@@ -5,8 +5,7 @@
 import requests
 import csv
 import numpy as np
-import heatmaps
-#from heatmaps.services import term_service
+import heatmaps.services
 from IPython import embed
 
 map_nlx_to_scigraph = {  # from column names
@@ -99,7 +98,7 @@ def main():
     lines = np.array(lines)
     labels = lines[:,1]
     syns = lines[:,2]
-    ts = heatmaps.term_service()
+    ts = heatmaps.services.term_service()
     records = [] 
     for l, ss, in zip(labels, syns):
         tr = ts.get_term_record(l)
@@ -109,7 +108,7 @@ def main():
                 tr = ts.get_term_record(syn)
                 if tr:
                     tr[0]['TRIGGERING SYN'] = syn
-                     break
+                    break
         records.append(tr)
             
                 
