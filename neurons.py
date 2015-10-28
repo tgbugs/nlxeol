@@ -1,11 +1,12 @@
-#!/usr/bin/env python3
+#!/usr#/bin/env python3
 """
     DO IT BY HAND BECAUSES NEWLINES EVERYWHERE AND I DONT FEEL LIKE WRITING A PARSER
 """
 import requests
 import csv
 import numpy as np
-from heatmaps.services import term_service
+import heatmaps
+#from heatmaps.services import term_service
 from IPython import embed
 
 map_nlx_to_scigraph = {  # from column names
@@ -98,17 +99,17 @@ def main():
     lines = np.array(lines)
     labels = lines[:,1]
     syns = lines[:,2]
-    ts = term_service()
+    ts = heatmaps.term_service()
     records = [] 
     for l, ss, in zip(labels, syns):
-        tr = ts.get_term(l)# tr = ts.get_term_record(l)
+        tr = ts.get_term_record(l)
     if not tr:
-            for syn in ss.split(','):
+        for syn in ss.split(','):
             if syn:
-                tr = ts.get_term(syn)#tr = ts.get_term_record(syn)
-            if tr:
-                        tr[0]['TRIGGERING SYN'] = syn
-                        break
+                tr = ts.get_term_record(syn)
+                if tr:
+                    tr[0]['TRIGGERING SYN'] = syn
+                     break
         records.append(tr)
             
                 
