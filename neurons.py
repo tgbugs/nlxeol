@@ -102,11 +102,11 @@ def main():
     records = [] 
     for l, ss, in zip(labels, syns):
         tr = ts.get_term(l)# tr = ts.get_term_record(l)
-	if not tr:
+    if not tr:
             for syn in ss.split(','):
-			if syn:
-				tr = ts.get_term(syn)#tr = ts.get_term_record(syn)
-			if tr:
+            if syn:
+                tr = ts.get_term(syn)#tr = ts.get_term_record(syn)
+            if tr:
                         tr[0]['TRIGGERING SYN'] = syn
                         break
         records.append(tr)
