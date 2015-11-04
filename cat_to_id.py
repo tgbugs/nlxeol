@@ -5,7 +5,11 @@ from collections import namedtuple
 from IPython import embed
 
 with open('neuron_data_curated.csv', 'rt') as f:
-    rows = [r for r in csv.reader(f)]
+    rows = [r[:4] for r in csv.reader(f)]
+with open('brain_region_data.csv', 'rt') as f:
+    rows += [r[:4] for r in csv.reader(f)][1:]
+with open('cell_layer_data.csv', 'rt') as f:
+    rows += [r[:4] for r in csv.reader(f)][1:]
 
 rows[0][0] = 'Category name'
 Columns = namedtuple('Columns', [n.replace(' ','_').replace('/','_') for n in rows[0]])
@@ -22,7 +26,7 @@ na_to_label = {wrap_string(tup.Category_name[1:]):tup.Label if tup.Label else 'N
 #print(na_id_dict)
 
 def sub(x):
-    print(x.group())
+    #print(x.group())
     return na_id_dict[x.group()]
 
 with open('Neurons.owl','rt') as f:
@@ -40,6 +44,8 @@ for string in lines:
 
     result = pattern.sub(sub, string)
     results.append(result)
+    if result == string and '&neurons' in result and 'Category' in result:
+        print(result)
     if '<owl:Class' in string:
         try:
             name = string.split(';')[1].split('"')[0]
@@ -60,7 +66,8 @@ for string in lines:
             #raise BaseException(name)
 
 with open('Neurons_new.owl', 'wt') as f:
-    f.writelines(results)
+    #f.writelines(results)
+    pass
 
 embed()
 
