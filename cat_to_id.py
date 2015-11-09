@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-import re
 import csv
+import re
 from collections import namedtuple
 from IPython import embed
+
 
 with open('neuron_data_curated.csv', 'rt') as f:
     rows = [r[:4] for r in csv.reader(f)]
