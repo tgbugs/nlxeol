@@ -5,6 +5,7 @@ from collections import namedtuple
 from IPython import embed
 
 
+
 with open('neuron_data_curated.csv', 'rt') as f:
     rows = [r[:4] for r in csv.reader(f)]
 with open('brain_region_data.csv', 'rt') as f:
@@ -15,7 +16,7 @@ with open('cell_layer_data.csv', 'rt') as f:
 rows[0][0] = 'Category name'
 Columns = namedtuple('Columns', [n.replace(' ', '_').replace('/', '_') for n in rows[0]])
 
-print(Columns)
+#print(Columns)
 #n_to_id_dict = {r[0][1:]:r[3] for r in rows}
 def wrap_string(string):
     #return '&neurons;' + string.replace(' ','_')
@@ -45,12 +46,14 @@ for string in lines:
 
     result = pattern.sub(sub, string)
     results.append(result)
+    '''
     if result == string and '&neurons' in result and 'Category' in result:
         n=len(result)
         temp=string
         temp=string.replace('">',' ')
         temp=temp.replace('_', ' ')
         print(temp[44:85])
+        '''
     if '<owl:Class' in string:
         try:
             name = string.split(';')[1].split('"')[0]
