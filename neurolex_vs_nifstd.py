@@ -43,8 +43,7 @@ for u in cell_IDs:
         print(u)
         need=need+1
 
-for y in list:
-    print(y)
+
 
 
 print('We need', need, 'IDs')
