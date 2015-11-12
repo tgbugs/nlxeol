@@ -1,0 +1,32 @@
+
+List of IDs not in NIF:
+
+nlx_anat_1008002
+nlx_42439,birnlex_4128
+nlx_153849
+nlx_156731
+nlx_156732
+nlx_156733
+nlx_156734
+nlx_156735
+nlx_156736
+nlx_152528
+nlx_152529
+nlx_152612
+nlx_152611
+nlx_152183
+nlx_152184
+nlx_152186
+nlx_152185
+nlx_144110
+nlx_144109
+nlx_152613
+nlx_152614
+nlx_152617
+nlx_152615
+nlx_143939
+nlx_152616
+We need 25 IDs
+
+We have 44 In NIF
+{'nlx_152616': '', 'birnlex_779': 'NIFGA', 'nlx_anat_1008003': 'NIFGA', 'nlx_anat_090821': 'NIFGA', 'nlx_anat_091007': 'NIFGA', 'nlx_144264': 'NIFGA', 'nlx_93650': 'NIFGA', 'birnlex_1211': 'NIFGA', 'nlx_144110': '', 'birnlex_790': 'NIFGA', 'nlx_144109': '', 'nlx_anat_090811': 'NIFGA', 'nlx_152183': '', 'birnlex_797': 'NIFGA', 'nlx_156735': '', 'nlx_anat_091008': 'NIFGA', 'birnlex_810': 'NIFGA', 'nlx_anat_090810': 'NIFGA', 'nlx_152614': '', 'nlx_144263': 'NIFGA', 'nlx_156731': '', 'nlx_anat_090809': 'NIFGA', 'nlx_152609': 'NIFGA', 'nlx_20558': 'NIFGA', 'nlx_58': 'NIFGA', 'nlx_153848': 'NIFGA', 'nlx_152611': '', 'nlx_152185': '', 'nlx_152612': '', 'UBERON_0001792': 'OBO', 'nlx_89': 'NIFGA', 'nlx_42439,birnlex_4128': '', 'nlx_152184': '', 'nlx_anat_091009': 'NIFGA', 'nlx_152619': 'NIFGA', 'nlx_anat_1008004': 'NIFGA', 'nlx_anat_1008006': 'NIFGA', 'nlx_152529': '', 'nlx_152186': '', 'nlx_156736': '', 'nlx_152615': '', 'birnlex_818': 'NIFGA', 'nlx_152617': '', 'nlx_anat_091006': 'NIFGA', 'nlx_143939': '', 'nlx_152613': '', 'nlx_93816': 'NIFGA', 'nlx_anat_1008002': '', 'nlx_anat_090808': 'NIFGA', 'nlx_39987': 'NIFGA', 'nlx_152528': '', 'nlx_144108': 'NIFGA', 'nlx_156733': '', 'nlx_anat_090820': 'NIFGA', 'nlx_anat_091003': 'NIFGA', 'birnlex_4127': 'NIFGA', 'nlx_anat_090812': 'NIFGA', 'nlx_anat_1008005': 'NIFGA', 'birnlex_1359': 'NIFGA', 'nlx_156732': '', 'nlx_153849': '', 'nlx_156734': '', 'nlx_anat_1005002': 'NIFGA', 'birnlex_4129': 'NIFGA', 'nlx_98': 'NIFGA', 'nlx_152610': 'NIFGA', 'nlx_anat_090807': 'NIFGA', 'nlx_152661': 'NIFGA', 'nlx_anat_1005034': 'NIFGA'}
