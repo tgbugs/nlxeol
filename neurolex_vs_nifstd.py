@@ -7,28 +7,46 @@ from collections import namedtuple
 from IPython import embed
 import numpy
 
-
+a=0
 v=Vocabulary()
 g=Graph()
-
+NIF_Directory={}
 
 with open('cell_layer_data.csv', 'rt') as cell_open:
     cell_IDs= [r[3] for r in csv.reader(cell_open)][1:]
 print(cell_IDs)
-print('')
-if '_' in cell_IDs:
-    cell_IDs=cell_IDs.replace('_',' ')
+
+n=len(cell_IDs)
+print('We have',n,'IDs')
 print('')
 Curie_Prefixes= v.getCuriePrefixes()[1:65]
+
+#NIF_Directory{}=
 #Curie_Prefixes=Curie_Prefixes.sort()
 #print (Curie_Prefixes)
 
-'''
+k=0
+count=0
+need=0
 for i in Curie_Prefixes:
     for j in cell_IDs:
-        print(i,j)
-        #if v.findById(i,j)!=None:
-         #   print('hello')
+        have=(i+':'+j)
+        have=v.findById(have)
+        if have!=None:
+            NIF_Directory[j]=i
+            count=count+1
 
-embed()
-'''
+needed=()
+for u in cell_IDs:
+    if u not in NIF_Directory:
+        NIF_Directory[u]=''
+        print(u)
+        need=need+1
+
+for y in list:
+    print(y)
+
+
+print('We need', need, 'IDs')
+print('We have', count, 'In NIF')
+print(NIF_Directory)
