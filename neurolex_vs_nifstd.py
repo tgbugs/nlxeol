@@ -14,6 +14,8 @@ NIF_Directory={}
 
 with open('cell_layer_data.csv', 'rt') as cell_open:
     cell_IDs= [r[3] for r in csv.reader(cell_open)][1:]
+with open('brain_region_data.csv') as brain_open:
+    cell_IDs+= [r[3] for r in csv.reader(brain_open)][1:]
 print(cell_IDs)
 
 n=len(cell_IDs)
@@ -49,3 +51,4 @@ for u in cell_IDs:
 print('We need', need, 'IDs')
 print('We have', count, 'In NIF')
 print(NIF_Directory)
+print('done!')
