@@ -10,8 +10,11 @@ NIF_Directory={}
 
 with open('cell_layer_data.csv', 'rt') as cell_open:
     cell_IDs= [r[3] for r in csv.reader(cell_open)][1:]
-with open('brain_region_data.csv') as brain_open:
+with open('brain_region_data.csv', 'rt') as brain_open:
     cell_IDs+= [r[3] for r in csv.reader(brain_open)][1:]
+with open('neuron_data_curated.csv', 'rt') as neuron_open:
+    cell_IDs+= [r[3] for r in csv.reader(neuron_open)][1:]
+
 print(cell_IDs)
 
 n=len(cell_IDs)
