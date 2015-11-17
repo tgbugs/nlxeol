@@ -2,47 +2,61 @@
 
 import csv
 from heatmaps.scigraph_client import Graph, Vocabulary
+from collections import defaultdict
 
+
+
+
+NIF_Directory = defaultdict(list)
 a=0
 v=Vocabulary()
 g=Graph()
-NIF_Directory={}
+count=0
+need=0
+
+
 
 with open('cell_layer_data.csv', 'rt') as cell_open:
     cell_IDs= [r[3] for r in csv.reader(cell_open)][1:]
+
+'''
 with open('brain_region_data.csv', 'rt') as brain_open:
     cell_IDs+= [r[3] for r in csv.reader(brain_open)][1:]
 with open('neuron_data_curated.csv', 'rt') as neuron_open:
     cell_IDs+= [r[3] for r in csv.reader(neuron_open)][1:]
+'''
 
 print(cell_IDs)
 
+
+
 n=len(cell_IDs)
 print('We have',n,'IDs')
-print('')
+#print('')
 Curie_Prefixes= v.getCuriePrefixes()[1:65]
 print(Curie_Prefixes)
 
-
-
-count=0
-need=0
-for i in Curie_Prefixes:
-    for j in cell_IDs:
-        have=(i+':'+j)
+for IDs in cell_IDs:
+    for Prefixes in Curie_Prefixes:
+        have=(Prefixes+':'+IDs)
         have=v.findById(have)
         if have!=None:
-            NIF_Directory[j]=i
+            print(IDs)
+            NIF_Directory[Prefixes].append(IDs)
             count=count+1
             print(count)
+            break
 
 
+
+
+'''
 for u in cell_IDs:
     if u not in NIF_Directory:
-        NIF_Directory[u]=''
+        NIF_Directory[u]='nlx_only'
         print(u)
         need=need+1
-
+'''
 
 print('We need', need, 'IDs')
 print('We have', count, 'In NIF')
