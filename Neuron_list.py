@@ -1,61 +1,61 @@
-Amygdala cortico-medial nucleus
+Amygdala cortico-medial nucleus:LOST
 
-Anterior piriform cortex
+Anterior piriform cortex:nlx_12056
 
-Basal pons
+Basal pons:nlx_70371
 
-CA3 alveus/oriens
+CA3 alveus/oriens:LOST
 
-CA3 oriens proximal
+CA3 oriens proximal:LOST
 
-Ciliary ganglion
+Ciliary ganglion:nlx_anat_100304
 
-Cochlea
+Cochlea:birnlex_1190
 
-Contralateral neocortex
+Contralateral neocortex:LOST
 
-Dorsal root ganglion
+Dorsal root ganglion:birnlex_2596
 
-Epiglottis
+Epiglottis:nlx_151722
 
-Lumbar spinal cord ventral horn
+Lumbar spinal cord ventral horn:birnlex_891
 
-Mediodorsal thalamus
+Mediodorsal thalamus:nlx_66882
 
-Neostriatum
+Neostriatum(Striatum):birnlex_1672
 
-Olfactory cortex deep layer III
+Olfactory cortex deep layer III:LOST
 
-Olfactory cortex layer 2a
+Olfactory cortex layer 2a:LOST
 
-Olfactory glomerulus
+Olfactory glomerulus:nlx_subcell_20090503
 
-Palate
+Palate:nlx_151721
 
-Posterior cricoarytenoid muscle
+Posterior cricoarytenoid muscle:nlx_143569
 
-Proximal
+Proximal(Proximal to):PATO_0001195
 
-Retina
+Retina:birnlex_1153
 
-Sacral spinal cord
+Sacral spinal cord:birnlex_1275
 
-Spinal cord
+Spinal cord:birnlex_1709
 
-Spinal cord dorsal horn
+Spinal cord dorsal horn:birnlex_2667
 
-Spinal cord ventral horn
+Spinal cord ventral horn:birnlex_2668
 
-Spinocerebellar tract
+Spinocerebellar tract:nlx_60355
 
-Spiral organ of Corti
+Spiral organ of Corti:birnlex_2526
 
-Thoracic spinal cord ventral horn
+Thoracic spinal cord ventral horn:birnlex_1410
 
-Thyroarytenoid muscle
+Thyroarytenoid muscle:nlx_143568
 
-Tongue
+Tongue:nlx_151720
 
-Ventral nuclei of the lateral lemniscus
+Ventral nuclei of the lateral lemniscus:nlx_50884
 
-Vestibular ganglion
+Vestibular ganglion:birnlex_2549
