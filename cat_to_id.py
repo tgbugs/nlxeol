@@ -5,14 +5,16 @@ from collections import namedtuple
 from IPython import embed
 
 
-
+with open('result-7.csv', 'rt') as f:
+    rows = [r[:4] for r in csv.reader(f)]
+'''
 with open('neuron_data_curated.csv', 'rt') as f:
     rows = [r[:4] for r in csv.reader(f)]
 with open('brain_region_data.csv', 'rt') as f:
     rows += [r[:4] for r in csv.reader(f)][1:]
 with open('cell_layer_data.csv', 'rt') as f:
     rows += [r[:4] for r in csv.reader(f)][1:]
-
+'''
 rows[0][0] = 'Category name'
 Columns = namedtuple('Columns', [n.replace(' ', '_').replace('/', '_') for n in rows[0]])
 
@@ -23,8 +25,9 @@ def wrap_string(string):
     return string.replace(' ','_')
 
 na_id_dict = {wrap_string(tup.Category_name[1:])+'"':wrap_string(tup.Id)+'"' if tup.Id else 'NO_ID' + wrap_string(tup.Category_name[1:]) for tup in map(Columns._make, rows[1:])}
+#print('na_id_dict',na_id_dict)
 na_to_label = {wrap_string(tup.Category_name[1:]):tup.Label if tup.Label else 'NO_LABEL' + tup.Category_name.split(':')[2].replace('_',' ') for tup in map(Columns._make, rows[1:])}
-
+#print('na_to_label', na_to_label)
 #print(na_id_dict)
 
 def sub(x):
@@ -36,8 +39,12 @@ with open('Neurons.owl','rt') as f:
 
 #expression = r'\b(' + '|'.join([k.replace(')',r'\)').replace('(',r'\(') for k in na_id_dict]) + r')\b'  # apparenlty the )\b causes errors
 expression = r'' + '|'.join([k.replace(')',r'\)').replace('(',r'\(') for k in na_id_dict]) + r''
+#print('expression',expression)
 pattern = re.compile(expression)  # what happens if key order changes?!
+#print('pattern',pattern)
 results = []
+#print('results',results)
+troy=[]
 for string in lines:
     if 'neurons#' in string:
         string = string.replace('#','/')
@@ -63,7 +70,7 @@ for string in lines:
         if "&apos;" in name:
             embed()
         if name in na_to_label:
-            label_line = '        <rdfs:label rdf:datatype="&xsd;string">{label}</rdfs:label>\n'.format(label=na_to_label[name])
+            label_line = '<rdfs:label rdf:datatype="&xsd;string">{label}</rdfs:label>\n'.format(label=na_to_label[name])
             results.append(label_line)
         #elif name.startswith('Axon') or name.startswith('Dendrite') or name.startswith('Soma'):
             #pass
