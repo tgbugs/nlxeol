@@ -4,15 +4,16 @@ import re
 from collections import namedtuple
 from IPython import embed
 
-
-
+with open('result-7.csv', 'rt') as f:
+    rows = [r[:4] for r in csv.reader(f)]
+'''
 with open('neuron_data_curated.csv', 'rt') as f:
     rows = [r[:4] for r in csv.reader(f)]
 with open('brain_region_data.csv', 'rt') as f:
     rows += [r[:4] for r in csv.reader(f)][1:]
 with open('cell_layer_data.csv', 'rt') as f:
     rows += [r[:4] for r in csv.reader(f)][1:]
-
+'''
 rows[0][0] = 'Category name'
 Columns = namedtuple('Columns', [n.replace(' ', '_').replace('/', '_') for n in rows[0]])
 
