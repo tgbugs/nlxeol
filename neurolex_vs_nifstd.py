@@ -22,6 +22,8 @@ with open('brain_region_data.csv', 'rt') as brain_open:
     cell_IDs+= [r[3] for r in csv.reader(brain_open)][1:]
 with open('neuron_data_curated.csv', 'rt') as neuron_open:
     cell_IDs+= [r[3] for r in csv.reader(neuron_open)][1:]
+with open('lost_cat.csv', 'rt') as f:
+    cell_IDs += [r[3] for r in csv.reader(f)][1:]
 
 print(cell_IDs)
 

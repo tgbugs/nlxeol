@@ -48,14 +48,12 @@ for string in lines:
 
     result = pattern.sub(sub, string)
     results.append(result)
-    '''
     if result == string and '&neurons' in result and 'Category' in result:
         n=len(result)
         temp=string
         temp=string.replace('">',' ')
         temp=temp.replace('_', ' ')
         print(temp[44:85])
-        '''
     if '<owl:Class' in string:
         try:
             name = string.split(';')[1].split('"')[0]
