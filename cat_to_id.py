@@ -4,7 +4,7 @@ import re
 from collections import namedtuple
 from IPython import embed
 
-with open('result-7.csv', 'rt') as f:
+with open('result_7.csv', 'rt') as f:
     rows = [r[:4] for r in csv.reader(f)]
 '''
 with open('neuron_data_curated.csv', 'rt') as f:
