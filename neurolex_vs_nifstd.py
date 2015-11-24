@@ -25,18 +25,19 @@ with open('neuron_data_curated.csv', 'rt') as neuron_open:
 with open('lost_cat.csv', 'rt') as f:
     cell_IDs += [r[3] for r in csv.reader(f)][1:]
 
-print(cell_IDs)
+#print(cell_IDs)
 
 
 
 n=len(cell_IDs)
-print('We have',n,'IDs')
+#print('We have',n,'IDs')
 #print('')
 
-Curie_Prefixes= v.getCuriePrefixes()[1:65]
+Curie_Prefixes= v.getCuriePrefixes()[1:]
 Curie_Prefixes.append('nlx_only')
 print(Curie_Prefixes)
 
+'''
 for IDs in cell_IDs:
     for Prefixes in Curie_Prefixes:
         have=(Prefixes+':'+IDs)
@@ -50,9 +51,10 @@ for IDs in cell_IDs:
     if have==None:
         NIF_Directory['nlx_only'].append(IDs)
         need=need+1
-
+#json
 
 print('We need', need, 'IDs')
 print('We have', count, 'In NIF')
 print(NIF_Directory)
 print('done!')
+'''
