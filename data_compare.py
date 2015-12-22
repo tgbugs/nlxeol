@@ -28,7 +28,7 @@ with open('cell_layer_data.csv', 'rt') as f:
 with open('brain_region_data.csv', 'rt') as f:
     csv_rows+= ([r[0:14] for r in csv.reader(f)][1:])
 with open('neuron_data_curated.csv', 'rt') as f:
-    csv_rows+= ([r[0:14] for r in csv.reader(f)][1:90])
+    csv_rows+= ([r[0:14] for r in csv.reader(f)][1:])
 with open('lost_cat.csv', 'rt') as f:
     csv_rows+= ([r[0:14] for r in csv.reader(f)][1:])
 
