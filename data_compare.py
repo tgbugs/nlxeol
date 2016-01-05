@@ -151,13 +151,14 @@ for rows in csv_rows:
 
 #need to condense the ifs of the original while just having the 4 compariable for the remaining if statements; need to map the rows to there sisters
 
-print(finished_dict)
-S=json.dumps(finished_dict)
+#print(finished_dict)
+#S=json.dump(finished_dict)
 #print(sudo)
 #print(master_csv)
 print('stopped')
 
-
+with open('Neurolex_Scigraph.json', 'wt') as f:
+    json.dump(finished_dict, f)
 
 
 
