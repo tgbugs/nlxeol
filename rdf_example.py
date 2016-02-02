@@ -58,13 +58,6 @@ PREFIXES = {
     'oboInOwl':'http://www.geneontology.org/formats/oboInOwl#',  # these aren't really from OBO files but they will be friendly known identifiers to people in the community
     'NIFGA':'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-GrossAnatomy.owl#',
 }
-SUFFIX = {"","OLD_CHEBI","NIFNEURCIR","NIFMOL","NIFNCBISLIM","RO","HP","NIFINV","NIFERO","BFO",
-           "QUALBB","ERO","NIFQUAL","NIFGOCC","PATO","NIFGA","NIFBE","OBO","NIFNEURNT","OBOANN","NIFANN","UO",
-           "SIO","NCBITaxon","NIFFUN","NIFNCBI","NIFGG","NIFSUB","IAO","PW","PR","NIFUNCL","NIFMOLINF","NIFNEURON","SAOCORE",
-           "BIRNANN","CLO","OLD_SO","NIFCELL","NIFDYS","NIFSCID","NIFNEURMOR","BFO1","COGPO","DOID","NIFNEURBR","OIO","COGAT","NEMOANN",
-           "BIRNOBO","NIFMOLROLE","NEMO","SO","NIFORG","BIRNOBI","FMA","NIFRES","EFO","PATO3","PATO2","UBERON","GO","NIFCHEM","CL"
-
-}
 ONTOLOGY_BASE = 'some silly iri'
 
 ONTOLOGY_DEF = {
