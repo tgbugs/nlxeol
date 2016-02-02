@@ -6,16 +6,18 @@ from collections import *
 from heatmaps.scigraph_client import Graph, Vocabulary
 from collected import data
 from rdflib import *
-
+import rdflib
+from rdflib.namespace import RDF
 g = Graph()
-
+v = Vocabulary()
+v.getCuriePrefixes()
 '''
 .namespace to map long names
 .graph to make tuples
 '''
 ns=Namespace
 person = ns("http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#Bill_Bug") + ns("http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#Bill_Bug")
-print(person)
+#print(person)
 rawInput = ns("http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#raw_import")
 nueroNames = ns("http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#NeuroNames_abbrevSource")
 
@@ -39,16 +41,17 @@ prefix = tuple(data)
 #length of labels is 0-84 or 85 elements
 for i  in range(0,len(keys)):
     for j in range(0,len(js['LABELS'][0])):
-        mid = js['LABELS'][0][j]
+        mid = ns(js['LABELS'][0][j])
         #print(mid)
-        right = js[keys[i]][0][j]
+        right = ns(js[keys[i]][0][j])
         for pre in prefix:
             for IDs in data[pre]:
                 if IDs in js[keys[i]][0][3]:
                     if 'nlx_only' in pre:
                         continue
                     if right != '':
-                        print(pre, mid, right)#FIXME: needs to be g.add() once I know how to use it...
+                        print('yep')
+                        #g.add_node((pre, mid, right))
                         continue
 
 
