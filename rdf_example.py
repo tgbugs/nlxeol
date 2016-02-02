@@ -56,7 +56,7 @@ PREFIXES = {
     'NIF':'http://uri.neuinfo.org/nif/nifstd/',  # for old ids??
     'obo_annot':'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#',  #FIXME OLD??
     'oboInOwl':'http://www.geneontology.org/formats/oboInOwl#',  # these aren't really from OBO files but they will be friendly known identifiers to people in the community
-
+    'NIFGA':'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-GrossAnatomy.owl#',
 }
 SUFFIX = {"","OLD_CHEBI","NIFNEURCIR","NIFMOL","NIFNCBISLIM","RO","HP","NIFINV","NIFERO","BFO",
            "QUALBB","ERO","NIFQUAL","NIFGOCC","PATO","NIFGA","NIFBE","OBO","NIFNEURNT","OBOANN","NIFANN","UO",
@@ -219,7 +219,7 @@ def make_node(id_, field, value):
 
 
 field_mapping = {
-    'Resource Name':'label',
+    'Lable':'label',
     'Description':'definition',
     'Synonyms':'synonyms',
     'Alternate IDs':'alt_ids',
@@ -232,7 +232,7 @@ field_mapping = {
 }
 
 
-def main():
+def _main():
     DB_URI = 'mysql+mysqlconnector://{user}:{password}@{host}:{port}/{db}'
     config = mysql_conn_helper('mysql5-stage.crbs.ucsd.edu', 'nif_eelg', 'nif_eelg_secure')
     engine = create_engine(DB_URI.format(**config))
@@ -295,27 +295,50 @@ def main():
     rc.append( (-101, 'Supercategory', 'NIF:nlx_152328', 1) )  # TODO extract this more intelligently from remap supers please
 
 
-#FIXME, keep the rest, but need a new function from my own dictionary to build my records
-for i  in range(0,len(keys)):
-    for j in range(0,len(js['LABELS'][0])):
-        mid = js['LABELS'][0][j]
-        #print(mid)
-        right = js[keys[i]][0][j]
-        for pre in prefix:
-            for IDs in data[pre]:
+def main():
+    #FIXME, keep the rest, but need a new function from my own dictionary to build my records
+    g = makeGraph('cell-merge', PREFIXES)
+    #for i  in range(0,len(keys)):
+        #for j in range(0,len(js['LABELS'][0])):
+    #print(js.keys())
+    for prefix, outer_identifiers in data.items():
+        for id_ in outer_identifiers:
+            pre = prefix + ':' + id_
+            columns = js[id_][0]
+            print('num columns', len(columns))
+            for index, label in enumerate(js['LABELS'][0]):
+                mid = label
+                right = columns[index]
+                if not right:
+                    continue
+                print(pre, mid, right)
+                continue
+            print()
+
+
+
+        #for inner_identifier, columns in js.items():
+            #mid = js['LABELS'][0][j]
+            #print(mid)
+            #right = js[keys[i]][0][j]
+            #for pre in prefix:
+                #for IDs in data[pre]:
+                #print(prefix, outer_identifiers, inner_identifier, columns, index, label)
                 if IDs in js[keys[i]][0][3]:
                     if 'nlx_only' in pre:
                         continue
                     if right != '':
                         #output = make_records(r, rc, field_mapping)
                         print('Fetching and data prep done.')
-                        g = makeGraph('scicrunch-registry', PREFIXES)
                         #for id_, rec in output.items():
                             #for field, value in rec:
                                 #print(field, value)
-                        g.add_node(*make_node(pre, mid, right))
+                        node = make_node(pre, mid, right)
+                        print(node)
+                        #g.add_node(*node)
                         print(g)
-                        g.write()
+
+    #g.write()
     #embed()
 
 if __name__ == '__main__':
