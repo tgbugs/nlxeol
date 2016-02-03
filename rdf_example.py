@@ -294,21 +294,31 @@ def main():
     #for i  in range(0,len(keys)):
         #for j in range(0,len(js['LABELS'][0])):
     #print(js.keys())
+    keyList=[]
     for prefix, outer_identifiers in data.items():
         for id_ in outer_identifiers:
             pre = prefix + ':' + id_
+            #if id_ not in js.keys():
+                #keyList.append(id_)
+                #continue
+            #if id_ == "nifext_128":
+                #id_ == "sao1736323572"
             columns = js[id_][0]
-            print('num columns', len(columns))
-            for index, label in enumerate(js['LABELS'][0]):
+            #print('num columns', len(columns), id_)
+            for index, label in enumerate(js['LABELS']):
                 mid = label
+                print(mid)
                 right = columns[index]
                 if not right:
                     continue
                 print(pre, mid, right)
+                node = make_node(pre, mid, right)
+                print(node)
+        #g.add_node(*node)
+                #print(pre, mid, right)
                 continue
-            print()
-
-
+            #print()
+    #print(keyList)
 
         #for inner_identifier, columns in js.items():
             #mid = js['LABELS'][0][j]
@@ -317,20 +327,21 @@ def main():
             #for pre in prefix:
                 #for IDs in data[pre]:
                 #print(prefix, outer_identifiers, inner_identifier, columns, index, label)
-                if IDs in js[keys[i]][0][3]:
-                    if 'nlx_only' in pre:
-                        continue
-                    if right != '':
-                        #output = make_records(r, rc, field_mapping)
-                        print('Fetching and data prep done.')
-                        #for id_, rec in output.items():
-                            #for field, value in rec:
-                                #print(field, value)
-                        node = make_node(pre, mid, right)
-                        print(node)
-                        #g.add_node(*node)
-                        print(g)
-
+'''
+if IDs in js[keys[i]][0][3]:
+    if 'nlx_only' in pre:
+        continue
+    if right != '':
+        #output = make_records(r, rc, field_mapping)
+        print('Fetching and data prep done.')
+        #for id_, rec in output.items():
+            #for field, value in rec:
+                #print(field, value)
+        node = make_node(pre, mid, right)
+        print(node)
+        #g.add_node(*node)
+        print(g)
+'''
     #g.write()
     #embed()
 

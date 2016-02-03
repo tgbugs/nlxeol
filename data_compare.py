@@ -49,10 +49,10 @@ with open('brain_region_data.csv', 'rt') as f:
 with open('neuron_data_curated.csv', 'rt') as f:
     csv_rows += ([r[0:14] for r in csv.reader(f)][1:])#47,66
 
-#with open('lost_cat.csv', 'rt') as f:
-    #lost_rows= ([r[0:14] for r in csv.reader(f)][1:])
+with open('lost_cat.csv', 'rt') as f:
+    lost_rows = ([r[0:14] for r in csv.reader(f)][1:])
 
-
+#print(csv_rows[0][3])
 '''
 #FINDS KEYS AND VALUES IN SCIGRAPH
 for keys in a:
@@ -135,7 +135,9 @@ def no_repeats(csv, sci):
     final_draft=str(final_draft).strip('[]')
     final_draft=final_draft.replace(',',', ')
     final_draft=final_draft.replace(',  ',', ')
-    final_draft=final_draft.replace('\'','')
+    final_draft=final_draft.replace(r'\\','')#need two \\ to make it valid to read one
+    final_draft=final_draft.replace(r'\\"', '')
+    final_draft=final_draft.replace(r'\\\\', '')
     final_draft=final_draft.replace('.,','.')
 
     #comma.join(final_draft)
@@ -235,19 +237,30 @@ k=[]
 for keys_1 in data.keys():
     k.append(keys_1)
 
-num=k.index('nlx_only')
-del k[num]
+#num=k.index('nlx_only')
+#del k[num]
 
 
 ''' My baby that is the backbone of comparing the curated csv files from Neurolex
     to the pulled out data from Scigraph to merge common data. We then add the rest of Scigraph
     data as its own potential csv columns in the imported json file.
 '''
+
 sci_dict=defaultdict(list)
+nlx_dict=defaultdict(list)
+
 for rows in csv_rows:
+    #print(rows[3])
     for i in k:
+        #print(i)
         for j in data[i]:
+            #print(j)
+            #print(rows[3])
             if j==rows[3]:
+                temp=j
+                if j in data['nlx_only']:
+                    nlx_dict[rows[3]]=rows
+                    continue
                 node=g.getNode(i+':'+j)
                 #print(node, '\n')
                 for key,value in node['nodes'][0]['meta'].items():#pulls items info out of web
@@ -376,6 +389,9 @@ for rows in csv_rows:
                 Sci_od_val=[]
                 for od_values in od.values():
                     Sci_od_val.append(od_values)
+                Sci_od_keys.append('PREFIX')
+                Sci_od_val.append(i+':'+j)
+
 
                 #TO FIND IF MATCHING INFO
 
@@ -427,29 +443,43 @@ for rows in csv_rows:
                 #print(y)
                 #y=no_repeats(y)
                 #print(y)
-                finished_dict[rows[3]].append(y)
-
+                #rint('\n',rows[3])
+                finished_dict[temp].append(y)
+                temp=0
                 # Sanity check to make sure data isn't being double copied.
                 Scigraph_info={}
                 y=[]
                 Sci_od_val=[]
                 del od
-#FIXME
-#for lost in lost_rows:
-    #finished_dict[lost[3]].append(lost)
+
 
 #combines orignial csv labels from neurolex and adds the scigraph labels I found important
 csv_sci = new_labels + Sci_od_keys
 
+#while len(lost_rows)!=len(csv_sci):
+    #lost_rows.append('')
+print(csv_sci)
+for lost in lost_rows:
+    while len(lost)!=len(csv_sci):
+        lost.append('')
+    finished_dict[lost[3]].append(lost)
+
+
+
 #FIXME IMPORTANT
 #adds a list of the order of which all the info is in under the key 'LABEL'
-finished_dict['LABELS'].append(csv_sci)
+finished_dict['LABELS']=csv_sci
+
+for nlxIds, nlxRows in nlx_dict.items():
+    while len(nlxRows) != len(csv_sci):
+        nlxRows.append('')
+    finished_dict[nlxIds]=nlxRows
 
 
 
 #FIXME
 # Nice reference to long data compiling.
-print(finished_dict)
+#print(finished_dict)
 #print(com_list)
 print('stopped')
 
