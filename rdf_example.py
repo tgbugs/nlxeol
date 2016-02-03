@@ -57,6 +57,78 @@ PREFIXES = {
     'obo_annot':'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#',  #FIXME OLD??
     'oboInOwl':'http://www.geneontology.org/formats/oboInOwl#',  # these aren't really from OBO files but they will be friendly known identifiers to people in the community
     'NIFGA':'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-GrossAnatomy.owl#',
+    'NIFCELL': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Cell.owl#',
+    'nlx_only': 'http://uri.neuinfo.org/nif/nifstd/',
+    # ontologies,
+    'HP': 'http://purl.obolibrary.org/obo/HP_',
+    'RO': 'http://purl.obolibrary.org/obo/RO_',
+    'OBO': 'http://purl.obolibrary.org/obo/',
+    'OIO': 'http://www.geneontology.org/formats/oboInOwl#',
+    'IAO': 'http://purl.obolibrary.org/obo/IAO_',
+    'SO' : 'http://purl.obolibrary.org/obo/SO_',
+    'OLD_SO' : 'http://purl.obolibrary.org/obo/SO#SO_',
+    'BFO': 'http://purl.obolibrary.org/obo/BFO_',
+    'DOID': 'http://purl.obolibrary.org/obo/DOID_,',
+    'PATO': 'http://purl.obolibrary.org/obo/PATO_',
+    'PATO2': 'http://purl.obolibrary.org/obo/PATO#PATO_',  #AAAAAAAAAAA
+    'PATO3': 'http://purl.org/obo/owl/PATO#PATO_',  #AAAAAAAAAAAAAAAAAA
+    'PR': 'http://purl.obolibrary.org/obo/PR_' ,
+    'PW' : 'http://purl.obolibrary.org/obo/PW_',
+    'CL' : 'http://purl.obolibrary.org/obo/CL_',
+    'CLO' : 'http://purl.obolibrary.org/obo/CLO_',
+    'GO' : 'http://purl.obolibrary.org/obo/GO_',
+    'SIO' : 'http://semanticscience.org/resource/SIO_',
+    'EFO' : 'http://www.ebi.ac.uk/efo/EFO_',
+    'UBERON' : 'http://purl.obolibrary.org/obo/UBERON_',
+    'ERO' : 'http://purl.obolibrary.org/obo/ERO_',
+    'NCBITaxon' : 'http://purl.obolibrary.org/obo/NCBITaxon_',
+    'UO': 'http://purl.obolibrary.org/obo/UO_',
+    'OLD_CHEBI': 'http://purl.obolibrary.org/obo/chebi.owl#CHEBI_',
+    'FMA': 'http://purl.org/sig/ont/fma/fma',
+
+    # NIF Import closure
+    'BIRNANN': 'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#',
+    'BIRNOBI': 'http://ontology.neuinfo.org/NIF/Backend/BIRNLex-OBI-proxy.owl#',
+    'BIRNOBO': 'http://ontology.neuinfo.org/NIF/Backend/BIRNLex-OBO-UBO.owl#',
+    'NIFBE': 'http://ontology.neuinfo.org/NIF/Backend/nif_backend.owl#',
+    'NIFQUAL': 'http://ontology.neuinfo.org/NIF/Backend/NIF-Quality.owl#',
+    'OBOANN': 'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#',
+    'NIFANN': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Annotation-Standard.owl#',
+    'NIFCELL': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Cell.owl#',
+    'NIFCHEM': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Chemical.owl#',
+    'NIFGA': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-GrossAnatomy.owl#',
+    'NIFMOL': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Molecule.owl#',
+    'NIFORG': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Organism.owl#',
+    'NIFSUB': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Subcellular.owl#',
+    'NIFUNCL': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Unclassified.owl#',
+    'SAOCORE': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/SAO-CORE_properties.owl#',
+    'NIFGG': 'http://ontology.neuinfo.org/NIF/DigitalEntities/NIF-Government-Granting-Agency.owl#',
+    'NIFINV': 'http://ontology.neuinfo.org/NIF/DigitalEntities/NIF-Investigation.owl#',
+    'NIFRES': 'http://ontology.neuinfo.org/NIF/DigitalEntities/NIF-Resource.owl#',
+    'NIFSCID': 'http://ontology.neuinfo.org/NIF/DigitalEntities/NIF-Scientific-Discipline.owl#',
+    'NIFDYS': 'http://ontology.neuinfo.org/NIF/Dysfunction/NIF-Dysfunction.owl#',
+    'NIFFUN': 'http://ontology.neuinfo.org/NIF/Function/NIF-Function.owl#',
+    'NEMOANN': 'http://purl.bioontology.org/NEMO/ontology/NEMO_annotation_properties.owl',
+    'NEMO': 'http://purl.bioontology.org/NEMO/ontology/NEMO.owl#NEMO_',
+    'BFO1': 'http://www.ifomis.org/bfo/1.1',
+    'COGAT': 'http://www.cognitiveatlas.org/ontology/cogat.owl#',
+    'COGPO': 'http://www.cogpo.org/ontologies/COGPO_',  # doesn't resolve
+
+    # Inferred or Slim
+    'NIFMOLINF': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Molecule-Role-Inferred.owl#',
+    'NIFNCBISLIM': 'http://ontology.neuinfo.org/NIF/NIF-NCBITaxonomy-Slim.owl#',
+
+    # Bridge
+    'QUALBB': 'http://ontology.neuinfo.org/NIF/Backend/quality_bfo_bridge.owl#',
+    'NIFNEURON': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF_Neuron_MolecularConstituent_Bridge.owl#',
+    'NIFERO': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Eagle-I-Bridge.owl#',
+    'NIFGOCC': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-GO-CC-Bridge.owl#',
+    'NIFMOLROLE': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Molecule-Role-Bridge.owl#',
+    'NIFNCBI': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-NCBITax-Bridge.owl#',
+    'NIFNEURBR': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Neuron-BrainRegion-Bridge.owl#',
+    'NIFNEURCIR': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Neuron-Circuit-Role-Bridge.owl#',
+    'NIFNEURMOR': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Neuron-Morphology-Bridge.owl#',
+    'NIFNEURNT': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Neuron-NT-Bridge.owl#'
 }
 ONTOLOGY_BASE = 'some silly iri'
 
@@ -193,16 +265,100 @@ class makeGraph:
 
 field_to_edge = {
     'abbrev':'obo_annot:abbrev',
+    'Abbrev':'obo_annot:abbrev',
     'alt_id':'oboInOwl:hasDbXref',
     #'definition':'obo:IAO_0000115',  # FIXME alternate is skos:definition...
-    'definition':'skos:definition',
-    'id':'rdf:type',
-    'label':'rdfs:label',
+    'Definition':'skos:definition',
+    'Id':'rdf:type',
+    'Label':'rdfs:label',
     'old_id':'oboInOwl:hasDbXref',  # old vs alt id?
     'superclass':'rdfs:subClassOf',  # translation required
-    'synonym':'obo_annot:synonym',  # FIXME
+    'Synonym':'obo_annot:synonym',  # FIXME
+    'SuperCategory':'FIXME:SuperCategory',
     'type':'FIXME:type',  # bloody type vs superclass :/ ask james
-    'Categories':'rdfs:categories'
+    'category':'rdfs:category',
+    'categories':'rdfs:categories',
+    'Categories':'rdfs:categories',
+    'Species':'rdfs:species',
+    'DefiningCriteria':'rdfs:DefiningCriteria',
+    'DefiningCitation':'rdfs:DefiningCitation',
+    'Has role':'rdfs:Has Role',
+    'PMID':'rdfs:PMID',
+    'FBbt Id':'rdfs:FBbt Id',
+    'FBBT Link':'rdfs:FBBT Link',
+    'acronym':'rdfs:acronym',
+    'http://ontology.neuinfo.org/NIF/#createdDate':'rdfs:createdDate',
+    'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#PMID':'rdfs:PMID',
+    'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#bamsID':'rdfs:bamsID',
+    'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#birnlexDefinition':'rdfs:birnlexDefinition',
+    'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#birnlexPendingDifferentiaNote':'rdfs:birnlexPendingDifferentiaNote',
+    'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#birnlexRetiredDefinition':'rdfs:birnlexRetiredDefinition',
+    'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#bonfireID':'rdfs:bonfireID',
+    'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#bonfire_ID':'rdfs:bonfire_ID',
+    'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#cell_ontology_ID':'rdfs:cell_ontology_ID',
+    'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#curationStatus':'rdfs:curationStatus',
+    'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#hasBirnlexCurator':'rdfs:hasBirnlexCurator',
+    'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#hasCurationStatus':'rdfs:hasCurationStatus',
+    'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#hasFormerParentClass':'rdfs:hasFormerParentClass',
+    'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#isReplacedByClass':'rdfs:isReplacedByClass',
+    'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#neuroNamesAncillaryTerm':'rdfs:neuroNamesAncillaryTerm',
+    'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#neuronamesID':'rdfs:neuronamesID',
+    'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#sao_ID':'rdfs:sao_ID',
+    'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#umls_ID':'rdfs:umls_ID',
+    'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#MeshUid':'rdfs:MeshUid',
+    'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#UmlsCui':'rdfs:UmlsCui',
+    'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#abbrev':'rdfs:abbrev',
+    'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#acronym':'rdfs:acronym',
+    'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#altDefinition':'rdfs:altDefinition',
+    'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#createdDate':'rdfs:createdDate',
+    'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#curator':'rdfs:curator',
+    'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#definingCitation':'rdfs:definingCitation',
+    'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#definingCitationURI':'rdfs:definingCitationURI',
+    'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#definitonSource':'rdfs:definitonSource',
+    'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#externalSourceId':'rdfs:externalSourceId',
+    'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#externalSourceURI':'rdfs:externalSourceURI',
+    'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#externallySourcedDefinition':'rdfs:externallySourcedDefinition',
+    'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#hasAbbrevSource':'rdfs:hasAbbrevSource',
+    'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#hasDefinitionSource':'rdfs:hasDefinitionSource',
+    'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#hasExternalSource':'rdfs:hasExternalSource',
+    'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#modifiedDate':'rdfs:modifiedDate',
+    'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#nifID':'rdfs:nifID',
+    'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#pendingActionNote':'rdfs:pendingActionNote',
+    'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#pendingMereotopologicalRelationNote':'rdfs:pendingMereotopologicalRelationNote',
+    'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#tempDefinition':'rdfs:tempDefinition',
+    'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#usageNote':'rdfs:usageNote',
+    'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Cell.owl#sao_ID':'rdfs:sao_ID',
+    'http://protege.stanford.edu/plugins/owl/protege#sao_ID':'rdfs:sao_ID',
+    'http://purl.obolibrary.org/obo/IAO_0000115':'rdfs:http://purl.obolibrary.org/obo/IAO_0000115',
+    'http://purl.obolibrary.org/obo/UBPROP_0000001':'rdfs:http://purl.obolibrary.org/obo/UBPROP_0000001',
+    'http://purl.obolibrary.org/obo/UBPROP_0000003':'rdfs:http://purl.obolibrary.org/obo/UBPROP_0000003',
+    'http://purl.obolibrary.org/obo/UBPROP_0000012':'rdfs:http://purl.obolibrary.org/obo/UBPROP_0000012',
+    'http://purl.org/dc/elements/1.1/contributor':'rdfs:http://purl.org/dc/elements/1.1/contributor',
+    'http://purl.org/dc/elements/1.1/description':'rdfs:http://purl.org/dc/elements/1.1/description',
+    'http://purl.org/dc/elements/1.1/source':'rdfs:http://purl.org/dc/elements/1.1/source',
+    'http://www.geneontology.org/formats/oboInOwl#creation_date':'rdfs:creation_date',
+    'http://www.geneontology.org/formats/oboInOwl#editor_notes':'rdfs:editor_notes',
+    'http://www.geneontology.org/formats/oboInOwl#hasBroadSynonym':'rdfs:hasBroadSynonym',
+    'http://www.geneontology.org/formats/oboInOwl#hasDbXref':'rdfs:hasDbXref',
+    'http://www.geneontology.org/formats/oboInOwl#hasExactSynonym':'rdfs:hasExactSynonym',
+    'http://www.geneontology.org/formats/oboInOwl#hasOBONamespace':'rdfs:hasOBONamespace',
+    'http://www.geneontology.org/formats/oboInOwl#hasRelatedSynonym':'rdfs:hasRelatedSynonym',
+    'http://www.geneontology.org/formats/oboInOwl#hasVersion':'rdfs:hasVersion',
+    'http://www.geneontology.org/formats/oboInOwl#id':'rdfs:oboInOwl_id',
+    'http://www.w3.org/2000/01/rdf-schema#comment':'rdfs:comment',
+    'http://www.w3.org/2002/07/owl#deprecated':'rdfs:deprecated',
+    'http://www.w3.org/2002/07/owl#versionInfo':'rdfs:versionInfo',
+    'http://www.w3.org/2004/02/skos/core#changeNote':'rdfs:changeNote',
+    'http://www.w3.org/2004/02/skos/core#definition':'rdfs:definition',
+    'http://www.w3.org/2004/02/skos/core#editorialNote':'rdfs:editorialNote',
+    'http://www.w3.org/2004/02/skos/core#example':'rdfs:example',
+    'http://www.w3.org/2004/02/skos/core#historyNote':'rdfs:historyNote',
+    'http://www.w3.org/2004/02/skos/core#scopeNote':'rdfs:scopeNote',
+    'synonym':'rdf:synonym',
+    'types':'rdf:types',
+    'PREFIX':'rdf:PREFIX',
+
+
 }
 
 def make_node(id_, field, value):
@@ -296,6 +452,8 @@ def main():
     #print(js.keys())
     keyList=[]
     for prefix, outer_identifiers in data.items():
+        if 'nlx_only' == prefix:
+            continue
         for id_ in outer_identifiers:
             pre = prefix + ':' + id_
             #if id_ not in js.keys():
@@ -304,17 +462,21 @@ def main():
             #if id_ == "nifext_128":
                 #id_ == "sao1736323572"
             columns = js[id_][0]
-            #print('num columns', len(columns), id_)
+            print('num columns', len(columns), id_)
             for index, label in enumerate(js['LABELS']):
                 mid = label
-                print(mid)
-                right = columns[index]
+                #print(mid)
+                if 'nlx_only' == prefix:
+                    right = columns
+                else:
+                    right = columns[index]
+                print(right)
                 if not right:
                     continue
-                print(pre, mid, right)
+                #print(pre, mid, right)
                 node = make_node(pre, mid, right)
-                print(node)
-        #g.add_node(*node)
+                #print(node)
+                g.add_node(*node)
                 #print(pre, mid, right)
                 continue
             #print()
