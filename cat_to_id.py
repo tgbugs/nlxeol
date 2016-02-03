@@ -26,7 +26,8 @@ def wrap_string(string):
 
 na_id_dict = {wrap_string(tup.Category_name[1:])+'"':wrap_string(tup.Id)+'"' if tup.Id else 'NO_ID' + wrap_string(tup.Category_name[1:]) for tup in map(Columns._make, rows[1:])}
 na_to_label = {wrap_string(tup.Category_name[1:]):tup.Label if tup.Label else 'NO_LABEL' + tup.Category_name.split(':')[2].replace('_',' ') for tup in map(Columns._make, rows[1:])}
-
+print('yep',na_id_dict)
+print('label', na_to_label)
 #print(na_id_dict)
 
 def sub(x):
@@ -76,5 +77,3 @@ for string in lines:
 with open('Neurons_new.owl', 'wt') as f:
     f.writelines(results)
     pass
-
-embed()
