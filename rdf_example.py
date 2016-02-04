@@ -282,10 +282,10 @@ field_to_edge = {
     'Species':'rdfs:species',
     'DefiningCriteria':'rdfs:DefiningCriteria',
     'DefiningCitation':'rdfs:DefiningCitation',
-    'Has role':'rdfs:Has Role',
+    'Has_role':'rdfs:Has_Role',
     'PMID':'rdfs:PMID',
-    'FBbt Id':'rdfs:FBbt Id',
-    'FBBT Link':'rdfs:FBBT Link',
+    'FBbt_Id':'rdfs:FBbt_Id',
+    'FBBT_Link':'rdfs:FBBT_Link',
     'acronym':'rdfs:acronym',
     'http://ontology.neuinfo.org/NIF/#createdDate':'rdfs:createdDate',
     'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#PMID':'rdfs:PMID',
@@ -329,13 +329,13 @@ field_to_edge = {
     'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#usageNote':'rdfs:usageNote',
     'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Cell.owl#sao_ID':'rdfs:sao_ID',
     'http://protege.stanford.edu/plugins/owl/protege#sao_ID':'rdfs:sao_ID',
-    'http://purl.obolibrary.org/obo/IAO_0000115':'rdfs:http://purl.obolibrary.org/obo/IAO_0000115',
-    'http://purl.obolibrary.org/obo/UBPROP_0000001':'rdfs:http://purl.obolibrary.org/obo/UBPROP_0000001',
-    'http://purl.obolibrary.org/obo/UBPROP_0000003':'rdfs:http://purl.obolibrary.org/obo/UBPROP_0000003',
-    'http://purl.obolibrary.org/obo/UBPROP_0000012':'rdfs:http://purl.obolibrary.org/obo/UBPROP_0000012',
-    'http://purl.org/dc/elements/1.1/contributor':'rdfs:http://purl.org/dc/elements/1.1/contributor',
-    'http://purl.org/dc/elements/1.1/description':'rdfs:http://purl.org/dc/elements/1.1/description',
-    'http://purl.org/dc/elements/1.1/source':'rdfs:http://purl.org/dc/elements/1.1/source',
+    'http://purl.obolibrary.org/obo/IAO_0000115':'rdfs:IAO_0000115',
+    'http://purl.obolibrary.org/obo/UBPROP_0000001':'rdfs:UBPROP_0000001',
+    'http://purl.obolibrary.org/obo/UBPROP_0000003':'rdfs:UBPROP_0000003',
+    'http://purl.obolibrary.org/obo/UBPROP_0000012':'rdfs:UBPROP_0000012',
+    'http://purl.org/dc/elements/1.1/contributor':'rdfs:contributor',
+    'http://purl.org/dc/elements/1.1/description':'rdfs:description',
+    'http://purl.org/dc/elements/1.1/source':'rdfs:source',
     'http://www.geneontology.org/formats/oboInOwl#creation_date':'rdfs:creation_date',
     'http://www.geneontology.org/formats/oboInOwl#editor_notes':'rdfs:editor_notes',
     'http://www.geneontology.org/formats/oboInOwl#hasBroadSynonym':'rdfs:hasBroadSynonym',
@@ -462,7 +462,7 @@ def main():
             #if id_ == "nifext_128":
                 #id_ == "sao1736323572"
             columns = js[id_][0]
-            print('num columns', len(columns), id_)
+            #print('num columns', len(columns), id_)
             for index, label in enumerate(js['LABELS']):
                 mid = label
                 #print(mid)
@@ -470,16 +470,22 @@ def main():
                     right = columns
                 else:
                     right = columns[index]
-                print(right)
+                #print(right)
                 if not right:
                     continue
                 #print(pre, mid, right)
+                if ':' in right:
+                    right=right.replace(':','')
+                if ' ' in mid:
+                    mid=mid.replace(' ','_')
+                if type(right)==list:
+                    right=str(right)
                 node = make_node(pre, mid, right)
                 #print(node)
                 g.add_node(*node)
-                #print(pre, mid, right)
                 continue
-            #print()
+    g.write()
+    #print(g)
     #print(keyList)
 
         #for inner_identifier, columns in js.items():
