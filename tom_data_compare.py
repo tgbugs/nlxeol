@@ -134,15 +134,15 @@ def add_elements(record, rows, labels, id_):
     if id_ in rows:
         for label, element in zip(labels, rows[id_]):
             if element:
-                record[label] = element
+                record.append((label, element))
 
 output = {}
 scigraph = set()
 for prefix, outer_identifiers in data.items():
     for outer_identifier in outer_identifiers:
-        record = {}
+        record = []
         # right now DNE duplicate rows
-        record['curie'] = prefix + ':' + outer_identifier
+        record.append(('curie', prefix + ':' + outer_identifier))
         if outer_identifier in cell_rows_dict:
             add_elements(record, cell_rows_dict, cell_labels, outer_identifier)
         elif outer_identifier in brain_rows_dict:
@@ -155,11 +155,17 @@ for prefix, outer_identifiers in data.items():
             #record.extend(['' for a in new_labels])
 
         if prefix != 'nlx_only':
-            node = g.getNode(record['curie'])
+            node = g.getNode(record[0][1])  # FIXME [0][1] always the curie
+            op = [e for e in g.getNeighbors(record[0][1], depth=1)['edges'] if e['sub'] == record[0][1]]
+            print(op)
             metadict = node['nodes'][0]['meta']
             for key, value in metadict.items():
-                record[key] = value
+                record.append((key, value))
                 scigraph.add(key)
+            for edge in op:
+                key = edge['pred']
+                value = edge['obj']
+                record.append((key, value))
 
         output[outer_identifier] = record
 
@@ -181,3 +187,4 @@ print('stopped')
 with open('Neurolex_Scigraph.json', 'wt') as f:
     json.dump(output, f)
 
+#embed()
