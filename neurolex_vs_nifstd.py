@@ -15,7 +15,6 @@ count=0
 need=0
 
 
-
 with open('cell_layer_data.csv', 'rt') as cell_open:
     cell_IDs= [r[3] for r in csv.reader(cell_open)][1:]
 with open('brain_region_data.csv', 'rt') as brain_open:
@@ -37,16 +36,15 @@ Curie_Prefixes= v.getCuriePrefixes()[1:]
 Curie_Prefixes.append('nlx_only')
 print(Curie_Prefixes)
 
-'''
 for IDs in cell_IDs:
     for Prefixes in Curie_Prefixes:
         have=(Prefixes+':'+IDs)
         have=v.findById(have)
         if have!=None:
-            print(IDs)
+            #print(IDs)
             NIF_Directory[Prefixes].append(IDs)
             count=count+1
-            print(count)
+            #print(count)
             break
     if have==None:
         NIF_Directory['nlx_only'].append(IDs)
@@ -57,4 +55,3 @@ print('We need', need, 'IDs')
 print('We have', count, 'In NIF')
 print(NIF_Directory)
 print('done!')
-'''
