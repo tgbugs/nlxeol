@@ -40,7 +40,7 @@ temp=defaultdict(list)
 #FIXME
 with open('cell_layer_data.csv', 'rt') as f:
     new_labels=([r[0:14] for r in csv.reader(f)][0])#only 14 columns to work with
-#print(new_labels, '\n')
+print(new_labels, '\n')
 
 with open('cell_layer_data.csv', 'rt') as f:
     csv_rows = ([r[0:14] for r in csv.reader(f)][1:])
@@ -139,6 +139,10 @@ def no_repeats(csv, sci):
     final_draft=final_draft.replace(r'\\"', '')
     final_draft=final_draft.replace(r'\\\\', '')
     final_draft=final_draft.replace('.,','.')
+    final_draft=final_draft.replace(r"\\", '')
+    final_draft=final_draft.replace(r"//", '')
+
+
 
     #comma.join(final_draft)
     #print(new_sci)
@@ -179,7 +183,7 @@ def twins(csv, sci):
 
 
 
-scigraph = ('http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#cell_ontology_ID', 'http://www.geneontology.org/formats/oboInOwl#hasVersion',
+scigraph = ['http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#cell_ontology_ID', 'http://www.geneontology.org/formats/oboInOwl#hasVersion',
             'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#neuroNamesAncillaryTerm',
             'http://purl.obolibrary.org/obo/UBPROP_0000012', 'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#birnlexDefinition', 'http://www.w3.org/2002/07/owl#deprecated',
             'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#MeshUid',
@@ -212,9 +216,9 @@ scigraph = ('http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properti
             'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#hasDefinitionSource',
             'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Cell.owl#sao_ID', 'http://www.w3.org/2004/02/skos/core#changeNote',
             'http://protege.stanford.edu/plugins/owl/protege#sao_ID', 'http://purl.org/dc/elements/1.1/contributor', 'synonym',
-            'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#hasFormerParentClass')
+            'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#hasFormerParentClass']
 
-
+LABEL = ["Categories", "Label", "Synonym", "Id", "PMID", "DefiningCitation", "SuperCategory", "Species", "Definition", "DefiningCriteria", "Has role", "FBbt Id", "Abbrev", "FBBT Link", "category", "http://ontology.neuinfo.org/NIF/#createdDate", "http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#bamsID", "http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#birnlexPendingDifferentiaNote", "http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#birnlexRetiredDefinition", "http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#bonfireID", "http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#bonfire_ID", "http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#cell_ontology_ID", "http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#curationStatus", "http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#hasBirnlexCurator", "http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#hasCurationStatus", "http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#hasFormerParentClass", "http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#isReplacedByClass", "http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#neuroNamesAncillaryTerm", "http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#neuronamesID", "http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#umls_ID", "http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#MeshUid", "http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#UmlsCui", "http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#altDefinition", "http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#createdDate", "http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#curator", "http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#definitonSource", "http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#externalSourceId", "http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#externalSourceURI", "http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#hasAbbrevSource", "http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#hasExternalSource", "http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#modifiedDate", "http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#nifID", "http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#pendingActionNote", "http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#pendingMereotopologicalRelationNote", "http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#tempDefinition", "http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#usageNote", "http://purl.obolibrary.org/obo/IAO_0000115", "http://purl.obolibrary.org/obo/UBPROP_0000001", "http://purl.obolibrary.org/obo/UBPROP_0000003", "http://purl.obolibrary.org/obo/UBPROP_0000012", "http://purl.org/dc/elements/1.1/contributor", "http://purl.org/dc/elements/1.1/description", "http://purl.org/dc/elements/1.1/source", "http://www.geneontology.org/formats/oboInOwl#creation_date", "http://www.geneontology.org/formats/oboInOwl#editor_notes", "http://www.geneontology.org/formats/oboInOwl#hasBroadSynonym", "http://www.geneontology.org/formats/oboInOwl#hasDbXref", "http://www.geneontology.org/formats/oboInOwl#hasExactSynonym", "http://www.geneontology.org/formats/oboInOwl#hasOBONamespace", "http://www.geneontology.org/formats/oboInOwl#hasRelatedSynonym", "http://www.geneontology.org/formats/oboInOwl#hasVersion", "http://www.geneontology.org/formats/oboInOwl#id", "http://www.w3.org/2000/01/rdf-schema#comment", "http://www.w3.org/2002/07/owl#deprecated", "http://www.w3.org/2002/07/owl#versionInfo", "http://www.w3.org/2004/02/skos/core#changeNote", "http://www.w3.org/2004/02/skos/core#editorialNote", "http://www.w3.org/2004/02/skos/core#example", "http://www.w3.org/2004/02/skos/core#historyNote", "http://www.w3.org/2004/02/skos/core#scopeNote", "synonym", "types"]
 '''
 #USEFUL BUT DON'T REMEMBER WHY.
 
@@ -245,7 +249,7 @@ for keys_1 in data.keys():
     to the pulled out data from Scigraph to merge common data. We then add the rest of Scigraph
     data as its own potential csv columns in the imported json file.
 '''
-
+delList=[]
 sci_dict=defaultdict(list)
 nlx_dict=defaultdict(list)
 
@@ -262,6 +266,7 @@ for rows in csv_rows:
                     nlx_dict[rows[3]]=rows
                     continue
                 node=g.getNode(i+':'+j)
+                #print(rows)
                 #print(node, '\n')
                 for key,value in node['nodes'][0]['meta'].items():#pulls items info out of web
                     if '[' and ']' in value:
@@ -273,7 +278,8 @@ for rows in csv_rows:
                             if val != False:
                                 #rows[8]=rows[8]+'. '+ val
                                 rows[8]=val
-                        del key
+                        if key in scigraph:
+                            scigraph.remove(key)
                         continue
                     if 'definition' in key: #need plain definition
                         #FIXME: this works :)
@@ -281,7 +287,8 @@ for rows in csv_rows:
                             val = no_repeats(rows[8], val)
                             if val != False:
                                 rows[8]=val
-                        del key
+                        if key in scigraph:
+                            scigraph.remove(key)
                         continue
                         #FIXME
                     if '#label' in key:
@@ -289,14 +296,16 @@ for rows in csv_rows:
                             val = no_repeats(rows[1], val)
                             if val != False:
                                 rows[1]=val
-                        del key
+                        if key in scigraph:
+                            scigraph.remove(key)
                         continue
                     if '#prefLabel' in key: #and "['"+rows[1]+"']"!=str(value):
                         for val in value:
                             val = no_repeats(rows[1], val)
                             if val != False:
                                 rows[1]=val
-                        del key
+                        if key in scigraph:
+                            scigraph.remove(key)
                         continue
                     if '#synonym' in key: #and "['"+rows[2]+"']"!=str(value):
                         for val in value:
@@ -305,21 +314,32 @@ for rows in csv_rows:
                             val = no_repeats(rows[2], val)
                             if val != False:
                                 rows[2]=val
-                        del key
+                        if key in scigraph:
+                            scigraph.remove(key)
                         continue
                     if 'abbreviation' in key: #and "['"+rows[12]+"']"!=str(value):
                         for val in value:
                             val = no_repeats(rows[12], val)
                             if val != False:
                                 rows[12]=val
-                        del key
+                        if key in scigraph:
+                            scigraph.remove(key)
+                        continue
+                    if 'abbrev' in key: #and "['"+rows[12]+"']"!=str(value):
+                        for val in value:
+                            val = no_repeats(rows[12], val)
+                            if val != False:
+                                rows[12]=val
+                        if key in scigraph:
+                            scigraph.remove(key)
                         continue
                     if '#sao_ID' in key:
                         for val in value:
                             val = no_repeats(rows[5], val)
                             if val != False:
                                 rows[3]=val
-                        del key
+                        if key in scigraph:
+                            scigraph.remove(key)
                         continue
                     if '#definingCitation' in key:
                         for val in value:
@@ -330,59 +350,70 @@ for rows in csv_rows:
                                 #print(rows[5])
                                 #print(val)
                                 rows[5]=val
-                        del key
+                        if key in scigraph:
+                            scigraph.remove(key)
                         continue
                     if '#PMID' in key:
                         for val in value:
                             val = no_repeats(rows[4], val)
                             if val != False:
                                 rows[4]=val
-                        del key
+                        if key in scigraph:
+                            scigraph.remove(key)
                         continue
                     if '#hasDefinitionSource' in key:
                         for val in value:
                             val = no_repeats(rows[8], val)
                             if val != False:
                                 rows[8]=val
-                        del key
+                        if key in scigraph:
+                            scigraph.remove(key)
                         continue
                     if '#birnlexDefinition' in key:
                         for val in value:
                             val = no_repeats(rows[8], val)
                             if val != False:
                                 rows[8]=val
-                        del key
+                        if key in scigraph:
+                            scigraph.remove(key)
                         continue
                     if '#externallySourcedDefinition' in key:
                         for val in value:
                             val = no_repeats(rows[8], val)
                             if val != False:
                                 rows[8]=val
-                        del key
+                        if key in scigraph:
+                            scigraph.remove(key)
                         continue
                     if '#hasDefinitionSource' in key:
                         for val in value:
                             val = no_repeats(rows[8], val)
                             if val != False:
                                 rows[8]=val
-                        del key
+                        if key in scigraph:
+                            scigraph.remove(key)
                         continue
                     if 'acronym' in key:
                         for val in value:
                             val = no_repeats(rows[12], val)
                             if val != False:
                                 rows[12]=val
-                        del key
+                        if key in scigraph:
+                            scigraph.remove(key)
                         continue
                     else:
+                        #print(key)
+                        #print(value)
                         Scigraph_info[key]=(value)
-                for elements in scigraph:
+                        #print(key)
+                for elements in LABEL:
                     if elements in Scigraph_info.keys():
-                        pass
+                        continue
                     if elements not in Scigraph_info.keys():
                         Scigraph_info[elements]=('')
-                        pass
+                        continue
                 od = collections.OrderedDict(sorted(Scigraph_info.items()))
+                print(len(od))
                 Sci_od_keys=[]
                 for od_keys in od.keys():
                     Sci_od_keys.append(od_keys)#reference
@@ -444,6 +475,7 @@ for rows in csv_rows:
                 #y=no_repeats(y)
                 #print(y)
                 #rint('\n',rows[3])
+                #print(len(y))
                 finished_dict[temp].append(y)
                 temp=0
                 # Sanity check to make sure data isn't being double copied.
@@ -452,13 +484,12 @@ for rows in csv_rows:
                 Sci_od_val=[]
                 del od
 
-
 #combines orignial csv labels from neurolex and adds the scigraph labels I found important
 csv_sci = new_labels + Sci_od_keys
-
+#print(len(csv_sci))
 #while len(lost_rows)!=len(csv_sci):
     #lost_rows.append('')
-print(csv_sci)
+#print(csv_sci)
 for lost in lost_rows:
     while len(lost)!=len(csv_sci):
         lost.append('')
