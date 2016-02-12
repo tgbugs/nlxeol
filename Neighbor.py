@@ -36,25 +36,38 @@ with open('cell_layer_data.csv', 'rt') as f:
 
 keys = tuple(js.keys())
 #prefix = tuple(data)
-record=[]
+record=defaultdict(list)
+
+SuperCategory=defaultdict(list)
+#def SuperCategoryMaker(SuperCategory, values):
+fixmeRecord=[]
+
+
 
 for prefix, outer_identifiers in data.items():
     if 'nlx_only' == prefix:
         continue
-
     for id_ in outer_identifiers:
-        pre = prefix + ':' + id_
+        PrefixWithID = prefix + ':' + id_
+        #FIXME why is there more than 1 neighbor?
+        neighbor = [e for e in g.getNeighbors(PrefixWithID, depth=1,direction='INCOMING')['edges'] if e['sub']==PrefixWithID and e['pred']=='subClassOf']
+        #print(neighbor)
+        for edge in neighbor:
+            key = edge['pred']
+            value = edge['obj']
+            sub = edge['sub']
+            record[sub].append(value)
+            if len(record[sub]) > 1:
+                fixmeRecord.append((sub,record[sub]))
 
-        for prefixIndex, prefixValue in enumerate(js['LABELS']):
-            if prefixValue == 'PREFIX':
-                PrefixWithID = js[id_][0][prefixIndex]
-                #FIXME why is there more than 1 neighbor?
-                neighbor = [e for e in g.getNeighbors(PrefixWithID, depth=1,direction='INCOMING')['edges'] if e['sub']==PrefixWithID]
-                print(neighbor)
-                for edge in neighbor:
-                    key = edge['pred']
-                    value = edge['obj']
-                    sub= edge['sub']
-                    record.append((key, value, sub))
+for i in js['LABELS']:
+    print(r"'"+i+r"'"+":"+r"'"+'rdfs:temp'+r"'"+",")
 
-print(record)
+
+
+
+#print(fixmeRecord)
+print('stopped')
+'''
+dict_keys(['', 'Retina ganglion cell', 'Olfactory bulb', 'Retina photoreceptor cone cell', 'Lobe parts of the cerebellar cortex', 'Frontal lobe', 'Regional part of a lobe of the cerebellum', 'Composite part spanning multiple base regional parts of brain', 'Regional Parts of the Hemisphere Lobules', 'Superficial feature part of occipital lobe', 'Hemispheric parts of the cerebellar cortex', 'Hemispheric Lobule VII', 'Nucleus raphe magnus', 'Regional part of cerebellar white matter', 'Limbic lobe', 'Nucleus of CNS', 'Temporal lobe', 'Superficial feature part of pons', 'Sulcus', 'Superficial feature part of the cerebellum', 'Paravermis parts of the cerebellar cortex', 'Neocortex stellate cell', 'Occipital lobe', 'Gross anatomical parts of the cerebellum', 'Spinal cord ventral horn interneuron V0', 'Cell layer', 'Telencephalon', 'Vermic Lobule VII', 'Cerebellar cortex', 'Vermal parts of the cerebellum', 'Glial-like cell', 'Septal pellucidum', 'Dorsal root ganglion A alpha-beta non-nociceptive neuron', 'Regional Parts of the Vermal Lobules', 'Cerebrospinal axis', 'Regional part of brain', 'Retina amacrine cell', 'Neuron', 'Hemisphere parts of cerebral cortex', 'Regional part of cerebellar cortex', 'Aggregate regional part of brain', 'Chemoarchitectural part', 'Regional Parts of the Paravermal Lobules', 'Cytoarchitectural fields of hippocampal formation', 'Lobular parts of the cerebellar cortex', 'Cytoarchitectural part of dentate gyrus', 'Regional part of cerebellum', 'Circumventricular organ', 'Neocortex pyramidal cell', 'Defined neuron class', 'Parietal lobe', 'Lobe parts of cerebral cortex', 'Functional part of brain', 'Lobe of cerebral cortex', 'Chemoarchitectural part of neostriatum', 'Retina bipolar cell', 'Sub-lobar region'])
+'''
