@@ -1,10 +1,5 @@
 '''
-Need to DO:
-Find a way to use what I learned from common and use it to merge rows and sci respectfully and do it
-automatically
-
-Tuesday 3.5
-Th 1hr + 2:30-6:05
+Merges Neurolex data with Scigraphs
 '''
 
 
@@ -48,6 +43,8 @@ with open('brain_region_data.csv', 'rt') as f:
     csv_rows += ([r[0:14] for r in csv.reader(f)][1:])
 with open('neuron_data_curated.csv', 'rt') as f:
     csv_rows += ([r[0:14] for r in csv.reader(f)][1:])#47,66
+with open('species_data.csv', 'rt') as f:
+    csv_rows += ([r[0:14] for r in csv.reader(f)][1:])
 
 with open('lost_cat.csv', 'rt') as f:
     lost_rows = ([r[0:14] for r in csv.reader(f)][1:])
