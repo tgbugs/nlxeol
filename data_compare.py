@@ -130,7 +130,7 @@ def no_repeats(csv, sci):
 
     final_draft=final_draft+temp_csv
     final_draft=str(final_draft).strip('[]')
-    final_draft=final_draft.replace(',',', ')
+    final_draft=final_draft.replace(',',', ').replace(r"\'",r"'")
     final_draft=final_draft.replace(',  ',', ')
     final_draft=final_draft.replace(r'\\','')#need two \\ to make it valid to read one
     final_draft=final_draft.replace(r'\\"', '')

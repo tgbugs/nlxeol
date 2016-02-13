@@ -16,7 +16,9 @@ import rdflib
 from datetime import date
 from IPython import embed
 from sqlalchemy import create_engine, inspect
+from rdflib import Namespace
 
+ns=Namespace
 '''
 .namespace to map long names
 .graph to make tuples
@@ -480,7 +482,7 @@ def main():
                 value = edge['obj']
                 sub = edge['sub']
                 record[sub].append(value)
-                if '#' or 'NIFNEURNT' or 'NIFNEURCIR' in value:
+                if '#' or 'NIFNEURNT' or 'NIFNEURCIR' in value: #FIXME the two prefixes didn't match to 'sub' so I took them out and not there is only one subClassOf
                     continue
 
                 if len(record[sub]) > 1:
@@ -510,9 +512,12 @@ def main():
                     mid=mid.replace(' ','_')
                 if type(right)==list:
                     right=str(right)
-
+                    #right.replace(r"['",'').replace(r"']",'') #FIXME list to str but not I cant remove the ['']
+                if "http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#Bill_Bug" in right:#FIXME how do I use Namespace??? prints more :(
+                    person = ns(right)
+                    right = person
                 node = make_node(PrefixWithID, mid, right)
-                #print(node)
+                print(node)
                 g.add_node(*node)
                 continue
     g.write()
