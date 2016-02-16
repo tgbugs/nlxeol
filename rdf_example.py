@@ -16,19 +16,12 @@ import rdflib
 from datetime import date
 from IPython import embed
 from sqlalchemy import create_engine, inspect
-from rdflib import Namespace
+from rdflib import Namespace,URIRef
+
 
 ns=Namespace
-'''
-.namespace to map long names
-.graph to make tuples
 
-ns=Namespace
-person = ns("http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#Bill_Bug") + ns("http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#Bill_Bug")
-print(person)
-rawInput = ns("http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#raw_import")
-nueroNames = ns("http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#NeuroNames_abbrevSource")
-'''
+
 values = [] #clumped total info of each element as a list of lists
 pref = defaultdict(list)
 temp = defaultdict(list)
@@ -308,70 +301,72 @@ field_to_edge = {
     'DefiningCriteria':'rdfs:DefiningCriteria',
     'DefiningCitation':'rdfs:DefiningCitation',
     'Has_role':'rdfs:Has_Role',
-    'PMID':'rdfs:temp',
-    'FBbt_Id':'rdfs:temp',
-    'FBBT_Link':'rdfs:temp',
-    'http://ontology.neuinfo.org/NIF/#createdDate':'rdfs:temp',
-    'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#bamsID':'rdfs:temp',
-    'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#birnlexPendingDifferentiaNote':'rdfs:temp',
-    'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#birnlexRetiredDefinition':'rdfs:temp',
-    'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#bonfireID':'rdfs:temp',
-    'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#bonfire_ID':'rdfs:temp',
-    'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#cell_ontology_ID':'rdfs:temp',
-    'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#curationStatus':'rdfs:temp',
-    'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#hasBirnlexCurator':'rdfs:temp',
-    'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#hasCurationStatus':'rdfs:temp',
-    'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#hasFormerParentClass':'rdfs:temp',
-    'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#isReplacedByClass':'rdfs:temp',
-    'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#neuroNamesAncillaryTerm':'rdfs:temp',
-    'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#neuronamesID':'rdfs:temp',
-    'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#umls_ID':'rdfs:temp',
-    'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#MeshUid':'rdfs:temp',
-    'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#UmlsCui':'rdfs:temp',
-    'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#altDefinition':'rdfs:temp',
-    'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#createdDate':'rdfs:temp',
-    'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#curator':'rdfs:temp',
-    'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#definitonSource':'rdfs:temp',
-    'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#externalSourceId':'rdfs:temp',
-    'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#externalSourceURI':'rdfs:temp',
-    'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#hasAbbrevSource':'rdfs:temp',
-    'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#hasExternalSource':'rdfs:temp',
-    'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#modifiedDate':'rdfs:temp',
-    'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#nifID':'rdfs:temp',
-    'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#pendingActionNote':'rdfs:temp',
-    'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#pendingMereotopologicalRelationNote':'rdfs:temp',
-    'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#tempDefinition':'rdfs:temp',
-    'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#usageNote':'rdfs:temp',
-    'http://purl.obolibrary.org/obo/IAO_0000115':'rdfs:temp',
-    'http://purl.obolibrary.org/obo/UBPROP_0000001':'rdfs:temp',
-    'http://purl.obolibrary.org/obo/UBPROP_0000003':'rdfs:temp',
-    'http://purl.obolibrary.org/obo/UBPROP_0000012':'rdfs:temp',
-    'http://purl.org/dc/elements/1.1/contributor':'rdfs:temp',
-    'http://purl.org/dc/elements/1.1/description':'rdfs:temp',
-    'http://purl.org/dc/elements/1.1/source':'rdfs:temp',
-    'http://www.geneontology.org/formats/oboInOwl#creation_date':'rdfs:temp',
-    'http://www.geneontology.org/formats/oboInOwl#editor_notes':'rdfs:temp',
-    'http://www.geneontology.org/formats/oboInOwl#hasBroadSynonym':'rdfs:temp',
-    'http://www.geneontology.org/formats/oboInOwl#hasDbXref':'rdfs:temp',
-    'http://www.geneontology.org/formats/oboInOwl#hasExactSynonym':'rdfs:temp',
-    'http://www.geneontology.org/formats/oboInOwl#hasOBONamespace':'rdfs:temp',
-    'http://www.geneontology.org/formats/oboInOwl#hasRelatedSynonym':'rdfs:temp',
-    'http://www.geneontology.org/formats/oboInOwl#hasVersion':'rdfs:temp',
-    'http://www.geneontology.org/formats/oboInOwl#id':'rdfs:temp',
-    'http://www.w3.org/2000/01/rdf-schema#comment':'rdfs:temp',
-    'http://www.w3.org/2002/07/owl#deprecated':'rdfs:temp',
-    'http://www.w3.org/2002/07/owl#versionInfo':'rdfs:temp',
-    'http://www.w3.org/2004/02/skos/core#changeNote':'rdfs:temp',
-    'http://www.w3.org/2004/02/skos/core#editorialNote':'rdfs:temp',
-    'http://www.w3.org/2004/02/skos/core#example':'rdfs:temp',
-    'http://www.w3.org/2004/02/skos/core#historyNote':'rdfs:temp',
-    'http://www.w3.org/2004/02/skos/core#scopeNote':'rdfs:temp',
-    'synonym':'rdfs:temp',
-    'types':'rdfs:temp',
-    'PREFIX':'rdfs:temp',
-
-
 }
+'''
+'PMID':'rdfs:temp',
+'FBbt_Id':'rdfs:temp',
+'FBBT_Link':'rdfs:temp',
+'http://ontology.neuinfo.org/NIF/#createdDate':'rdfs:temp',
+'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#bamsID':'rdfs:temp',
+'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#birnlexPendingDifferentiaNote':'rdfs:temp',
+'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#birnlexRetiredDefinition':'rdfs:temp',
+'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#bonfireID':'rdfs:temp',
+'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#bonfire_ID':'rdfs:temp',
+'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#cell_ontology_ID':'rdfs:temp',
+'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#curationStatus':'rdfs:temp',
+'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#hasBirnlexCurator':'rdfs:temp',
+'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#hasCurationStatus':'rdfs:temp',
+'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#hasFormerParentClass':'rdfs:temp',
+'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#isReplacedByClass':'rdfs:temp',
+'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#neuroNamesAncillaryTerm':'rdfs:temp',
+'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#neuronamesID':'rdfs:temp',
+'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#umls_ID':'rdfs:temp',
+'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#MeshUid':'rdfs:temp',
+'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#UmlsCui':'rdfs:temp',
+'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#altDefinition':'rdfs:temp',
+'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#createdDate':'rdfs:temp',
+'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#curator':'rdfs:temp',
+'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#definitonSource':'rdfs:temp',
+'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#externalSourceId':'rdfs:temp',
+'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#externalSourceURI':'rdfs:temp',
+'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#hasAbbrevSource':'rdfs:temp',
+'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#hasExternalSource':'rdfs:temp',
+'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#modifiedDate':'rdfs:temp',
+'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#nifID':'rdfs:temp',
+'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#pendingActionNote':'rdfs:temp',
+'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#pendingMereotopologicalRelationNote':'rdfs:temp',
+'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#tempDefinition':'rdfs:temp',
+'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#usageNote':'rdfs:temp',
+'http://purl.obolibrary.org/obo/IAO_0000115':'rdfs:temp',
+'http://purl.obolibrary.org/obo/UBPROP_0000001':'rdfs:temp',
+'http://purl.obolibrary.org/obo/UBPROP_0000003':'rdfs:temp',
+'http://purl.obolibrary.org/obo/UBPROP_0000012':'rdfs:temp',
+'http://purl.org/dc/elements/1.1/contributor':'rdfs:temp',
+'http://purl.org/dc/elements/1.1/description':'rdfs:temp',
+'http://purl.org/dc/elements/1.1/source':'rdfs:temp',
+'http://www.geneontology.org/formats/oboInOwl#creation_date':'rdfs:temp',
+'http://www.geneontology.org/formats/oboInOwl#editor_notes':'rdfs:temp',
+'http://www.geneontology.org/formats/oboInOwl#hasBroadSynonym':'rdfs:temp',
+'http://www.geneontology.org/formats/oboInOwl#hasDbXref':'rdfs:temp',
+'http://www.geneontology.org/formats/oboInOwl#hasExactSynonym':'rdfs:temp',
+'http://www.geneontology.org/formats/oboInOwl#hasOBONamespace':'rdfs:temp',
+'http://www.geneontology.org/formats/oboInOwl#hasRelatedSynonym':'rdfs:temp',
+'http://www.geneontology.org/formats/oboInOwl#hasVersion':'rdfs:temp',
+'http://www.geneontology.org/formats/oboInOwl#id':'rdfs:temp',
+'http://www.w3.org/2000/01/rdf-schema#comment':'rdfs:temp',
+'http://www.w3.org/2002/07/owl#deprecated':'rdfs:temp',
+'http://www.w3.org/2002/07/owl#versionInfo':'rdfs:temp',
+'http://www.w3.org/2004/02/skos/core#changeNote':'rdfs:temp',
+'http://www.w3.org/2004/02/skos/core#editorialNote':'rdfs:temp',
+'http://www.w3.org/2004/02/skos/core#example':'rdfs:temp',
+'http://www.w3.org/2004/02/skos/core#historyNote':'rdfs:temp',
+'http://www.w3.org/2004/02/skos/core#scopeNote':'rdfs:temp',
+'synonym':'rdfs:temp',
+'types':'rdfs:temp',
+'PREFIX':'rdfs:temp',
+'''
+
+
 
 def make_node(id_, field, value):
     if field == 'id':
@@ -464,8 +459,10 @@ def main():
     fixmeRecord = []
 
     for prefix, outer_identifiers in data.items():
+
         if 'nlx_only' == prefix:
             continue
+
         for id_ in outer_identifiers:
             PrefixWithID = prefix + ':' + id_
             columns = js[id_][0]
@@ -481,71 +478,104 @@ def main():
                 value = edge['obj']
                 sub = edge['sub']
                 record[sub].append(value)
-                if '#' or 'NIFNEURNT' or 'NIFNEURCIR' in value: #FIXME the two prefixes didn't match to 'sub' so I took them out and not there is only one subClassOf
-                    continue
 
+                if '#' or 'NIFNEURNT' or 'NIFNEURCIR' in value:
+                    continue
                 if len(record[sub]) > 1:
                     fixmeRecord.append((sub,record[sub]))
-                # temp = record[sub]
-                #if type(temp)==list:
-                    #record[sub]=str(temp)
+
                 node = make_node(PrefixWithID, 'subClassOf' , value)
                 g.add_node(*node)
 
-            #print('num columns', len(columns), id_)
-
             for index, label in enumerate(js['LABELS']):
-
                 mid = label
+
                 if 'nlx_only' == prefix:
                     right = columns
                 else:
                     right = columns[index]
-                #print(right)
                 if not right:
                     continue
-                #print(pre, mid, right)
-                if ':' in right:
-                    right=right.replace(':','')
                 if ' ' in mid:
                     mid=mid.replace(' ','_')
+                if 'http' in mid:
+                    mid = rdflib.URIRef(mid)
+
+                #right can be either a tuple, string, or list and need to be treated for different occurrences
+                if type(right)==tuple:
+                    for e in right:
+
+                        if not e:
+                            continue
+                        if type(e)==bool:
+                            continue
+                        if ',' in e:
+                            e=e.replace(',','')
+                        if 'http' in e:
+                            node = make_node(PrefixWithID, mid, rdflib.term.URIRef(e))#for values with urls
+                        else:
+                            node = make_node(PrefixWithID, mid, e)
+
                 if type(right)==list:
-                    right=str(right)
-                    #right.replace(r"['",'').replace(r"']",'') #FIXME list to str but not I cant remove the ['']
-                if "http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#Bill_Bug" in right:#FIXME how do I use Namespace??? prints more :(
-                    person = ns(right)
-                    right = person
-                node = make_node(PrefixWithID, mid, right)
+                    right = tuple(right)
+
+                    for e in right:
+
+                        if not e:
+                            continue
+                        if type(e)==bool:
+                            continue
+
+                        if ',' in e:
+                            e=e.replace(',','')
+                        if 'http' in e:
+                            if 'http://neurolex.org/wiki/Nlx_anat_1005030' in e:
+                                e='http://neurolex.org/wiki/Nlx_anat_1005030'
+                            if 'http://www.nature.com/nrn/journal/v6/n4/glossary/nrn1646.html#df1' in e:
+                                e='http://www.nature.com/nrn/journal/v6/n4/glossary/nrn1646.html#df1'
+                            node = make_node(PrefixWithID, mid, rdflib.term.URIRef(e))
+                        else:
+                            node = make_node(PrefixWithID, mid, e)
+
+                if type(right)==str:
+
+                    for e in right.split(","):
+                        if ',' in right:
+                            right=right.replace(',','')
+                        if '"' in right:
+                            right=right.replace('"','')
+                        #typos from previous people
+                        if '#' in e:
+                            if 'http:ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#NeuroNames_defSource' in e:
+                                e='http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#NeuroNames_defSource'
+                            if 'http:ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#UMLS_defSource' in e:
+                                e='http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#UMLS_defSource'
+                            if 'http:ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#MeSH_defSource' in e:
+                                e='http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#MeSH_defSource'
+                            if 'http:ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#NeuroNames_abbrevSource' in e:
+                                e='http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#NeuroNames_abbrevSource'
+                            if 'http:ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#American_Heritage_Dictionary_4th_ed_defSource' in e:
+                                e='http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#American_Heritage_Dictionary_4th_ed_defSource'
+                            if 'http:purl.org/nbirn/birnlex/ontology/annotation/UMLS_annotation_properties.owl#UMLS_defSource' in e:
+                                e='http://purl.org/nbirn/birnlex/ontology/annotation/UMLS_annotation_properties.owl#UMLS_defSource'
+                            if 'http://neurolex.org/wiki/Nlx_anat_1005030' in e:
+                                e='http://neurolex.org/wiki/Nlx_anat_1005030'
+                            if 'http://www.nature.com/nrn/journal/v6/n4/glossary/nrn1646.html#df1' in e:
+                                e='http://www.nature.com/nrn/journal/v6/n4/glossary/nrn1646.html#df1'
+                            if 'http:ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#The_Sylvius_Project_defSource' in e:
+                                e='http:ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#The_Sylvius_Project_defSource'
+                            if 'http:ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#Wikipedia_defSource' in e:
+                                e='http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#Wikipedia_defSource'
+
+                            node = make_node(PrefixWithID, mid, rdflib.term.URIRef(e))
+                        else:
+                            node = make_node(PrefixWithID, mid, e)
+
                 #print(node)
                 g.add_node(*node)
                 continue
     g.write()
-    #print(keyList)
-
-        #for inner_identifier, columns in js.items():
-            #mid = js['LABELS'][0][j]
-            #print(mid)
-            #right = js[keys[i]][0][j]
-            #for pre in prefix:
-                #for IDs in data[pre]:
-                #print(prefix, outer_identifiers, inner_identifier, columns, index, label)
-'''
-if IDs in js[keys[i]][0][3]:
-    if 'nlx_only' in pre:
-        continue
-    if right != '':
-        #output = make_records(r, rc, field_mapping)
-        print('Fetching and data prep done.')
-        #for id_, rec in output.items():
-            #for field, value in rec:
-                #print(field, value)
-        node = make_node(pre, mid, right)
-        print(node)
-        #g.add_node(*node)
-        print(g)
-'''
-    #g.write()
-    #embed()
 
 if __name__ == '__main__':
     main()
+    #embed()
