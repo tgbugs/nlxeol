@@ -457,7 +457,6 @@ def _main():
 
 
 def main():
-    #FIXME, keep the rest, but need a new function from my own dictionary to build my records
     g = makeGraph('cell-merge', PREFIXES)
     gn = Graph()
     keyList=[]
@@ -487,7 +486,7 @@ def main():
 
                 if len(record[sub]) > 1:
                     fixmeRecord.append((sub,record[sub]))
-               # temp = record[sub]
+                # temp = record[sub]
                 #if type(temp)==list:
                     #record[sub]=str(temp)
                 node = make_node(PrefixWithID, 'subClassOf' , value)
@@ -517,7 +516,7 @@ def main():
                     person = ns(right)
                     right = person
                 node = make_node(PrefixWithID, mid, right)
-                print(node)
+                #print(node)
                 g.add_node(*node)
                 continue
     g.write()
