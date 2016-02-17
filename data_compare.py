@@ -98,12 +98,14 @@ def no_repeats(csv, sci):
     if sci in csv:
         #print('passed')
         return False
+    if (" "+sci) or (sci+" ") in csv:
+        return False
     if (sci + '.') in csv:
         #print('passed')
         return False
 
     #FIXME: I haven't been able to seperate properly if there are abbre.
-    temp_csv=list(csv.split('. '))
+    #FIXME temp_csv=list(csv.split('. '))
 
     #print('csv 1',10*" ",temp_csv)
     #for ele in temp_csv:
@@ -112,25 +114,26 @@ def no_repeats(csv, sci):
         #else:
             #new_csv.append(ele)
 
-    temp_sci=list(sci.split ('. '))
+    #FIXME temp_sci=list(sci.split ('. '))
 
     #for ele in temp_sci:
         #if '.' in ele:
             #new_sci.append(ele.replace('.',''))
         #else:
             #new_sci.append(ele)
-    temp2_csv=[]
-    for ele in temp_csv:
-        temp2_csv.append(ele.lower())
+    #FIXME temp2_csv=[]
+    #for ele in temp_csv:
+        #temp2_csv.append(ele.lower())
 
-    for ele1 in temp_sci:
-        ele=ele1.lower()
-        if ele not in temp2_csv:
-            final_draft.append(ele1)
+    #FIXME for ele1 in temp_sci:
+        #ele=ele1.lower()
+        #if ele not in temp2_csv:
+            #final_draft.append(ele1)
 
-    final_draft=final_draft+temp_csv
+    #final_draft=final_draft+temp_csv
+    final_draft.append(csv,sci)
     final_draft=str(final_draft).strip('[]')
-    final_draft=final_draft.replace(',',', ').replace(r"\'",r"'")
+    final_draft=final_draft.replace(',',', ').replace(r"\'",r"'").replace('..','.')
     final_draft=final_draft.replace(',  ',', ')
     final_draft=final_draft.replace(r'\\','')#need two \\ to make it valid to read one
     final_draft=final_draft.replace(r'\\"', '')
@@ -215,7 +218,7 @@ scigraph = ['http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properti
             'http://protege.stanford.edu/plugins/owl/protege#sao_ID', 'http://purl.org/dc/elements/1.1/contributor', 'synonym',
             'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#hasFormerParentClass']
 
-LABEL = ["Categories", "Label", "Synonym", "Id", "PMID", "DefiningCitation", "SuperCategory", "Species", "Definition", "DefiningCriteria", "Has role", "FBbt Id", "Abbrev", "FBBT Link", "category", "http://ontology.neuinfo.org/NIF/#createdDate", "http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#bamsID", "http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#birnlexPendingDifferentiaNote", "http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#birnlexRetiredDefinition", "http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#bonfireID", "http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#bonfire_ID", "http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#cell_ontology_ID", "http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#curationStatus", "http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#hasBirnlexCurator", "http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#hasCurationStatus", "http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#hasFormerParentClass", "http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#isReplacedByClass", "http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#neuroNamesAncillaryTerm", "http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#neuronamesID", "http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#umls_ID", "http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#MeshUid", "http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#UmlsCui", "http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#altDefinition", "http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#createdDate", "http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#curator", "http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#definitonSource", "http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#externalSourceId", "http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#externalSourceURI", "http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#hasAbbrevSource", "http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#hasExternalSource", "http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#modifiedDate", "http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#nifID", "http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#pendingActionNote", "http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#pendingMereotopologicalRelationNote", "http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#tempDefinition", "http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#usageNote", "http://purl.obolibrary.org/obo/IAO_0000115", "http://purl.obolibrary.org/obo/UBPROP_0000001", "http://purl.obolibrary.org/obo/UBPROP_0000003", "http://purl.obolibrary.org/obo/UBPROP_0000012", "http://purl.org/dc/elements/1.1/contributor", "http://purl.org/dc/elements/1.1/description", "http://purl.org/dc/elements/1.1/source", "http://www.geneontology.org/formats/oboInOwl#creation_date", "http://www.geneontology.org/formats/oboInOwl#editor_notes", "http://www.geneontology.org/formats/oboInOwl#hasBroadSynonym", "http://www.geneontology.org/formats/oboInOwl#hasDbXref", "http://www.geneontology.org/formats/oboInOwl#hasExactSynonym", "http://www.geneontology.org/formats/oboInOwl#hasOBONamespace", "http://www.geneontology.org/formats/oboInOwl#hasRelatedSynonym", "http://www.geneontology.org/formats/oboInOwl#hasVersion", "http://www.geneontology.org/formats/oboInOwl#id", "http://www.w3.org/2000/01/rdf-schema#comment", "http://www.w3.org/2002/07/owl#deprecated", "http://www.w3.org/2002/07/owl#versionInfo", "http://www.w3.org/2004/02/skos/core#changeNote", "http://www.w3.org/2004/02/skos/core#editorialNote", "http://www.w3.org/2004/02/skos/core#example", "http://www.w3.org/2004/02/skos/core#historyNote", "http://www.w3.org/2004/02/skos/core#scopeNote", "synonym", "types"]
+LABEL = ["acronym","category", "http://ontology.neuinfo.org/NIF/#createdDate", "http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#acronym", "http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#bamsID", "http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#birnlexPendingDifferentiaNote", "http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#birnlexRetiredDefinition", "http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#bonfireID", "http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#bonfire_ID", "http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#cell_ontology_ID", "http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#curationStatus", "http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#hasBirnlexCurator", "http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#hasCurationStatus", "http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#hasFormerParentClass", "http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#isReplacedByClass", "http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#neuroNamesAncillaryTerm", "http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#neuronamesID", "http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#umls_ID", "http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#MeshUid", "http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#UmlsCui", "http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#altDefinition", "http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#createdDate", "http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#curator", "http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#definitonSource", "http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#externalSourceId", "http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#externalSourceURI", "http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#hasAbbrevSource", "http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#hasExternalSource", "http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#modifiedDate", "http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#nifID", "http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#pendingActionNote", "http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#pendingMereotopologicalRelationNote", "http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#tempDefinition", "http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#usageNote", "http://purl.obolibrary.org/obo/IAO_0000115", "http://purl.obolibrary.org/obo/UBPROP_0000001", "http://purl.obolibrary.org/obo/UBPROP_0000003", "http://purl.obolibrary.org/obo/UBPROP_0000012", "http://purl.org/dc/elements/1.1/contributor", "http://purl.org/dc/elements/1.1/description", "http://purl.org/dc/elements/1.1/source", "http://www.geneontology.org/formats/oboInOwl#creation_date", "http://www.geneontology.org/formats/oboInOwl#editor_notes", "http://www.geneontology.org/formats/oboInOwl#hasBroadSynonym", "http://www.geneontology.org/formats/oboInOwl#hasDbXref", "http://www.geneontology.org/formats/oboInOwl#hasExactSynonym", "http://www.geneontology.org/formats/oboInOwl#hasOBONamespace", "http://www.geneontology.org/formats/oboInOwl#hasRelatedSynonym", "http://www.geneontology.org/formats/oboInOwl#hasVersion", "http://www.geneontology.org/formats/oboInOwl#id", "http://www.w3.org/2000/01/rdf-schema#comment", "http://www.w3.org/2002/07/owl#deprecated", "http://www.w3.org/2002/07/owl#versionInfo", "http://www.w3.org/2004/02/skos/core#changeNote", "http://www.w3.org/2004/02/skos/core#editorialNote", "http://www.w3.org/2004/02/skos/core#example", "http://www.w3.org/2004/02/skos/core#historyNote", "http://www.w3.org/2004/02/skos/core#scopeNote", "types"]
 '''
 #USEFUL BUT DON'T REMEMBER WHY.
 
@@ -251,35 +254,26 @@ sci_dict=defaultdict(list)
 nlx_dict=defaultdict(list)
 
 for rows in csv_rows:
-    #print(rows[3])
     for i in k:
-        #print(i)
         for j in data[i]:
-            #print(j)
-            #print(rows[3])
             if j==rows[3]:
                 temp=j
                 if j in data['nlx_only']:
                     nlx_dict[rows[3]]=rows
                     continue
                 node=g.getNode(i+':'+j)
-                #print(rows)
-                #print(node, '\n')
                 for key,value in node['nodes'][0]['meta'].items():#pulls items info out of web
                     if '[' and ']' in value:
                         value = value.replace('[','').replace(']','')
                     if '#definition' in key: #need plain definition
-                        #FIXME: this works :)
                         for val in value:
                             val = no_repeats(rows[8], val)
                             if val != False:
-                                #rows[8]=rows[8]+'. '+ val
                                 rows[8]=val
                         if key in scigraph:
                             scigraph.remove(key)
                         continue
                     if 'definition' in key: #need plain definition
-                        #FIXME: this works :)
                         for val in value:
                             val = no_repeats(rows[8], val)
                             if val != False:
@@ -304,7 +298,7 @@ for rows in csv_rows:
                         if key in scigraph:
                             scigraph.remove(key)
                         continue
-                    if '#synonym' in key: #and "['"+rows[2]+"']"!=str(value):
+                    if 'synonym' in key: #and "['"+rows[2]+"']"!=str(value):
                         for val in value:
                             if 'Vestibular ganglioin neuron' in val:
                                 val=val.replace('Vestibular ganglioin neuron', '')
@@ -334,18 +328,14 @@ for rows in csv_rows:
                         for val in value:
                             val = no_repeats(rows[5], val)
                             if val != False:
-                                rows[3]=val
+                                rows[5]=val
                         if key in scigraph:
                             scigraph.remove(key)
                         continue
                     if '#definingCitation' in key:
                         for val in value:
-                            #print (val)
                             val = no_repeats(rows[5], val)
                             if val != False:
-                                #val=val.replace('(Baloyannis, S. J., Costa, V., Psaroulis, V., Arzoglou, L.', '(Baloyannis, S., J., Costa, V., Psaroulis, V., Arzoglou, L., ')
-                                #print(rows[5])
-                                #print(val)
                                 rows[5]=val
                         if key in scigraph:
                             scigraph.remove(key)
@@ -390,14 +380,6 @@ for rows in csv_rows:
                         if key in scigraph:
                             scigraph.remove(key)
                         continue
-                    if 'acronym' in key:
-                        for val in value:
-                            val = no_repeats(rows[12], val)
-                            if val != False:
-                                rows[12]=val
-                        if key in scigraph:
-                            scigraph.remove(key)
-                        continue
                     else:
                         #print(key)
                         #print(value)
@@ -410,7 +392,7 @@ for rows in csv_rows:
                         Scigraph_info[elements]=('')
                         continue
                 od = collections.OrderedDict(sorted(Scigraph_info.items()))
-                print(len(od))
+                #print(od)
                 Sci_od_keys=[]
                 for od_keys in od.keys():
                     Sci_od_keys.append(od_keys)#reference
@@ -483,7 +465,7 @@ for rows in csv_rows:
 
 #combines orignial csv labels from neurolex and adds the scigraph labels I found important
 csv_sci = new_labels + Sci_od_keys
-#print(len(csv_sci))
+print(csv_sci)
 #while len(lost_rows)!=len(csv_sci):
     #lost_rows.append('')
 #print(csv_sci)
