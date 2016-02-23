@@ -148,7 +148,7 @@ def no_repeats(csv, sci):
     final_draft=final_draft.replace(r'\\\\', '')
     final_draft=final_draft.replace('.,','.')
     final_draft=final_draft.replace(r"\\", '')
-    final_draft=final_draft.replace(r"//", '')
+    #final_draft=final_draft.replace(r"//", '')
 
 
 

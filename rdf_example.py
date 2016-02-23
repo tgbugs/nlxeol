@@ -387,9 +387,10 @@ field_to_edge = {k: rdflib.URIRef(k) if k.startswith('http') else v for k,v in f
 
 
 def make_node(id_, field, value):
-    if field == 'id':
+    field = field_to_edge[field]
+    if field == 'rdf:type':
         value = 'owl:Class'
-    return id_, field_to_edge[field], value
+    return id_, field, value
 
 
 field_mapping = {
@@ -498,12 +499,12 @@ def main():
                 sub = edge['sub']
                 record[sub].append(value)
 
-                if '#' or 'NIFNEURNT' or 'NIFNEURCIR' in value:
+                if '#' in value or 'NIFNEURNT' in value or 'NIFNEURCIR' in value:
                     continue
                 if len(record[sub]) > 1:
                     fixmeRecord.append((sub,record[sub]))
 
-                node = make_node(PrefixWithID, 'subClassOf' , value)
+                node = make_node(PrefixWithID, 'subClassOf' , value.strip())
                 g.add_node(*node)
 
             for index, label in enumerate(js['LABELS']):
@@ -523,31 +524,16 @@ def main():
                     #mid = rdflib.URIRef(mid)
                     #print(mid)
 
-                #right can be either a tuple, string, or list and need to be treated for different occurrences
-                if type(right)==tuple:
-                    for e in right:
-                        if type(e)==bool:
-                            continue
-                        temp = list(e)
-                        length = len(temp)
-                        if temp[0] == ' ':
-                            e=str(temp[1:])
-                            e=e.strip('[]')
-                        if not e:
-                            continue
-                        if ',' in e:
-                            e=e.replace(',','')
-                        if 'http' in e:
-                            node = make_node(PrefixWithID, mid, rdflib.term.URIRef(e))#for values with urls
-                        else:
-                            node = make_node(PrefixWithID, mid, e)
-
+                #right can be either a string or list, need to be treated for different occurrences
                 if type(right)==list:
                     right = tuple(right)
 
                     for e in right:
                         if type(e)==bool:
                             continue
+                        if ':Category:' in e:
+                            print('list')
+                            print(e)
                         temp = list(e)
                         length = len(temp)
                         if temp[0] == ' ':
@@ -556,8 +542,8 @@ def main():
                         if not e:
                             continue
 
-                        if ',' in e:
-                            e=e.replace(',','')
+                        #if ',' in e:
+                            #e=e.replace(',','')
                         if 'http' in e:
                             if 'http://neurolex.org/wiki/Nlx_anat_1005030' in e:
                                 e='http://neurolex.org/wiki/Nlx_anat_1005030'
@@ -565,56 +551,24 @@ def main():
                                 e='http://www.nature.com/nrn/journal/v6/n4/glossary/nrn1646.html#df1'
                             node = make_node(PrefixWithID, mid, rdflib.term.URIRef(e))
                         else:
-                            node = make_node(PrefixWithID, mid, e)
+                            node = make_node(PrefixWithID, mid, e.strip())
 
                 if type(right)==str:
                     e=right
-                    #for e in right.split(","):
-                    temp = list(e)
-                    length = len(temp)
-                    if temp[0] == ' ':
-                        e=str(temp[1:])
-                        e=e.strip('[]')
-                    if temp[length-1] == ' ':
-                        e=str(temp[0:length-1])
-                        e=e.strip('[]')
-                    if ',' in e:
-                        e=e.replace(',','')
-                    if '"' in e:
-                        e=e.replace('"','')
-                    e=e.replace('   ',' ').replace('  ',' ').replace('..','.')
-                    if " '" in e:
-                        e=e.replace(" '","")
-                    if "'" in e:
-                        e=e.replace("'","")
-                    if r'\"' in e:
-                        e=e.replace(r'\"','')
+                    e.replace('  ',' ')
+                    if ':Category:' in e:
+                        print(e)
+
                     #typos from previous people
                     if '#' in e:
-                        if 'http:ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#NeuroNames_defSource' in e:
-                            e='http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#NeuroNames_defSource'
-                        if 'http:ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#UMLS_defSource' in e:
-                            e='http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#UMLS_defSource'
-                        if 'http:ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#MeSH_defSource' in e:
-                            e='http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#MeSH_defSource'
-                        if 'http:ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#NeuroNames_abbrevSource' in e:
-                            e='http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#NeuroNames_abbrevSource'
-                        if 'http:ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#American_Heritage_Dictionary_4th_ed_defSource' in e:
-                            e='http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#American_Heritage_Dictionary_4th_ed_defSource'
-                        if 'http:purl.org/nbirn/birnlex/ontology/annotation/UMLS_annotation_properties.owl#UMLS_defSource' in e:
-                            e='http://purl.org/nbirn/birnlex/ontology/annotation/UMLS_annotation_properties.owl#UMLS_defSource'
                         if 'http://neurolex.org/wiki/Nlx_anat_1005030' in e:
                             e='http://neurolex.org/wiki/Nlx_anat_1005030'
                         if 'http://www.nature.com/nrn/journal/v6/n4/glossary/nrn1646.html#df1' in e:
                             e='http://www.nature.com/nrn/journal/v6/n4/glossary/nrn1646.html#df1'
-                        if 'http:ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#The_Sylvius_Project_defSource' in e:
-                            e='http:ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#The_Sylvius_Project_defSource'
-                        if 'http:ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#Wikipedia_defSource' in e:
-                            e='http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#Wikipedia_defSource'
 
                         node = make_node(PrefixWithID, mid, rdflib.term.URIRef(e))
                     else:
-                        node = make_node(PrefixWithID, mid, e)
+                        node = make_node(PrefixWithID, mid, e.strip())
 
                 #print(node)
                 g.add_node(*node)
