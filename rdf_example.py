@@ -574,6 +574,7 @@ def main():
                         e=e.replace(',','')
                     if '"' in e:
                         e=e.replace('"','')
+                    e=e.replace('   ',' ').replace('  ',' ')
                     if " '" in e:
                         e=e.replace(" '","")
                     if "'" in e:
