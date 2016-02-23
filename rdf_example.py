@@ -526,10 +526,14 @@ def main():
                 #right can be either a tuple, string, or list and need to be treated for different occurrences
                 if type(right)==tuple:
                     for e in right:
-
-                        if not e:
-                            continue
                         if type(e)==bool:
+                            continue
+                        temp = list(e)
+                        length = len(temp)
+                        if temp[0] == ' ':
+                            e=str(temp[1:])
+                            e=e.strip('[]')
+                        if not e:
                             continue
                         if ',' in e:
                             e=e.replace(',','')
@@ -542,10 +546,14 @@ def main():
                     right = tuple(right)
 
                     for e in right:
-
-                        if not e:
-                            continue
                         if type(e)==bool:
+                            continue
+                        temp = list(e)
+                        length = len(temp)
+                        if temp[0] == ' ':
+                            e=str(temp[1:])
+                            e=e.strip('[]')
+                        if not e:
                             continue
 
                         if ',' in e:
