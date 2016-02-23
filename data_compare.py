@@ -33,21 +33,29 @@ temp=defaultdict(list)
 
 
 #FIXME
-with open('cell_layer_data.csv', 'rt') as f:
-    new_labels=([r[0:14] for r in csv.reader(f)][0])#only 14 columns to work with
+with open('neuron_data_curated.csv', 'rt') as f:
+    new_labels=([r[0:] for r in csv.reader(f)][0])#only 14 columns to work with
+    new_labels[0] = 'Category'
 print(new_labels, '\n')
 
 with open('cell_layer_data.csv', 'rt') as f:
-    csv_rows = ([r[0:14] for r in csv.reader(f)][1:])
+    csv_rows = ([r[0:] for r in csv.reader(f)][1:])
 with open('brain_region_data.csv', 'rt') as f:
-    csv_rows += ([r[0:14] for r in csv.reader(f)][1:])
+    csv_rows += ([r[0:] for r in csv.reader(f)][1:])
 with open('neuron_data_curated.csv', 'rt') as f:
-    csv_rows += ([r[0:14] for r in csv.reader(f)][1:])#47,66
+    csv_rows += ([r[0:] for r in csv.reader(f)][1:])#47,66
 with open('species_data.csv', 'rt') as f:
-    csv_rows += ([r[0:14] for r in csv.reader(f)][1:])
+    csv_rows += ([r[0:] for r in csv.reader(f)][1:])
 
 with open('lost_cat.csv', 'rt') as f:
-    lost_rows = ([r[0:14] for r in csv.reader(f)][1:])
+    lost_rows = ([r[0:] for r in csv.reader(f)][1:])
+
+for row in csv_rows:
+    for row_element in row:
+        if type(row_element) == list:
+            row_element = row_element.set()
+    while len(row) != len(new_labels):
+        row.append('')
 
 #print(csv_rows[0][3])
 '''
@@ -465,7 +473,7 @@ for rows in csv_rows:
 
 #combines orignial csv labels from neurolex and adds the scigraph labels I found important
 csv_sci = new_labels + Sci_od_keys
-print(csv_sci)
+print(len(csv_sci))
 #while len(lost_rows)!=len(csv_sci):
     #lost_rows.append('')
 #print(csv_sci)

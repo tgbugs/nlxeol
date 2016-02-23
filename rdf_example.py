@@ -296,7 +296,7 @@ field_to_edge = {
     'Synonym':'obo_annot:synonym_troy',
     'SuperCategory':'FIXME:SuperCategory',
     'type':'FIXME:type',  # bloody type vs superclass :/ ask james
-    'category':'rdfs:category',
+    'Category':'rdfs:category',
     'categories':'rdfs:categories',
     'Categories':'rdfs:categories',
     'Species':'rdfs:species',
@@ -306,7 +306,24 @@ field_to_edge = {
     'PMID':'obo_annot:PMID_troy',
     'FBbt_Id':'obo_annot:FBbt_merge',
     'FBBT_Link':'rdfs:temp',
+    'Species/taxa':'rdfs:temp',
+    'CellSomaShape':'rdfs:CellSomaShape',
+    'LocationOfLocalAxonArborization':'rdfs:LocationOfLocalAxonArborization',
+    'CellSomaSize':'rdfs:CellSomaSize',
     'http://ontology.neuinfo.org/NIF/#createdDate':'rdfs:temp',
+    'OriginOfAxon':'rdfs:OriginOfAxon',
+    'category':'rdfs:category',
+    'Located_in':'rdfs:Located_in',
+    'SpineDensityOnDendrites':'rdfs:SpineDensityOnDendrites',
+    'AxonMyelination':'rdfs:AxonMyelination',
+    'AxonProjectionLaterality':'rdfs:AxonProjectionLaterality',
+    'LocationOfAxonArborization':'rdfs:temp',
+    'MolecularConstituents':'rdfs:MolecularConstituents',
+    'DendriteLocation':'rdfs:DendriteLocation',
+    'BranchingMetrics':'rdfs:BranchingMetrics',
+    'Neurotransmitter/NeurotransmitterReceptors':'rdfs:Neurotransmitter/NeurotransmitterReceptors',
+    'Curator_Notes':'rdfs:Curator_Notes',
+    'Fasciculates_with':'rdfs:Fasciculates_with',
     'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#bamsID':'rdfs:temp',
     'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#birnlexPendingDifferentiaNote':'rdfs:temp',
     'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#birnlexRetiredDefinition':'rdfs:temp',
@@ -467,6 +484,7 @@ def main():
         for id_ in outer_identifiers:
             PrefixWithID = prefix + ':' + id_
             columns = js[id_][0]
+            #print(columns)
             neighbor = [e for e in gn.getNeighbors(PrefixWithID, depth=1,direction='INCOMING')['edges'] if e['sub']==PrefixWithID and e['pred']=='subClassOf']
 
             if neighbor in neighborList: #checks for duplicates
@@ -494,6 +512,8 @@ def main():
                 if 'nlx_only' == prefix:
                     right = columns
                 else:
+                    #print(index)
+                    #print(columns[index])
                     right = columns[index]
                 if not right:
                     continue
@@ -542,6 +562,14 @@ def main():
                 if type(right)==str:
                     e=right
                     #for e in right.split(","):
+                    temp = list(e)
+                    length = len(temp)
+                    if temp[0] == ' ':
+                        e=str(temp[1:])
+                        e=e.strip('[]')
+                    if temp[length-1] == ' ':
+                        e=str(temp[0:length-1])
+                        e=e.strip('[]')
                     if ',' in e:
                         e=e.replace(',','')
                     if '"' in e:
