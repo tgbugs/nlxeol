@@ -288,19 +288,19 @@ class makeGraph:
 
 field_to_edge = {
     'subClassOf':'rdfs:subClassof',#FIXME I made this up
-    'abbrev':'obo_annot:abbrev',
-    'Abbrev':'obo_annot:abbrev_troy',
+    'abbrev':'TROY:abbrev',
+    'Abbrev':'TROY:abbrev_troy',
     'alt_id':'oboInOwl:hasDbXref',
     #'definition':'obo:IAO_0000115',  # FIXME alternate is skos:definition...
     #'Definition':'skos:definition',
-    'Definition':'obo_annot:Definition_troy',
+    'Definition':'TROY:Definition_troy',
     'Id':'rdf:type',
-    'Label':'obo_annot:Label_troy',
+    'Label':'TROY:Label_troy',
     'old_id':'oboInOwl:hasDbXref',  # old vs alt id?
     'superclass':'rdfs:subClassOf',  # translation required
-    'Synonym':'obo_annot:synonym_troy',
-    'SuperCategory':'FIXME:SuperCategory',
-    'type':'FIXME:type',  # bloody type vs superclass :/ ask james
+    'Synonym':'TROY:synonym_troy',
+    'SuperCategory':'TROY:SuperCategory',
+    'type':'TROY:type',  # bloody type vs superclass :/ ask james
     'Category':'rdfs:Category',
     'categories':'rdfs:categories',
     'Categories':'rdfs:Categories',
@@ -308,8 +308,8 @@ field_to_edge = {
     'DefiningCriteria':'rdfs:DefiningCriteria',
     'DefiningCitation':'rdfs:DefiningCitation',
     'Has_role':'rdfs:Has_Role',
-    'PMID':'obo_annot:PMID_troy',
-    'FBbt_Id':'obo_annot:FBbt_merge',
+    'PMID':'TROY:PMID_troy',
+    'FBbt_Id':'TROY:FBbt_merge',
     'FBBT_Link':'rdfs:temp',
     'Species/taxa':'rdfs:temp',
     'CellSomaShape':'rdfs:CellSomaShape',
@@ -381,12 +381,12 @@ field_to_edge = {
     'http://www.w3.org/2004/02/skos/core#changeNote':'rdfs:temp',
     'http://www.w3.org/2004/02/skos/core#editorialNote':'rdfs:temp',
     'http://www.w3.org/2004/02/skos/core#example':'rdfs:temp',
-    'http://www.w3.org/2004/02/skos/core#historyNote':'obo_annot:historyNote_scigraph',
-    'http://www.w3.org/2004/02/skos/core#scopeNote':'obo_annot:scopeNote_scigraph',
-    'types':'obo_annot:types_scigraph',
-    'PREFIX':'obo_annot:prefixWithID_merge',
-    'acronym':'obo_annot:acronym_scigraph',
-    'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#acronym':'obo_annot:acronym_scigraph',
+    'http://www.w3.org/2004/02/skos/core#historyNote':'TROY:historyNote_scigraph',
+    'http://www.w3.org/2004/02/skos/core#scopeNote':'TROY:scopeNote_scigraph',
+    'types':'TROY:types_scigraph',
+    'PREFIX':'TROY:prefixWithID_merge',
+    'acronym':'TROY:acronym_scigraph',
+    'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#acronym':'TROY:acronym_scigraph',
 }
 field_to_edge = {k: rdflib.URIRef(k) if k.startswith('http') else v for k,v in field_to_edge.items()}
 
@@ -399,7 +399,7 @@ def make_node(id_, field, value):
 
 
 field_mapping = {
-    'Lable':'label',
+    'Label':'label',
     'Description':'definition',
     'Synonyms':'synonyms',
     'Alternate IDs':'alt_ids',
@@ -515,7 +515,10 @@ def main():
 
             for index, label in enumerate(js['LABELS']):
                 mid = label
-
+                if  PrefixWithID == 'NIFGA:birnlex_1249':
+                    if "\\\\" in right:
+                        #right=right.replace("'''","\\'\\'\\'")
+                        print(right)
                 if 'nlx_only' == prefix:
                     right = columns
                 else:
@@ -538,7 +541,7 @@ def main():
                         g.add_node(*node)
 #FIXME: this is where I change category to prefix + ID
                     elif ':Category:' in right and ',' in right and '.' not in right and '(' not in right:
-                        print(right)
+                        #print(right)
                         e = right.split(',')
                         i = ''
                         #print(e)
@@ -555,7 +558,7 @@ def main():
                         #e = str(','.join(e))
                         #print(e)
                             node = make_node(PrefixWithID, mid, e[n])
-                            print('node', node)
+                            #print('node', node)
                             g.add_node(*node)
 
 
@@ -571,6 +574,7 @@ def main():
                             continue
                         if not e:
                             continue
+                        e=e.replace('  ',' ').replace("'''","' ''").replace('\\','').replace("\\","")
                         if 'http' in e:
                             if 'http://neurolex.org/wiki/Nlx_anat_1005030' in e:
                                 e='http://neurolex.org/wiki/Nlx_anat_1005030'
@@ -581,9 +585,10 @@ def main():
                             node = make_node(PrefixWithID, mid, e.strip())
 
 
-                elif type(right)==str:
+                else: #type(right)==str:
+                    right=right.replace('  ',' ').replace("'''","' ''").replace('\\','').replace("\\","")
                     e=right
-                    e.replace('  ',' ')
+                    e=e.replace('  ',' ')
                     #typos from previous people
                     if '#' in e:
                         
