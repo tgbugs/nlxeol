@@ -301,9 +301,9 @@ field_to_edge = {
     'Synonym':'obo_annot:synonym_troy',
     'SuperCategory':'FIXME:SuperCategory',
     'type':'FIXME:type',  # bloody type vs superclass :/ ask james
-    'Category':'rdfs:category',
+    'Category':'rdfs:Category',
     'categories':'rdfs:categories',
-    'Categories':'rdfs:categories',
+    'Categories':'rdfs:Categories',
     'Species':'rdfs:species',
     'DefiningCriteria':'rdfs:DefiningCriteria',
     'DefiningCitation':'rdfs:DefiningCitation',
@@ -530,38 +530,40 @@ def main():
                     #mid = rdflib.URIRef(mid)
                     #print(mid)
 
-                if type(right)==str:
+                if type(right)==str and ':Category:' in right:
                     if ':Category:' in right and ',' not in right and '.' not in right and '(' not in right:
                         #print(right)
                         right = PrefixWithID
                         node = make_node(PrefixWithID, mid, right)
                         g.add_node(*node)
 #FIXME: this is where I change category to prefix + ID
-                    if ':Category:' in right and ',' in right and '.' not in right and '(' not in right:
+                    elif ':Category:' in right and ',' in right and '.' not in right and '(' not in right:
                         print(right)
                         e = right.split(',')
                         i = ''
                         #print(e)
                         temp = 'hey'
-                        for items in Cat_to_preID:
+                        for n,ele in enumerate(e):
+
+                            for items in Cat_to_preID:
                             #print(ele)
-                            for n,ele in enumerate(e):
+                            #for n,ele in enumerate(e):
                                 #print(items)
                                 if ele == items[1]:
                                     e[n] = items[0]
 
-                        e = str(','.join(e))
+                        #e = str(','.join(e))
                         #print(e)
-                        node = make_node(PrefixWithID, mid, e)
-                        print('node', node)
-                        g.add_node(*node)
+                            node = make_node(PrefixWithID, mid, e[n])
+                            print('node', node)
+                            g.add_node(*node)
 
 
                 #if ':Category:' in right and mid == 'Located_in':
 
 
                 #right can be either a string or list, need to be treated for different occurrences
-                if type(right)==list:
+                elif type(right)==list:
                     right = tuple(right)
 
                     for e in right:
@@ -578,7 +580,8 @@ def main():
                         else:
                             node = make_node(PrefixWithID, mid, e.strip())
 
-                if type(right)==str:
+
+                elif type(right)==str:
                     e=right
                     e.replace('  ',' ')
                     #typos from previous people
