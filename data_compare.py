@@ -261,6 +261,8 @@ for keys_1 in data.keys():
 delList=[]
 sci_dict=defaultdict(list)
 nlx_dict=defaultdict(list)
+bigSci=defaultdict(list)
+littleSci=defaultdict(list)
 
 for rows in csv_rows:
     for i in k:
@@ -279,6 +281,7 @@ for rows in csv_rows:
                             val = no_repeats(rows[8], val)
                             if val != False:
                                 rows[8]=val
+                                bigSci[rows[3]].append(littleSci[key].append(val))
                         if key in scigraph:
                             scigraph.remove(key)
                         continue
@@ -287,6 +290,7 @@ for rows in csv_rows:
                             val = no_repeats(rows[8], val)
                             if val != False:
                                 rows[8]=val
+                                bigSci[rows[3]].append(littleSci[key].append(val))
                         if key in scigraph:
                             scigraph.remove(key)
                         continue
@@ -296,6 +300,7 @@ for rows in csv_rows:
                             val = no_repeats(rows[1], val)
                             if val != False:
                                 rows[1]=val
+                                bigSci[rows[3]].append(littleSci[key].append(val))
                         if key in scigraph:
                             scigraph.remove(key)
                         continue
@@ -304,6 +309,7 @@ for rows in csv_rows:
                             val = no_repeats(rows[1], val)
                             if val != False:
                                 rows[1]=val
+                                bigSci[rows[3]].append(littleSci[key].append(val))
                         if key in scigraph:
                             scigraph.remove(key)
                         continue
@@ -314,6 +320,8 @@ for rows in csv_rows:
                             val = no_repeats(rows[2], val)
                             if val != False:
                                 rows[2]=val
+                                bigSci[rows[3]].append(littleSci[key].append(val))
+
                         if key in scigraph:
                             scigraph.remove(key)
                         continue
@@ -322,6 +330,8 @@ for rows in csv_rows:
                             val = no_repeats(rows[12], val)
                             if val != False:
                                 rows[12]=val
+                                bigSci[rows[3]].append(littleSci[key].append(val))
+
                         if key in scigraph:
                             scigraph.remove(key)
                         continue
@@ -330,6 +340,8 @@ for rows in csv_rows:
                             val = no_repeats(rows[12], val)
                             if val != False:
                                 rows[12]=val
+                                bigSci[rows[3]].append(littleSci[key].append(val))
+
                         if key in scigraph:
                             scigraph.remove(key)
                         continue
@@ -338,6 +350,8 @@ for rows in csv_rows:
                             val = no_repeats(rows[5], val)
                             if val != False:
                                 rows[5]=val
+                                bigSci[rows[3]].append(littleSci[key].append(val))
+
                         if key in scigraph:
                             scigraph.remove(key)
                         continue
@@ -346,6 +360,8 @@ for rows in csv_rows:
                             val = no_repeats(rows[5], val)
                             if val != False:
                                 rows[5]=val
+                                bigSci[rows[3]].append(littleSci[key].append(val))
+
                         if key in scigraph:
                             scigraph.remove(key)
                         continue
@@ -354,6 +370,8 @@ for rows in csv_rows:
                             val = no_repeats(rows[4], val)
                             if val != False:
                                 rows[4]=val
+                                bigSci[rows[3]].append(littleSci[key].append(val))
+
                         if key in scigraph:
                             scigraph.remove(key)
                         continue
@@ -362,6 +380,8 @@ for rows in csv_rows:
                             val = no_repeats(rows[8], val)
                             if val != False:
                                 rows[8]=val
+                                bigSci[rows[3]].append(littleSci[key].append(val))
+
                         if key in scigraph:
                             scigraph.remove(key)
                         continue
@@ -370,6 +390,8 @@ for rows in csv_rows:
                             val = no_repeats(rows[8], val)
                             if val != False:
                                 rows[8]=val
+                                bigSci[rows[3]].append(littleSci[key].append(val))
+
                         if key in scigraph:
                             scigraph.remove(key)
                         continue
@@ -378,6 +400,8 @@ for rows in csv_rows:
                             val = no_repeats(rows[8], val)
                             if val != False:
                                 rows[8]=val
+                                bigSci[rows[3]].append(littleSci[key].append(val))
+
                         if key in scigraph:
                             scigraph.remove(key)
                         continue
@@ -386,6 +410,8 @@ for rows in csv_rows:
                             val = no_repeats(rows[8], val)
                             if val != False:
                                 rows[8]=val
+                                bigSci[rows[3]].append(littleSci[key].append(val))
+
                         if key in scigraph:
                             scigraph.remove(key)
                         continue
@@ -494,14 +520,20 @@ for nlxIds, nlxRows in nlx_dict.items():
         nlxRows.append('')
     finished_dict[nlxIds]=nlxRows
 
+SciList = []
+for key,value in bigSci.items():
+    SciList.append((key,value))
 
 
 #FIXME
 # Nice reference to long data compiling.
 #print(finished_dict)
 #print(com_list)
+#print(littleSci)
 print('stopped')
 
+with open('Sci.json', 'wt') as f:
+    json.dump(SciList , f)
 #json will make this readable to others
 with open('Neurolex_Scigraph.json', 'wt') as f:
     json.dump(finished_dict, f)
