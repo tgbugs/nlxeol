@@ -347,9 +347,9 @@ for rows in csv_rows:
                         continue
                     if '#sao_ID' in key:
                         for val in value:
-                            val = no_repeats(rows[5], val)
+                            val = no_repeats(rows[3], val)
                             if val != False:
-                                rows[5]=val
+                                rows[3]=val
                                 bigSci[rows[3]].append(littleSci[key].append(val))
 
                         if key in scigraph:

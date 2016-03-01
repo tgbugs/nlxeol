@@ -298,7 +298,7 @@ class makeGraph:
 
 field_to_edge = {
     'subClassOf':'rdfs:subClassof',#FIXME I made this up
-    'abbrev':'TROY:abbrev',
+    'abbrev':'rdfs:abbrev',
     'Abbrev':'TROY:Abbrev',
     'alt_id':'oboInOwl:hasDbXref',
     #'definition':'obo:IAO_0000115',  # FIXME alternate is skos:definition...
@@ -339,6 +339,35 @@ field_to_edge = {
     'Neurotransmitter/NeurotransmitterReceptors':'rdfs:Neurotransmitter/NeurotransmitterReceptors',
     'Curator_Notes':'rdfs:Curator_Notes',
     'Fasciculates_with':'rdfs:Fasciculates_with',
+
+
+        #FIXME: merged edges
+    'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#synonym':'TROY:synonym_troy',
+    'synonym':'TROY:synonym_troy',
+
+    'abbreviation':'TROY:Abbrev_troy',
+    'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#abbrev':'TROY:Abbrev_troy',
+
+    'http://www.w3.org/2004/02/skos/core#definition':'TROY:Definition_troy',
+    'definition':'TROY:Definition_troy',
+    'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#externallySourcedDefinition':'TROY:Definition_troy',
+    'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#hasDefinitionSource':'TROY:Definition_troy',
+    'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#birnlexDefinition':'TROY:Definition_troy',
+
+    'http://www.w3.org/2000/01/rdf-schema#label':'TROY:Label_troy',
+    'http://www.w3.org/2004/02/skos/core#prefLabel':'TROY:Label_troy',
+
+    'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#definingCitation':'TROY:DefiningCitation_troy',
+    'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#definingCitationURI':'TROY:DefiningCitation_troy',
+
+    'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#sao_ID':'TROY:Id_troy',
+    'http://protege.stanford.edu/plugins/owl/protege#sao_ID':'TROY:Id_troy',
+    'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Cell.owl#sao_ID':'TROY:Id_troy',
+
+    'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#PMID':'TROY:PMID_troy',
+    #FIXME: end of new edges
+
+
     'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#bamsID':'rdfs:temp',
     'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#birnlexPendingDifferentiaNote':'rdfs:temp',
     'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#birnlexRetiredDefinition':'rdfs:temp',
@@ -496,40 +525,57 @@ def main():
 
         if 'nlx_only' == prefix:
             continue
+        outer_identifiers.sort()
+        #FIXME: temp to see only a bit at a time
+        if 'NIFGA' == prefix:
+            for id_ in outer_identifiers:
+                PrefixWithID = prefix + ':' + id_
+                node=graph.getNode(PrefixWithID)
+                cheatList.append(PrefixWithID)
 
-        for id_ in outer_identifiers:
-            PrefixWithID = prefix + ':' + id_
-            node=graph.getNode(PrefixWithID)
-            for keys, values in node['nodes'][0]['meta'].items():
+                for keys, values in node['nodes'][0]['meta'].items():
 
-                columns = js[id_][0]
-                #print(columns)
-                cheatList.append((js[id_][0][0],PrefixWithID))
-                neighbor = [e for e in gn.getNeighbors(PrefixWithID, depth=1,direction='INCOMING')['edges'] if e['sub']==PrefixWithID and e['pred']=='subClassOf']
+                    columns = js[id_][0]
+                    #print(columns)
+                    #cheatList.append((js[id_][0][0],PrefixWithID))
+                    neighbor = [e for e in gn.getNeighbors(PrefixWithID, depth=1,direction='INCOMING')['edges'] if e['sub']==PrefixWithID and e['pred']=='subClassOf']
 
-                if neighbor in neighborList: #checks for duplicates
-                    continue
-                else:
-                    neighborList.append(neighbor)
-
-                for edge in neighbor:
-                    key = edge['pred']
-                    value = edge['obj']
-                    sub = edge['sub']
-                    record[sub].append(value)
-
-                    if '#' in value or 'NIFNEURNT' in value or 'NIFNEURCIR' in value:
+                    if neighbor in neighborList: #checks for duplicates
                         continue
-                    if len(record[sub]) > 1:
-                        fixmeRecord.append((sub,record[sub]))
+                    else:
+                        neighborList.append(neighbor)
 
-                    node = make_node(PrefixWithID, 'subClassOf' , value.strip())
-                    g.add_node(*node)
+                    for edge in neighbor:
+                        key = edge['pred']
+                        value = edge['obj']
+                        sub = edge['sub']
+                        record[sub].append(value)
 
-                for index, label in enumerate(js['LABELS']):
-                    mid = label
-                    if mid == keys:
-                        columns = columns + values
+                        if '#' in value or 'NIFNEURNT' in value or 'NIFNEURCIR' in value:
+                            continue
+                        if len(record[sub]) > 1:
+                            fixmeRecord.append((sub,record[sub]))
+
+                        node = make_node(PrefixWithID, 'subClassOf' , value.strip())
+                        g.add_node(*node)
+
+                    for index, label in enumerate(js['LABELS']):
+                        mid = label
+
+                        #FIXME: captures pure scigraph to compare values
+                        if mid == keys:
+                            if type(values) == list:
+                                for val in values:
+                                    node = make_node(PrefixWithID, mid, val.strip())
+                                    g.add_node(*node)
+                                    #print(node)
+
+                            else:
+                                node = make_node(PrefixWithID, mid, values)
+                                g.add_node(*node)
+                                #print(node )
+
+                            #columns = columns + values
                         if  PrefixWithID == 'NIFGA:birnlex_1249':
                             if "\\\\" in right:
                                 #right=right.replace("'''","\\'\\'\\'")
@@ -553,33 +599,21 @@ def main():
                                 right = PrefixWithID
                                 node = make_node(PrefixWithID, mid, right)
                                 g.add_node(*node)
-        #FIXME: this is where I change category to prefix + ID
+
+                            #FIXME: this is where I change category to prefix + ID
                             elif ':Category:' in right and ',' in right and '.' not in right and '(' not in right:
-                                #print(right)
                                 e = right.split(',')
                                 i = ''
-                                #print(e)
                                 temp = 'hey'
                                 for n,ele in enumerate(e):
 
                                     for items in Cat_to_preID:
-                                    #print(ele)
-                                    #for n,ele in enumerate(e):
-                                        #print(items)
                                         if ele == items[1]:
                                             e[n] = items[0]
 
-                                #e = str(','.join(e))
-                                #print(e)
                                     node = make_node(PrefixWithID, mid, e[n])
-                                    #print('node', node)
                                     g.add_node(*node)
 
-
-                        #if ':Category:' in right and mid == 'Located_in':
-
-
-                        #right can be either a string or list, need to be treated for different occurrences
                         elif type(right)==list:
                             right = tuple(right)
 
@@ -595,15 +629,17 @@ def main():
                                     if 'http://www.nature.com/nrn/journal/v6/n4/glossary/nrn1646.html#df1' in e:
                                         e='http://www.nature.com/nrn/journal/v6/n4/glossary/nrn1646.html#df1'
                                     node = make_node(PrefixWithID, mid, rdflib.term.URIRef(e))
+                                    g.add_node(*node)
+
                                 else:
                                     node = make_node(PrefixWithID, mid, e.strip())
+                                    g.add_node(*node)
 
 
-                        else: #type(right)==str:
+                        else:
                             right=right.replace('  ',' ').replace("'''","' ''").replace('\\','').replace("\\","")
                             e=right
                             e=e.replace('  ',' ')
-                            #typos from previous people
                             if '#' in e:
 
                                 if 'http://neurolex.org/wiki/Nlx_anat_1005030' in e:
@@ -612,15 +648,15 @@ def main():
                                     e='http://www.nature.com/nrn/journal/v6/n4/glossary/nrn1646.html#df1'
 
                                 node = make_node(PrefixWithID, mid, rdflib.term.URIRef(e))
+                                g.add_node(*node)
+
                             else:
                                 node = make_node(PrefixWithID, mid, e.strip())
-
-                        #print(node)
-                        g.add_node(*node)
+                                g.add_node(*node)
                         continue
     g.write()
 
 if __name__ == '__main__':
     main()
     #embed()
-#print(cheatList)
+print(cheatList)
