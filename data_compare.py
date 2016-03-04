@@ -504,10 +504,10 @@ print(len(csv_sci))
 #while len(lost_rows)!=len(csv_sci):
     #lost_rows.append('')
 #print(csv_sci)
-for lost in lost_rows:
-    while len(lost)!=len(csv_sci):
-        lost.append('')
-    finished_dict[lost[3]].append(lost)
+#for lost in lost_rows:
+  #  while len(lost)!=len(csv_sci):
+  #      lost.append('')
+  #  finished_dict[lost[3]].append(lost)
 
 
 
@@ -515,10 +515,19 @@ for lost in lost_rows:
 #adds a list of the order of which all the info is in under the key 'LABEL'
 finished_dict['LABELS']=csv_sci
 
-for nlxIds, nlxRows in nlx_dict.items():
-    while len(nlxRows) != len(csv_sci):
-        nlxRows.append('')
-    finished_dict[nlxIds]=nlxRows
+for i in range(0,len(nlx_dict.keys())):
+    while len(nlx_dict[i]) != len(csv_sci):
+        nlx_dict[i].append('')
+    finished_dict[nlx_dict[i][3]].append(nlx_dict[i])
+
+for i in range(0,15):
+    while len(lost_rows[i])!=len(csv_sci):
+        lost_rows[i].append('')
+    print(len(lost_rows[i]))
+    finished_dict[lost_rows[i][3]].append(lost_rows[i])
+
+#for rows in lost_rows:
+    #finished_dict[rows[3]].append(rows)
 
 SciList = []
 for key,value in bigSci.items():
@@ -532,7 +541,7 @@ for key,value in bigSci.items():
 #print(littleSci)
 print('stopped')
 
-with open('Sci.json', 'wt') as f:
+with open('sci.json', 'wt') as f:
     json.dump(SciList , f)
 #json will make this readable to others
 with open('Neurolex_Scigraph.json', 'wt') as f:
