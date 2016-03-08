@@ -517,7 +517,6 @@ def _main():
 def main():
     g = makeGraph('cell-merge', PREFIXES)
     gn = Graph()
-    keyList=[]
     record = defaultdict(list)
     fixmeRecord = []
 
