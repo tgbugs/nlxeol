@@ -8,6 +8,7 @@ from datetime import date
 import os
 import json
 from Prefix_ID_Cat_List import Cat_to_preID
+from IPython import embed
 
 
 graph = Graph()
@@ -19,7 +20,7 @@ Sci = defaultdict(list)
 with open('Neurolex_Scigraph.json') as data_file:
     js = json.load(data_file)
 
-PREFIXES = {'TROY':'TROY','rdf':'http://www.w3.org/1999/02/22-rdf-syntax-ns#','rdfs':'http://www.w3.org/2000/01/rdf-schema#','': 'http://uri.neuinfo.org/nif/nifstd/', 'OIO': 'http://www.geneontology.org/formats/oboInOwl#', 'UO': 'http://purl.obolibrary.org/obo/UO_', 'OBOANN': 'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#', 'NIFMOLINF': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Molecule-Role-Inferred.owl#', 'BFO': 'http://purl.obolibrary.org/obo/BFO_', 'QUALBB': 'http://ontology.neuinfo.org/NIF/Backend/quality_bfo_bridge.owl#', 'nlx_only': 'http://uri.neuinfo.org/nif/nifstd/', 'NEMO': 'http://purl.bioontology.org/NEMO/ontology/NEMO.owl#NEMO_', 'NIFCHEM': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Chemical.owl#', 'NIFFUN': 'http://ontology.neuinfo.org/NIF/Function/NIF-Function.owl#', 'EFO': 'http://www.ebi.ac.uk/efo/EFO_', 'BIRNOBO': 'http://ontology.neuinfo.org/NIF/Backend/BIRNLex-OBO-UBO.owl#', 'OBO': 'http://purl.obolibrary.org/obo/', 'SCR': 'http://scicrunch.org/resolver/SCR_', 'NIFANN': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Annotation-Standard.owl#', 'NIFMOLROLE': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Molecule-Role-Bridge.owl#', 'NIFGOCC': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-GO-CC-Bridge.owl#', 'NIFNEURMOR': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Neuron-Morphology-Bridge.owl#', 'PATO3': 'http://purl.org/obo/owl/PATO#PATO_', 'NIFRES': 'http://ontology.neuinfo.org/NIF/DigitalEntities/NIF-Resource.owl#', 'NIFNCBI': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-NCBITax-Bridge.owl#', 'PATO2': 'http://purl.obolibrary.org/obo/PATO#PATO_', 'NIFSCID': 'http://ontology.neuinfo.org/NIF/DigitalEntities/NIF-Scientific-Discipline.owl#', 'GO': 'http://purl.obolibrary.org/obo/GO_', 'UBERON': 'http://purl.obolibrary.org/obo/UBERON_', 'NIFUNCL': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Unclassified.owl#', 'NIFNEURCIR': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Neuron-Circuit-Role-Bridge.owl#', 'ILX': 'http://uri.interlex.org/base/ilx_', 'SAOCORE': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/SAO-CORE_properties.owl#', 'MBA': 'http://api.brain-map.org/api/v2/data/Structure/', 'BFO1': 'http://www.ifomis.org/bfo/1.1', 'OLD_SO': 'http://purl.obolibrary.org/obo/SO#SO_', 'NIFGA': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-GrossAnatomy.owl#', 'NIFGG': 'http://ontology.neuinfo.org/NIF/DigitalEntities/NIF-Government-Granting-Agency.owl#', 'DOID': 'http://purl.obolibrary.org/obo/DOID_', 'SIO': 'http://semanticscience.org/resource/SIO_', 'ERO': 'http://purl.obolibrary.org/obo/ERO_', 'BIRNOBI': 'http://ontology.neuinfo.org/NIF/Backend/BIRNLex-OBI-proxy.owl#', 'NIFNEURBR': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Neuron-BrainRegion-Bridge.owl#', 'NIFSUB': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Subcellular.owl#', 'NEMOANN': 'http://purl.bioontology.org/NEMO/ontology/NEMO_annotation_properties.owl', 'PR': 'http://purl.obolibrary.org/obo/PR_', 'NIFCELL': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Cell.owl#', 'HP': 'http://purl.obolibrary.org/obo/HP_', 'NIFERO': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Eagle-I-Bridge.owl#', 'BIRNANN': 'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#', 'NIFQUAL': 'http://ontology.neuinfo.org/NIF/Backend/NIF-Quality.owl#', 'PATO': 'http://purl.obolibrary.org/obo/PATO_', 'OLD_CHEBI': 'http://purl.obolibrary.org/obo/chebi.owl#CHEBI_', 'CL': 'http://purl.obolibrary.org/obo/CL_', 'NIFBE': 'http://ontology.neuinfo.org/NIF/Backend/nif_backend.owl#', 'IAO': 'http://purl.obolibrary.org/obo/IAO_', 'NIFMOL': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Molecule.owl#', 'COGPO': 'http://www.cogpo.org/ontologies/COGPO_', 'NIFNCBISLIM': 'http://ontology.neuinfo.org/NIF/NIF-NCBITaxonomy-Slim.owl#', 'FMA': 'http://purl.org/sig/ont/fma/fma', 'COGAT': 'http://www.cognitiveatlas.org/ontology/cogat.owl#', 'PW': 'http://purl.obolibrary.org/obo/PW_', 'NIFNEURNT': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Neuron-NT-Bridge.owl#', 'RO': 'http://purl.obolibrary.org/obo/RO_', 'NIFINV': 'http://ontology.neuinfo.org/NIF/DigitalEntities/NIF-Investigation.owl#', 'NIFDYS': 'http://ontology.neuinfo.org/NIF/Dysfunction/NIF-Dysfunction.owl#', 'NCBITaxon': 'http://purl.obolibrary.org/obo/NCBITaxon_', 'SO': 'http://purl.obolibrary.org/obo/SO_', 'NIFNEURON': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF_Neuron_MolecularConstituent_Bridge.owl#', 'CLO': 'http://purl.obolibrary.org/obo/CLO_', 'NIFORG': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Organism.owl#'}
+PREFIXES = {'owl':'http://www.w3.org/2002/07/owl#','TROY':'TROY','rdf':'http://www.w3.org/1999/02/22-rdf-syntax-ns#','rdfs':'http://www.w3.org/2000/01/rdf-schema#','': 'http://uri.neuinfo.org/nif/nifstd/', 'OIO': 'http://www.geneontology.org/formats/oboInOwl#', 'UO': 'http://purl.obolibrary.org/obo/UO_', 'OBOANN': 'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#', 'NIFMOLINF': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Molecule-Role-Inferred.owl#', 'BFO': 'http://purl.obolibrary.org/obo/BFO_', 'QUALBB': 'http://ontology.neuinfo.org/NIF/Backend/quality_bfo_bridge.owl#', 'nlx_only': 'http://uri.neuinfo.org/nif/nifstd/', 'NEMO': 'http://purl.bioontology.org/NEMO/ontology/NEMO.owl#NEMO_', 'NIFCHEM': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Chemical.owl#', 'NIFFUN': 'http://ontology.neuinfo.org/NIF/Function/NIF-Function.owl#', 'EFO': 'http://www.ebi.ac.uk/efo/EFO_', 'BIRNOBO': 'http://ontology.neuinfo.org/NIF/Backend/BIRNLex-OBO-UBO.owl#', 'OBO': 'http://purl.obolibrary.org/obo/', 'SCR': 'http://scicrunch.org/resolver/SCR_', 'NIFANN': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Annotation-Standard.owl#', 'NIFMOLROLE': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Molecule-Role-Bridge.owl#', 'NIFGOCC': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-GO-CC-Bridge.owl#', 'NIFNEURMOR': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Neuron-Morphology-Bridge.owl#', 'PATO3': 'http://purl.org/obo/owl/PATO#PATO_', 'NIFRES': 'http://ontology.neuinfo.org/NIF/DigitalEntities/NIF-Resource.owl#', 'NIFNCBI': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-NCBITax-Bridge.owl#', 'PATO2': 'http://purl.obolibrary.org/obo/PATO#PATO_', 'NIFSCID': 'http://ontology.neuinfo.org/NIF/DigitalEntities/NIF-Scientific-Discipline.owl#', 'GO': 'http://purl.obolibrary.org/obo/GO_', 'UBERON': 'http://purl.obolibrary.org/obo/UBERON_', 'NIFUNCL': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Unclassified.owl#', 'NIFNEURCIR': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Neuron-Circuit-Role-Bridge.owl#', 'ILX': 'http://uri.interlex.org/base/ilx_', 'SAOCORE': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/SAO-CORE_properties.owl#', 'MBA': 'http://api.brain-map.org/api/v2/data/Structure/', 'BFO1': 'http://www.ifomis.org/bfo/1.1', 'OLD_SO': 'http://purl.obolibrary.org/obo/SO#SO_', 'NIFGA': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-GrossAnatomy.owl#', 'NIFGG': 'http://ontology.neuinfo.org/NIF/DigitalEntities/NIF-Government-Granting-Agency.owl#', 'DOID': 'http://purl.obolibrary.org/obo/DOID_', 'SIO': 'http://semanticscience.org/resource/SIO_', 'ERO': 'http://purl.obolibrary.org/obo/ERO_', 'BIRNOBI': 'http://ontology.neuinfo.org/NIF/Backend/BIRNLex-OBI-proxy.owl#', 'NIFNEURBR': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Neuron-BrainRegion-Bridge.owl#', 'NIFSUB': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Subcellular.owl#', 'NEMOANN': 'http://purl.bioontology.org/NEMO/ontology/NEMO_annotation_properties.owl', 'PR': 'http://purl.obolibrary.org/obo/PR_', 'NIFCELL': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Cell.owl#', 'HP': 'http://purl.obolibrary.org/obo/HP_', 'NIFERO': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Eagle-I-Bridge.owl#', 'BIRNANN': 'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#', 'NIFQUAL': 'http://ontology.neuinfo.org/NIF/Backend/NIF-Quality.owl#', 'PATO': 'http://purl.obolibrary.org/obo/PATO_', 'OLD_CHEBI': 'http://purl.obolibrary.org/obo/chebi.owl#CHEBI_', 'CL': 'http://purl.obolibrary.org/obo/CL_', 'NIFBE': 'http://ontology.neuinfo.org/NIF/Backend/nif_backend.owl#', 'IAO': 'http://purl.obolibrary.org/obo/IAO_', 'NIFMOL': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Molecule.owl#', 'COGPO': 'http://www.cogpo.org/ontologies/COGPO_', 'NIFNCBISLIM': 'http://ontology.neuinfo.org/NIF/NIF-NCBITaxonomy-Slim.owl#', 'FMA': 'http://purl.org/sig/ont/fma/fma', 'COGAT': 'http://www.cognitiveatlas.org/ontology/cogat.owl#', 'PW': 'http://purl.obolibrary.org/obo/PW_', 'NIFNEURNT': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Neuron-NT-Bridge.owl#', 'RO': 'http://purl.obolibrary.org/obo/RO_', 'NIFINV': 'http://ontology.neuinfo.org/NIF/DigitalEntities/NIF-Investigation.owl#', 'NIFDYS': 'http://ontology.neuinfo.org/NIF/Dysfunction/NIF-Dysfunction.owl#', 'NCBITaxon': 'http://purl.obolibrary.org/obo/NCBITaxon_', 'SO': 'http://purl.obolibrary.org/obo/SO_', 'NIFNEURON': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF_Neuron_MolecularConstituent_Bridge.owl#', 'CLO': 'http://purl.obolibrary.org/obo/CLO_', 'NIFORG': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Organism.owl#'}
 
 KEY_ = data.keys()
 ONTOLOGY_BASE = 'some silly iri'
@@ -165,6 +166,7 @@ field_to_edge = {
     #'Definition':'skos:definition',
     'Definition':'TROY:Definition_troy',
     'Id':'rdf:type',
+    'NLXID':'rdfs:nlx_only',
     'Label':'TROY:Label_troy',
     'old_id':'oboInOwl:hasDbXref',  # old vs alt id?
     'superclass':'rdfs:subClassOf',  # translation required
@@ -378,13 +380,20 @@ def _main():
 
 def main():
     g = makeGraph('cell-merge2', PREFIXES)
+    g.g.parse('http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Cell.owl', format='xml')
 
     for prefix, outer_identifiers in data.items():
 
-        if 'nlx_only' == prefix:
-            continue
         outer_identifiers.sort()
-        if 'NIFGA' == prefix:
+        if 'nlx_only' == prefix:
+            for id_ in outer_identifiers:
+                id_=id_.replace(':', '_').replace(': ', '_')
+                PrefixWithID = prefix + ':' + id_
+                node = make_node(PrefixWithID, 'NLXID', id_)
+                g.add_node(*node)
+
+        if 'NIFCELL' == prefix:
+
             for id_ in outer_identifiers:
                 PrefixWithID = prefix + ':' + id_
                 nodes=graph.getNode(PrefixWithID)
@@ -395,6 +404,7 @@ def main():
                 for keys, values in nodes['nodes'][0]['meta'].items():
                     if keys not in js['LABELS']:
                         mid = keys
+                        mid.replace('_ ', '_')
                         right = values
                         cheatList.append(PrefixWithID)
 
@@ -465,3 +475,4 @@ if __name__ == '__main__':
     main()
 
 print(cheatList)
+#embed()
