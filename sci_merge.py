@@ -529,7 +529,7 @@ def main():
             for id_ in outer_identifiers:
                 id_=id_.replace(':', '_').replace(': ', '_')
                 PrefixWithID = prefix + ':' + id_
-                node = make_node(PrefixWithID, 'NLXID', id_)
+                node = make_node(PrefixWithID, 'Id', id_)
                 g.add_node(*node)
 
 
@@ -567,11 +567,6 @@ def main():
                 for index, label in enumerate(js['LABELS']):
                     #print(list(enumerate(js['LABELS'])))
                     mid = label
-                    #if not index:
-                    #print(index, label)
-                    #print(index, label , columns[index] , mid)
-                    #print(PrefixWithID)
-                    #print(columns[index], js['LABELS'][index])
                     right = columns[index]
                     #if not right:
                         #continue
