@@ -10,6 +10,8 @@ from collections import defaultdict
 from LABELS_keys import LABEL
 from scigraph_keys import scigraph
 
+sci = scigraph
+
 Scigraph_info={}
 g=Graph()
 k=[]
@@ -105,12 +107,13 @@ nlx_dict=defaultdict(list)
 bigSci=defaultdict(list)
 littleSci=defaultdict(list)
 
-merged_terms = {'definition':8, 'label':1, '#prefLabel':1, 'synonym':2, 'abbreviation':12, 'abbrev':12,'#sao_ID':3,
+merged_terms = {'#definition':8, 'definition':8, 'label':1, '#prefLabel':1, 'synonym':2, 'abbreviation':12, 'abbrev':12,'#sao_ID':3,
                 '#definingCitation':5, '#PMID':4, '#hasDefinitionSource':8, '#birnlexDefinition':8,
                 '#externallySourcedDefinition':8}
 
 
 def merge(merged_terms, key, value):
+    k=False
     for term, num in merged_terms.items():
         if term in key: #need plain definition
             for val in value:
@@ -118,10 +121,12 @@ def merge(merged_terms, key, value):
                 if val != False:
                     rows[num]=val
                     bigSci[rows[3]].append(littleSci[key].append(val))
-            if key in scigraph:
-                scigraph.remove(key)
-        else:
-            Scigraph_info[key]=(value)
+            if key in sci:
+                print(key)
+                sci.remove(key)
+            k = True
+    if k == False:
+        Scigraph_info[key]=(value)
 
 
 for rows in csv_rows:
@@ -140,14 +145,7 @@ for rows in csv_rows:
                 for key,value in node['nodes'][0]['meta'].items():#pulls items info out of web
                     if '[' and ']' in value:
                         value = value.replace('[','').replace(']','')
-                    if not value:
-                        continue
-                    if not key:
-                        continue
-                    if key == "":
-                        continue
-                    if key == None:
-                        continue
+                    #Golden Boy
                     merge(merged_terms, key, value)
 
                 for elements in LABEL:
@@ -164,6 +162,7 @@ for rows in csv_rows:
                 Sci_od_val=[]
                 for od_values in od.values():
                     Sci_od_val.append(od_values)
+
 
                 Sci_od_keys.append('PREFIX')
                 Sci_od_val.append(i+':'+j)
@@ -185,6 +184,7 @@ csv_sci = new_labels + Sci_od_keys
 #FIXME IMPORTANT
 #adds a list of the order of which all the info is in under the key 'LABEL'
 finished_dict['LABELS']=csv_sci
+print(finished_dict['LABELS'])
 
 for i in range(0,len(nlx_dict.keys())):
     while len(nlx_dict[i]) != len(csv_sci):
@@ -196,19 +196,13 @@ for i in range(0,15):
         lost_rows[i].append('')
     finished_dict[lost_rows[i][3]].append(lost_rows[i])
 #FIXME
-finished_dict2 = defaultdict(list)
-temp3 = []
-for keys, values in finished_dict.items():
-    if not keys:
-        continue
-    else:
-        finished_dict2[keys].append(values)
-        temp3.append(keys)
+finished_dict.pop("", None)
+
+
 SciList = []
 for key,value in bigSci.items():
     SciList.append((key,value))
-temp3.sort()
-print(temp3)
+
 print('stopped')
 
 with open('sci.json', 'wt') as f:
@@ -216,7 +210,7 @@ with open('sci.json', 'wt') as f:
 
 #json will make this readable to others
 with open('Neurolex_Scigraph.json', 'wt') as f:
-    json.dump(finished_dict2, f)
+    json.dump(finished_dict, f)
 
 
 #This is the original TOTAL list of keys from scigraph... enjoy :)

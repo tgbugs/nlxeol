@@ -257,7 +257,7 @@ class makeGraph:
         self.name = name
         self.namespaces = {p:rdflib.Namespace(ns) for p, ns in prefixes.items()}
         self.g = rdflib.Graph()
-        #[self.g.namespace_manager.bind(p, ns) for p, ns in prefixes.items()]
+        [self.g.namespace_manager.bind(p, ns) for p, ns in prefixes.items()]
 
     def write(self):
         with open('/tmp/' + self.name + '.ttl', 'wb') as f:
@@ -565,10 +565,16 @@ def main():
                         g.add_node(*node)
 
                 for index, label in enumerate(js['LABELS']):
+                    #print(list(enumerate(js['LABELS'])))
                     mid = label
+                    #if not index:
+                    #print(index, label)
+                    #print(index, label , columns[index] , mid)
+                    #print(PrefixWithID)
+                    #print(columns[index], js['LABELS'][index])
                     right = columns[index]
-                    if not right:
-                        continue
+                    #if not right:
+                        #continue
                     #print(PrefixWithID, mid, right)
 
                     if ' ' in mid:
@@ -602,6 +608,7 @@ def main():
 
                         for e in right:
                             if type(e)==bool:
+                                print(e)
                                 continue
                             if not e:
                                 continue
