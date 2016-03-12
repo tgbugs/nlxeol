@@ -21,12 +21,15 @@ with open('brain_region_data.csv', 'rt') as brain_open:
     cell_IDs+= [r[3] for r in csv.reader(brain_open)][1:]
 with open('neuron_data_curated.csv', 'rt') as neuron_open:
     cell_IDs+= [r[3] for r in csv.reader(neuron_open)][1:]
+with open('species_data.csv', 'rt') as species_open:
+    cell_IDs+= [r[3] for r in csv.reader(species_open)][1:]
 with open('lost_cat.csv', 'rt') as f:
     cell_IDs += [r[3] for r in csv.reader(f)][1:]
 
 n=len(cell_IDs)
 
 Curie_Prefixes= v.getCuriePrefixes()[1:]
+print(Curie_Prefixes)
 Curie_Prefixes.append('nlx_only')
 print(Curie_Prefixes)
 
@@ -35,12 +38,11 @@ for IDs in cell_IDs:
         have=(Prefixes+':'+IDs)
         have=v.findById(have)
         if have!=None:
-            #print(IDs)
             NIF_Directory[Prefixes].append(IDs)
             count=count+1
-            #print(count)
             break
     if have==None:
+
         NIF_Directory['nlx_only'].append(IDs)
         need=need+1
 
