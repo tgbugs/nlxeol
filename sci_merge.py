@@ -4,9 +4,6 @@
     file for loading into scigraph for autocomplete.
 """
 #FIXME: make nlx_only work
-import re
-import numpy
-import collections
 from heatmaps.scigraph_client import Graph, Vocabulary
 import json
 import csv
@@ -16,9 +13,9 @@ import os
 import rdflib
 from datetime import date
 from IPython import embed
+import requests
 from sqlalchemy import create_engine, inspect
 from rdflib import Namespace,URIRef
-import yaml
 from Prefix_ID_Cat_List import Cat_to_preID
 
 
@@ -521,7 +518,11 @@ def main():
     record = defaultdict(list)
     fixmeRecord = []
 
-    g.g.parse('http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Cell.owl', format='xml')
+    ncttl = requests.get('http://ontology.neuinfo.org/NIF/ttl/NIF-Cell.ttl').text
+    ncttl = '\n'.join([l for l in ncttl.split('\n') if 'owl:imports' not in l])
+    g.g.parse(data = ncttl, format='turtle')
+
+   #g.g.parse('http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Cell.owl', format='xml')
 
 
     for prefix, outer_identifiers in data.items():
@@ -567,20 +568,16 @@ def main():
                     #print(list(enumerate(js['LABELS'])))
                     mid = label
                     right = columns[index]
-                    #if right == '':
-                    #   continue
+                    if right == '':
+                       continue
                     #if not right:
                         #continue
-                    #print(PrefixWithID, mid, right)
 
                     if ' ' in mid:
                         mid=mid.replace(' ','_')
-                    #if 'http' in mid:
-                        #mid = rdflib.URIRef(mid)
-                        #print(mid)
+
                     if type(right)==str and ':Category:' in right:
                         if ':Category:' in right and ',' not in right and '.' not in right and '(' not in right:
-                            #print(right)
                             right = PrefixWithID
                             node = make_node(PrefixWithID, mid, right)
                             g.add_node(*node)
@@ -604,7 +601,6 @@ def main():
 
                         for e in right:
                             if type(e)==bool:
-                                print(e)
                                 continue
                             if not e:
                                 continue

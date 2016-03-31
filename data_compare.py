@@ -2,7 +2,6 @@
 Merges Neurolex data with Scigraphs
 '''
 import collections
-from collected2 import data2
 from heatmaps.scigraph_client import Graph
 import json
 import csv
@@ -96,7 +95,7 @@ def twins(csv, sci):
 #Scigraph doesn't have nlx_only data to retrieve and will cause an error. Thus, we take it out and add it back in later.
 value_1=[]
 k=[]
-for keys_1 in data2.keys():
+for keys_1 in data.keys():
     k.append(keys_1)
 
 
@@ -132,14 +131,14 @@ def merge(merged_terms, key, value):
 
 for rows in csv_rows:
     for i in k:
-        for j in data2[i]:
+        for j in data[i]:
             if j==rows[3]:
                 temp=j
                 if temp == "":
                     continue
                 if temp == None:
                     continue
-                if j in data2['nlx_only']:
+                if j in data['nlx_only']:
                     nlx_dict[rows[3]]=rows
                     continue
                 node=g.getNode(i+':'+j)
