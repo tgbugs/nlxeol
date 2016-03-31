@@ -528,8 +528,8 @@ def main():
         outer_identifiers.sort()
         if 'nlx_only' == prefix:
             for id_ in outer_identifiers:
-                if 'FMAID:242176' in id_: #
-                    continue
+                if 'FMAID:' in id_:
+                    id_ =  'http://badfma.org/' + id_
                 #id_=id_.replace(':', '_').replace(': ', '_')
                 PrefixWithID = prefix + ':' + id_
                 node = make_node(PrefixWithID, 'Id', id_)
