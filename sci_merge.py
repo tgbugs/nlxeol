@@ -567,8 +567,8 @@ def main():
                     #print(list(enumerate(js['LABELS'])))
                     mid = label
                     right = columns[index]
-                    if right == '':
-                        continue
+                    #if right == '':
+                    #   continue
                     #if not right:
                         #continue
                     #print(PrefixWithID, mid, right)
