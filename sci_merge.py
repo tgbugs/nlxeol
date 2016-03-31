@@ -528,9 +528,6 @@ def main():
         outer_identifiers.sort()
         if 'nlx_only' == prefix:
             for id_ in outer_identifiers:
-                if 'FMAID:' in id_:
-                    id_ =  'http://badfma.org/' + id_
-                #id_=id_.replace(':', '_').replace(': ', '_')
                 PrefixWithID = prefix + ':' + id_
                 node = make_node(PrefixWithID, 'Id', id_)
                 g.add_node(*node)
@@ -544,8 +541,7 @@ def main():
                 columns = js[id_][0]
 
                 for keys, values in node['nodes'][0]['meta'].items():
-                    #print(columns)
-                    #cheatList.append((js[id_][0][0],PrefixWithID))
+
                     neighbor = [e for e in gn.getNeighbors(PrefixWithID, depth=1,direction='INCOMING')['edges'] if e['sub']==PrefixWithID and e['pred']=='subClassOf']
 
                     if neighbor in neighborList: #checks for duplicates
@@ -571,6 +567,8 @@ def main():
                     #print(list(enumerate(js['LABELS'])))
                     mid = label
                     right = columns[index]
+                    if right == '':
+                        continue
                     #if not right:
                         #continue
                     #print(PrefixWithID, mid, right)
