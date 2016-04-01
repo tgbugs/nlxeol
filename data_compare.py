@@ -140,8 +140,11 @@ for rows in csv_rows:
                     continue
                 if j in data['nlx_only']:
                     nlx_dict[rows[3]]=rows
-                    continue
-                node=g.getNode(i+':'+j)
+                    node = {'nodes':[{'meta':{}}]}
+                    #continue
+                else:
+                    node = g.getNode(i+':'+j)
+
                 for key,value in node['nodes'][0]['meta'].items():#pulls items info out of web
                     if '[' and ']' in value:
                         value = value.replace('[','').replace(']','')

@@ -70,7 +70,7 @@ with open('cell_layer_data.csv', 'rt') as f:
     cell_rows = cell_rows[1:]
 
 
-PREFIXES = {'owl':'http://www.w3.org/2002/07/owl#','TROY':'TROY','rdf':'http://www.w3.org/1999/02/22-rdf-syntax-ns#','rdfs':'http://www.w3.org/2000/01/rdf-schema#','': 'http://uri.neuinfo.org/nif/nifstd/', 'OIO': 'http://www.geneontology.org/formats/oboInOwl#', 'UO': 'http://purl.obolibrary.org/obo/UO_', 'OBOANN': 'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#', 'NIFMOLINF': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Molecule-Role-Inferred.owl#', 'BFO': 'http://purl.obolibrary.org/obo/BFO_', 'QUALBB': 'http://ontology.neuinfo.org/NIF/Backend/quality_bfo_bridge.owl#', 'nlx_only': 'http://uri.neuinfo.org/nif/nifstd/', 'NEMO': 'http://purl.bioontology.org/NEMO/ontology/NEMO.owl#NEMO_', 'NIFCHEM': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Chemical.owl#', 'NIFFUN': 'http://ontology.neuinfo.org/NIF/Function/NIF-Function.owl#', 'EFO': 'http://www.ebi.ac.uk/efo/EFO_', 'BIRNOBO': 'http://ontology.neuinfo.org/NIF/Backend/BIRNLex-OBO-UBO.owl#', 'OBO': 'http://purl.obolibrary.org/obo/', 'SCR': 'http://scicrunch.org/resolver/SCR_', 'NIFANN': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Annotation-Standard.owl#', 'NIFMOLROLE': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Molecule-Role-Bridge.owl#', 'NIFGOCC': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-GO-CC-Bridge.owl#', 'NIFNEURMOR': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Neuron-Morphology-Bridge.owl#', 'PATO3': 'http://purl.org/obo/owl/PATO#PATO_', 'NIFRES': 'http://ontology.neuinfo.org/NIF/DigitalEntities/NIF-Resource.owl#', 'NIFNCBI': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-NCBITax-Bridge.owl#', 'PATO2': 'http://purl.obolibrary.org/obo/PATO#PATO_', 'NIFSCID': 'http://ontology.neuinfo.org/NIF/DigitalEntities/NIF-Scientific-Discipline.owl#', 'GO': 'http://purl.obolibrary.org/obo/GO_', 'UBERON': 'http://purl.obolibrary.org/obo/UBERON_', 'NIFUNCL': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Unclassified.owl#', 'NIFNEURCIR': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Neuron-Circuit-Role-Bridge.owl#', 'ILX': 'http://uri.interlex.org/base/ilx_', 'SAOCORE': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/SAO-CORE_properties.owl#', 'MBA': 'http://api.brain-map.org/api/v2/data/Structure/', 'BFO1': 'http://www.ifomis.org/bfo/1.1', 'OLD_SO': 'http://purl.obolibrary.org/obo/SO#SO_', 'NIFGA': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-GrossAnatomy.owl#', 'NIFGG': 'http://ontology.neuinfo.org/NIF/DigitalEntities/NIF-Government-Granting-Agency.owl#', 'DOID': 'http://purl.obolibrary.org/obo/DOID_', 'SIO': 'http://semanticscience.org/resource/SIO_', 'ERO': 'http://purl.obolibrary.org/obo/ERO_', 'BIRNOBI': 'http://ontology.neuinfo.org/NIF/Backend/BIRNLex-OBI-proxy.owl#', 'NIFNEURBR': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Neuron-BrainRegion-Bridge.owl#', 'NIFSUB': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Subcellular.owl#', 'NEMOANN': 'http://purl.bioontology.org/NEMO/ontology/NEMO_annotation_properties.owl', 'PR': 'http://purl.obolibrary.org/obo/PR_', 'NIFCELL': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Cell.owl#', 'HP': 'http://purl.obolibrary.org/obo/HP_', 'NIFERO': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Eagle-I-Bridge.owl#', 'BIRNANN': 'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#', 'NIFQUAL': 'http://ontology.neuinfo.org/NIF/Backend/NIF-Quality.owl#', 'PATO': 'http://purl.obolibrary.org/obo/PATO_', 'OLD_CHEBI': 'http://purl.obolibrary.org/obo/chebi.owl#CHEBI_', 'CL': 'http://purl.obolibrary.org/obo/CL_', 'NIFBE': 'http://ontology.neuinfo.org/NIF/Backend/nif_backend.owl#', 'IAO': 'http://purl.obolibrary.org/obo/IAO_', 'NIFMOL': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Molecule.owl#', 'COGPO': 'http://www.cogpo.org/ontologies/COGPO_', 'NIFNCBISLIM': 'http://ontology.neuinfo.org/NIF/NIF-NCBITaxonomy-Slim.owl#', 'FMA': 'http://purl.org/sig/ont/fma/fma', 'COGAT': 'http://www.cognitiveatlas.org/ontology/cogat.owl#', 'PW': 'http://purl.obolibrary.org/obo/PW_', 'NIFNEURNT': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Neuron-NT-Bridge.owl#', 'RO': 'http://purl.obolibrary.org/obo/RO_', 'NIFINV': 'http://ontology.neuinfo.org/NIF/DigitalEntities/NIF-Investigation.owl#', 'NIFDYS': 'http://ontology.neuinfo.org/NIF/Dysfunction/NIF-Dysfunction.owl#', 'NCBITaxon': 'http://purl.obolibrary.org/obo/NCBITaxon_', 'SO': 'http://purl.obolibrary.org/obo/SO_', 'NIFNEURON': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF_Neuron_MolecularConstituent_Bridge.owl#', 'CLO': 'http://purl.obolibrary.org/obo/CLO_', 'NIFORG': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Organism.owl#'}
+PREFIXES = {'obo_annot':'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#','owl':'http://www.w3.org/2002/07/owl#','TROY':'TROY','rdf':'http://www.w3.org/1999/02/22-rdf-syntax-ns#','rdfs':'http://www.w3.org/2000/01/rdf-schema#','': 'http://uri.neuinfo.org/nif/nifstd/', 'OIO': 'http://www.geneontology.org/formats/oboInOwl#', 'UO': 'http://purl.obolibrary.org/obo/UO_', 'OBOANN': 'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#', 'NIFMOLINF': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Molecule-Role-Inferred.owl#', 'BFO': 'http://purl.obolibrary.org/obo/BFO_', 'QUALBB': 'http://ontology.neuinfo.org/NIF/Backend/quality_bfo_bridge.owl#', 'nlx_only': 'http://uri.neuinfo.org/nif/nifstd/', 'NEMO': 'http://purl.bioontology.org/NEMO/ontology/NEMO.owl#NEMO_', 'NIFCHEM': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Chemical.owl#', 'NIFFUN': 'http://ontology.neuinfo.org/NIF/Function/NIF-Function.owl#', 'EFO': 'http://www.ebi.ac.uk/efo/EFO_', 'BIRNOBO': 'http://ontology.neuinfo.org/NIF/Backend/BIRNLex-OBO-UBO.owl#', 'OBO': 'http://purl.obolibrary.org/obo/', 'SCR': 'http://scicrunch.org/resolver/SCR_', 'NIFANN': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Annotation-Standard.owl#', 'NIFMOLROLE': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Molecule-Role-Bridge.owl#', 'NIFGOCC': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-GO-CC-Bridge.owl#', 'NIFNEURMOR': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Neuron-Morphology-Bridge.owl#', 'PATO3': 'http://purl.org/obo/owl/PATO#PATO_', 'NIFRES': 'http://ontology.neuinfo.org/NIF/DigitalEntities/NIF-Resource.owl#', 'NIFNCBI': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-NCBITax-Bridge.owl#', 'PATO2': 'http://purl.obolibrary.org/obo/PATO#PATO_', 'NIFSCID': 'http://ontology.neuinfo.org/NIF/DigitalEntities/NIF-Scientific-Discipline.owl#', 'GO': 'http://purl.obolibrary.org/obo/GO_', 'UBERON': 'http://purl.obolibrary.org/obo/UBERON_', 'NIFUNCL': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Unclassified.owl#', 'NIFNEURCIR': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Neuron-Circuit-Role-Bridge.owl#', 'ILX': 'http://uri.interlex.org/base/ilx_', 'SAOCORE': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/SAO-CORE_properties.owl#', 'MBA': 'http://api.brain-map.org/api/v2/data/Structure/', 'BFO1': 'http://www.ifomis.org/bfo/1.1', 'OLD_SO': 'http://purl.obolibrary.org/obo/SO#SO_', 'NIFGA': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-GrossAnatomy.owl#', 'NIFGG': 'http://ontology.neuinfo.org/NIF/DigitalEntities/NIF-Government-Granting-Agency.owl#', 'DOID': 'http://purl.obolibrary.org/obo/DOID_', 'SIO': 'http://semanticscience.org/resource/SIO_', 'ERO': 'http://purl.obolibrary.org/obo/ERO_', 'BIRNOBI': 'http://ontology.neuinfo.org/NIF/Backend/BIRNLex-OBI-proxy.owl#', 'NIFNEURBR': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Neuron-BrainRegion-Bridge.owl#', 'NIFSUB': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Subcellular.owl#', 'NEMOANN': 'http://purl.bioontology.org/NEMO/ontology/NEMO_annotation_properties.owl', 'PR': 'http://purl.obolibrary.org/obo/PR_', 'NIFCELL': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Cell.owl#', 'HP': 'http://purl.obolibrary.org/obo/HP_', 'NIFERO': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Eagle-I-Bridge.owl#', 'BIRNANN': 'http://ontology.neuinfo.org/NIF/Backend/BIRNLex_annotation_properties.owl#', 'NIFQUAL': 'http://ontology.neuinfo.org/NIF/Backend/NIF-Quality.owl#', 'PATO': 'http://purl.obolibrary.org/obo/PATO_', 'OLD_CHEBI': 'http://purl.obolibrary.org/obo/chebi.owl#CHEBI_', 'CL': 'http://purl.obolibrary.org/obo/CL_', 'NIFBE': 'http://ontology.neuinfo.org/NIF/Backend/nif_backend.owl#', 'IAO': 'http://purl.obolibrary.org/obo/IAO_', 'NIFMOL': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Molecule.owl#', 'COGPO': 'http://www.cogpo.org/ontologies/COGPO_', 'NIFNCBISLIM': 'http://ontology.neuinfo.org/NIF/NIF-NCBITaxonomy-Slim.owl#', 'FMA': 'http://purl.org/sig/ont/fma/fma', 'COGAT': 'http://www.cognitiveatlas.org/ontology/cogat.owl#', 'PW': 'http://purl.obolibrary.org/obo/PW_', 'NIFNEURNT': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Neuron-NT-Bridge.owl#', 'RO': 'http://purl.obolibrary.org/obo/RO_', 'NIFINV': 'http://ontology.neuinfo.org/NIF/DigitalEntities/NIF-Investigation.owl#', 'NIFDYS': 'http://ontology.neuinfo.org/NIF/Dysfunction/NIF-Dysfunction.owl#', 'NCBITaxon': 'http://purl.obolibrary.org/obo/NCBITaxon_', 'SO': 'http://purl.obolibrary.org/obo/SO_', 'NIFNEURON': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF_Neuron_MolecularConstituent_Bridge.owl#', 'CLO': 'http://purl.obolibrary.org/obo/CLO_', 'NIFORG': 'http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-Organism.owl#'}
 
 #FIXME: old prefixes
 '''
@@ -261,6 +261,10 @@ class makeGraph:
         with open('/tmp/' + self.name + '.ttl', 'wb') as f:
             f.write(self.g.serialize(format='turtle'))
         with open('/tmp/ttl_files', 'wt') as f: f.write('/tmp/' + self.name + '.ttl')
+        os.system('java -cp ' +
+        os.path.expanduser('~/git/ttl-convert/target/'
+                            'ttl-convert-1.0-SNAPSHOT-jar-with-dependencies.jar') +
+                            ' scicrunch.App ' + '/tmp/ttl_files')
 
     def expand(self, curie):
         #print(curie)
@@ -289,24 +293,27 @@ class makeGraph:
                 value = ' ' + value
             value = self.check_thing(value)
         except TypeError:
-            value = rdflib.Literal(value)  # trust autoconv
+            if type(value) == str:
+                value = rdflib.Literal(value, datatype = rdflib.XSD.string)
+            else:
+                value = rdflib.Literal(value)  # trust autoconv
         self.g.add( (target, edge, value) )
 
 
 field_to_edge = {
     'subClassOf':'rdfs:subClassof',#FIXME I made this up
     'abbrev':'rdfs:abbrev',
-    'Abbrev':'TROY:Abbrev',
+    'Abbrev':'obo_annot:abbrev', # 'TROY:Abbrev',
     'alt_id':'oboInOwl:hasDbXref',
     #'definition':'obo:IAO_0000115',  # FIXME alternate is skos:definition...
     #'Definition':'skos:definition',
     'Definition':'TROY:Definition_troy',
     'Id':'rdf:type',
     'NLXID':'rdfs:nlx_only',
-    'Label':'TROY:Label_troy',
+    'Label':'rdfs:label',#'TROY:Label_troy',
     'old_id':'oboInOwl:hasDbXref',  # old vs alt id?
     'superclass':'rdfs:subClassOf',  # translation required
-    'Synonym':'TROY:synonym_troy',
+    'Synonym':'obo_annot:synonym', #'TROY:synonym_troy',
     'SuperCategory':'TROY:SuperCategory',
     'type':'TROY:type',  # bloody type vs superclass :/ ask james
     'Category':'rdfs:Category',
@@ -527,120 +534,130 @@ def main():
 
     for prefix, outer_identifiers in data.items():
         outer_identifiers.sort()
-        if 'nlx_only' == prefix:
-            for id_ in outer_identifiers:
-                PrefixWithID = prefix + ':' + id_
-                node = make_node(PrefixWithID, 'Id', id_)
-                g.add_node(*node)
+        #if 'nlx_only' == prefix:
+            #for id_ in outer_identifiers:
+                #PrefixWithID = prefix + ':' + id_
+                #node = make_node(PrefixWithID, 'Id', id_)
+                #g.add_node(*node)
 
 
-        if 'NIFCELL' == prefix:
-            for id_ in outer_identifiers:
-                PrefixWithID = prefix + ':' + id_
-                node=graph.getNode(PrefixWithID)
-                cheatList.append(PrefixWithID)
+
+       # if 'NIFCELL' == prefix:
+        for id_ in outer_identifiers:
+            PrefixWithID = prefix + ':' + id_
+            if prefix in ['NIFGA']:
+                continue
+            if prefix in ['FMAID', 'nlx_only']:
+                node = {'nodes':[{'meta':{}}]}
+                continue
+            else:
+                node=graph.getNode(PrefixWithID)#skipped for nlx_only
+            cheatList.append(PrefixWithID)
+            try:
                 columns = js[id_][0]
+            except KeyError:
+                columns = [''] * 100
 
-                for keys, values in node['nodes'][0]['meta'].items():
+            for keys, values in node['nodes'][0]['meta'].items():
 
-                    neighbor = [e for e in gn.getNeighbors(PrefixWithID, depth=1,direction='INCOMING')['edges'] if e['sub']==PrefixWithID and e['pred']=='subClassOf']
+                neighbor = [e for e in gn.getNeighbors(PrefixWithID, depth=1,direction='INCOMING')['edges'] if e['sub']==PrefixWithID and e['pred']=='subClassOf']
 
-                    if neighbor in neighborList: #checks for duplicates
+                if neighbor in neighborList: #checks for duplicates
+                    continue
+                else:
+                    neighborList.append(neighbor)
+
+                for edge in neighbor:
+                    key = edge['pred']
+                    value = edge['obj']
+                    sub = edge['sub']
+                    record[sub].append(value)
+
+                    if '#' in value or 'NIFNEURNT' in value or 'NIFNEURCIR' in value:
                         continue
-                    else:
-                        neighborList.append(neighbor)
+                    if len(record[sub]) > 1:
+                        fixmeRecord.append((sub,record[sub]))
 
-                    for edge in neighbor:
-                        key = edge['pred']
-                        value = edge['obj']
-                        sub = edge['sub']
-                        record[sub].append(value)
+                    node = make_node(PrefixWithID, 'subClassOf' , value.strip())
+                    g.add_node(*node)
 
-                        if '#' in value or 'NIFNEURNT' in value or 'NIFNEURCIR' in value:
-                            continue
-                        if len(record[sub]) > 1:
-                            fixmeRecord.append((sub,record[sub]))
+            for index, label in enumerate(js['LABELS']):
+                #print(list(enumerate(js['LABELS'])))
+                mid = label
+                right = columns[index]
+                if right == '':
+                   continue
+                #if not right:
+                    #continue
 
-                        node = make_node(PrefixWithID, 'subClassOf' , value.strip())
+                if ' ' in mid:
+                    mid=mid.replace(' ','_')
+
+                if type(right)==str and ':Category:' in right:
+                    if ':Category:' in right and ',' not in right and '.' not in right and '(' not in right:
+                        right = PrefixWithID
+                        node = make_node(PrefixWithID, mid, right)
                         g.add_node(*node)
 
-                for index, label in enumerate(js['LABELS']):
-                    #print(list(enumerate(js['LABELS'])))
-                    mid = label
-                    right = columns[index]
-                    if right == '':
-                       continue
-                    #if not right:
-                        #continue
+                    #FIXME: this is where I change category to prefix + ID
+                    elif ':Category:' in right and ',' in right and '.' not in right and '(' not in right:
+                        e = right.split(',')
+                        i = ''
+                        temp = 'hey'
+                        for n,ele in enumerate(e):
 
-                    if ' ' in mid:
-                        mid=mid.replace(' ','_')
+                            for items in Cat_to_preID:
+                                if ele == items[1]:
+                                    e[n] = items[0]
 
-                    if type(right)==str and ':Category:' in right:
-                        if ':Category:' in right and ',' not in right and '.' not in right and '(' not in right:
-                            right = PrefixWithID
-                            node = make_node(PrefixWithID, mid, right)
+                            node = make_node(PrefixWithID, mid, e[n])
                             g.add_node(*node)
 
-                        #FIXME: this is where I change category to prefix + ID
-                        elif ':Category:' in right and ',' in right and '.' not in right and '(' not in right:
-                            e = right.split(',')
-                            i = ''
-                            temp = 'hey'
-                            for n,ele in enumerate(e):
+                elif type(right)==list:
+                    right = tuple(right)
 
-                                for items in Cat_to_preID:
-                                    if ele == items[1]:
-                                        e[n] = items[0]
-
-                                node = make_node(PrefixWithID, mid, e[n])
+                    for e in right:
+                        if type(e)==bool:
+                            continue
+                        if not e:
+                            continue
+                        if type(e)==list:
+                            for i in e:
+                                node = make_node(PrefixWithID, mid, i.strip())
                                 g.add_node(*node)
 
-                    elif type(right)==list:
-                        right = tuple(right)
-
-                        for e in right:
-                            if type(e)==bool:
-                                continue
-                            if not e:
-                                continue
-                            if type(e)==list:
-                                for i in e:
-                                    node = make_node(PrefixWithID, mid, i.strip())
-                                    g.add_node(*node)
-
-                            e=e.replace('  ',' ').replace("'''","' ''").replace('\\','').replace("\\","")
-                            if 'http' in e:
-                                if 'http://neurolex.org/wiki/Nlx_anat_1005030' in e:
-                                    e='http://neurolex.org/wiki/Nlx_anat_1005030'
-                                if 'http://www.nature.com/nrn/journal/v6/n4/glossary/nrn1646.html#df1' in e:
-                                    e='http://www.nature.com/nrn/journal/v6/n4/glossary/nrn1646.html#df1'
-                                node = make_node(PrefixWithID, mid, rdflib.term.URIRef(e))
-                                g.add_node(*node)
-
-                            else:
-                                node = make_node(PrefixWithID, mid, e.strip())
-                                g.add_node(*node)
-
-
-                    else:
-                        right=right.replace('  ',' ').replace("'''","' ''").replace('\\','').replace("\\","")
-                        e=right
-                        e=e.replace('  ',' ')
-                        if '#' in e:
-
+                        e=e.replace('  ',' ').replace("'''","' ''").replace('\\','').replace("\\","")
+                        if 'http' in e:
                             if 'http://neurolex.org/wiki/Nlx_anat_1005030' in e:
                                 e='http://neurolex.org/wiki/Nlx_anat_1005030'
                             if 'http://www.nature.com/nrn/journal/v6/n4/glossary/nrn1646.html#df1' in e:
                                 e='http://www.nature.com/nrn/journal/v6/n4/glossary/nrn1646.html#df1'
-
                             node = make_node(PrefixWithID, mid, rdflib.term.URIRef(e))
                             g.add_node(*node)
 
                         else:
                             node = make_node(PrefixWithID, mid, e.strip())
                             g.add_node(*node)
-                    continue
+
+
+                else:
+                    right=right.replace('  ',' ').replace("'''","' ''").replace('\\','').replace("\\","")
+                    e=right
+                    e=e.replace('  ',' ')
+                    if '#' in e:
+
+                        if 'http://neurolex.org/wiki/Nlx_anat_1005030' in e:
+                            e='http://neurolex.org/wiki/Nlx_anat_1005030'
+                        if 'http://www.nature.com/nrn/journal/v6/n4/glossary/nrn1646.html#df1' in e:
+                            e='http://www.nature.com/nrn/journal/v6/n4/glossary/nrn1646.html#df1'
+
+                        node = make_node(PrefixWithID, mid, rdflib.term.URIRef(e))
+                        g.add_node(*node)
+
+                    else:
+                        node = make_node(PrefixWithID, mid, e.strip())
+                        g.add_node(*node)
+                continue
     g.write()
 
 if __name__ == '__main__':
