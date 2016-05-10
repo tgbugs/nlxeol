@@ -11,7 +11,7 @@ Th 1hr + 2:30-6:05
 import re
 import numpy
 import collections
-from heatmaps.scigraph_client import Graph, Vocabulary
+from pyontutils.scigraph_client import Graph, Vocabulary
 import json
 import csv
 from collected import data #imports data from a previous py file
