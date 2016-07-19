@@ -9,9 +9,13 @@ class convertCurated(rowParse):
     def __init__(self, graph, rows, header):
         self.graph = graph
         self.set_LocationOfAxonArborization = set()
+        self.chebi_ids = set()
+        self.failed_resolution = set()
+
         self.cat_id_dict = {}
         self.to_call = []
-        self.fake_url_prefix = 'http://fake.org/'
+        self.fake_url_prefix = 'ILX:'
+        self.neurolex_url = 'http://neurolex.org/wiki/'
         eval_first = ['FBbt_Id', 'Id', 'Category']
         super().__init__(rows, header, order=eval_first)
         [func(*args) for func, args in self.to_call]
@@ -23,20 +27,17 @@ class convertCurated(rowParse):
         elif ':Category:' in o:  # FIXME need a way to identify putative objectProperties
             if (self._add_node, (s, p, o)) in self.to_call:
                 self.graph.add_node(s, p, o)
-                print('Failed to resolve reference to', o)
+                self.failed_resolution.add(o)
+                #print('Failed to resolve reference to', o)
             else:
                 self.to_call.append((self._add_node, (s, p, o)))
         else:
             self.graph.add_node(s, p, o)
 
-    #def _translate_category_id(self, category):  # FIXME this fails when referencing later defined cats
-        #if category in self.cat_id_dict:
-            #return self.cat_id_dict[category]
-        #else:
-            #return category
-
     def Category(self, value):
-        self.category = self.fake_url_prefix + value.replace(' ','_')
+        if 'Resource' in value:
+            raise self.SkipError
+        self.category = self.neurolex_url + value.replace(' ','_')
         if self.id_ is None:
             self.Id(self.category)
         self.cat_id_dict[self.category] = self.id_
@@ -71,7 +72,23 @@ class convertCurated(rowParse):
         if not value:
             self.id_ = None
         else:
-            self.id_ = self.fake_url_prefix + value  # TODO need proper curie prefixes
+            if value.startswith('JAX:') or value.startswith('FMAID:'):
+                value = value.replace(' ','')  # FIXME
+            elif value.startswith('Taxonomy ID: '):
+                value = 'NCBITaxon:' + value.strip('Taxonomy ID: ')
+            elif value.startswith('NCBITaxon: '):
+                value = value.replace(' ','')
+            elif value.startswith('PATO'):
+                value = value.replace(' ',':')
+            elif value.startswith('CHEBI'):
+                self.chebi_ids.add(value.replace('_',':'))
+                raise self.SkipError
+
+            if value.startswith('http://'):  # category round
+                self.id_ = value
+            else:
+                self.id_ = self.fake_url_prefix + value  # TODO need proper curie prefixes
+
             self.graph.add_node(self.id_, rdflib.RDF.type, rdflib.OWL.Class)
         #print(value)
 
@@ -83,7 +100,9 @@ class convertCurated(rowParse):
         pass
 
     def SuperCategory(self, value):
-        value = self.fake_url_prefix + ':Category:' + value.replace(' ','_')
+        value = self.neurolex_url + ':Category:' + value.replace(' ','_')
+        if 'University' in value:
+            print(value)
         self._add_node(self.id_, rdflib.RDFS.subClassOf, value)
 
     def Species_taxa(self, value):
@@ -200,22 +219,25 @@ class convertCurated(rowParse):
 
 def main():
     filename = 'hello world'
-    PREFIXES = {'to':'do','NLX':'http://fake.org/:Category:',
+    PREFIXES = {'to':'do',
+                'ILX':'http://uri.interlex.org/base/ilx_',
                 'OBOANN':'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#',  # FIXME needs to die a swift death
                }
     new_graph = makeGraph(filename, PREFIXES)
     rows = None  #TODO look at line 15 of nlxeol/mysqlinsert.py for this
-    with open('neuron_data_curated.csv', 'rt') as f:
+    #with open('neuron_data_curated.csv', 'rt') as f:
+    with open('neurolex_full.csv', 'rt') as f:
         rows = [r for r in csv.reader(f)]
-    header = [h.replace(' ', '_')  for h in rows[0]]  #TODO
-    #embed()
-    header[header.index('')] = 'Category'
-    header[header.index('Species/taxa')] = 'Species_taxa'
-    #header[header.index('Neurotransmitter/NeurotransmitterReceptors')] = 'Neurotransmitter_NeurotransmitterReceptors'
-    header[header.index('Phenotypes:_ilx:has_location_phenotype')] = 'Phenotypes'
     # convert the header names so that ' ' is replaced with '_'
+    header = [h.replace(' ', '_')  for h in rows[0]]  #TODO
+    #header[header.index('')] = 'Category'
+    #header[header.index('Species/taxa')] = 'Species_taxa'
+    #header[header.index('Neurotransmitter/NeurotransmitterReceptors')] = 'Neurotransmitter_NeurotransmitterReceptors'
+    #header[header.index('Phenotypes:_ilx:has_location_phenotype')] = 'Phenotypes'
+
     state = convertCurated(new_graph, rows, header)
-    #[print(i) for i in sorted(state.set_LocationOfAxonArborization)]
+    _ = [print(i) for i in sorted(state.failed_resolution)]
+    #_ = [print(i) for i in sorted(state.set_LocationOfAxonArborization)]
     new_graph.write()
 
 
