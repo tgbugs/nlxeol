@@ -96,7 +96,7 @@ class convertCurated(rowParse):
             if value in fragment_curie_dict:
                 self.id_ = fragment_curie_dict[value]
                 if self.id_ == 'NLXONLY':
-                    self.id_ += ':' + value
+                    self.id_ = 'NLX:' + value
                 else:
                     prefix, fragment = self.id_.split(':')
                     if prefix not in self.graph.namespaces:
@@ -110,6 +110,7 @@ class convertCurated(rowParse):
 
         self.cat_id_dict[self.category] = self.id_
         self.graph.add_node(self.id_, rdflib.RDF.type, rdflib.OWL.Class)
+        self.graph.add_node(self.id_, 'OBOANN:neurolex_category', self.category)
 
 
     def PMID(self, value):
@@ -240,7 +241,7 @@ class convertCurated(rowParse):
 def main():
     filename = 'hello world'
     PREFIXES = {'to':'do',
-                'NLXONLY':'http://neurolex.org/wiki/',
+                'NLX':'http://neurolex.org/wiki/',
                 'ILX':'http://uri.interlex.org/base/ilx_',
                 'OBOANN':'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#',  # FIXME needs to die a swift death
                }
