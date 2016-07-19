@@ -34,7 +34,7 @@ async def check_id(future_, ids):
 
 def main():
     with open('neurolex_full.csv', 'rt') as f:
-        identifiers = [r[89] for r in csv.reader(f)]
+        identifiers = [r[89] for r in csv.reader(f) if ':Category:Resource:' not in r[0]]
 
     future = asyncio.Future()
     loop = asyncio.get_event_loop()
