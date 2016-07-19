@@ -27,10 +27,12 @@ class convertCurated(rowParse):
         self.cat_id_dict[self.category] = self.id_
 
     def Label(self, value):
-        #print(value)
+        print(value)
+        self.graph.add_node(self.id_, rdflib.RDFS.label, value)
         pass
     def Synonym(self, value):
-        #print(value)
+        print(value)
+        #self.graph.add_node(self.id_, rdflib.RDFS.synonym, value)
         pass
     def Id(self, value):
         if not value:
@@ -122,7 +124,25 @@ class convertCurated(rowParse):
             self.graph.add_node(self.category, 'http://LocationOfAxonArborization.org', value)
         pass
     def LocationOfLocalAxonArborization(self, value): 
-        #print(value)
+        if value:
+            print(value)
+        NONE = 'None'
+        fixes = {
+            ':Category:NA':NONE,
+            ':Category:No axon':NONE,
+            ':Category:None':NONE,
+        } 
+        if value in fixes:
+            value = fixes[value]
+
+        self.set_LocationOfLocalAxonArborization.add(value)
+
+        to_skip = {':Category:NA', ':Category:No axon', ':Category:None', ''}
+        if value in to_skip:
+            pass
+        else:
+            #put_the_value_in_the_graph(value)
+            self.graph.add_node(self.category, 'http://LocationOfLocalAxonArborization.org', value) 
         pass
     def DefiningCitation(self, value):
         #print(value)
@@ -172,4 +192,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
