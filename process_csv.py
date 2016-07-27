@@ -16,6 +16,7 @@ class convertCurated(rowParse):
         self.set_BranchingMetrics = set()
         self.set_CellSomaShape = set()
         self.set_DendriteLocation = set()
+        self.set_Has_Role = set()
         self.cat_id_dict = {}
         self.fake_url_prefix = 'http://fake.org/'
         eval_first = ['Id', 'Category']
@@ -71,7 +72,18 @@ class convertCurated(rowParse):
         #print(value)
         pass
     def Has_role(self, value):
-        #print(value)
+        print(value)
+        self.set_Has_Role.add(value)
+
+        to_skip = {':Category:Neuroendocrine motor cell role', ''} #I skipped this because it is already included in the phenotypes. 
+# some of the others have been included as well like Principal neuron role, Motor role of nerve cell, Intrinsic neuron role, sensory reception role, but I can't skip those because I only included them in the phenotypes of the Mammals and Vertebrata, not Drosophila or other insects/invertebrate
+
+        if value in to_skip:
+            pass
+        else:
+            #put_the_value_in_the_graph(view)
+            self.graph.add_node(self.category, 'http://Has_Role.org', value)
+
         pass
     def FBbt_Id(self, value):
         #print(value)
@@ -88,6 +100,46 @@ class convertCurated(rowParse):
     def CellSomaShape(self, value): 
         if value:
             print(value)
+        multipolar_fix = 'Category:Multipolar Soma Quality'
+        fusiform_fix = 'Category:Fusiform Soma Quality'
+        pyramidal_fix = 'Category:Pyramidal Soma Quality'
+        spherical_fix = 'Category:Spherical Soma Quality'
+        oval_fix = 'Category:Oval Som Quality'
+        bipolar_fix = 'Category:Bipolar Soma Quality'
+        granule_fix = 'Category:Granule Soma Quality'
+        mitral_fix = 'Category:Mitral Soma Quality'
+        round_fix = 'Category:Round Soma Quality'
+
+        s = 'Category:Round, Oval, Fusiform' #is this (100-122) correct?
+        locations = s.split(", ")
+        for location in locations:
+            print(location)
+
+        fixes = {
+                'Category:Multipolar':multipolar_fix,
+                'Category:Fusiform':fusiform_fix,
+                'Category:Pyramidal':pyramidal_fix,
+                'Category:Spherical':spherical_fix,
+                'Category:Oval':oval_fix,
+                'Category:bipolar':bipolar_fix,
+                'Category:Granule':granule_fix,
+                'Category:Mitral':mitral_fix,
+                'Oval':oval_fix,
+                'Fusiform':fusiform_fix,
+                'Category:Round':round_fix
+        }                
+        if value in fixes:
+            value = fixes[value]
+        
+        self.set_CellSomaShape.add(value)
+
+        to_skip = {'Category:Multipolar', 'Category:Fusiform', 'Category:Pyramidal', 'Category:Spherical', 'Category:Oval', 'Category:bipolar', 'Category:Granule', 'Category:Mitral', 'Oval', 'Fusiform', 'Category:Round', ''}
+
+        if value in to_skip:
+            pass
+        else:
+            #put_the_value_in_the_graph(view)
+            self.graph.add_node(self.category, 'http://CellSomaShape.org', value)
             
         pass
     def CellSomaSize(self, value): 
@@ -134,24 +186,31 @@ class convertCurated(rowParse):
         if value:
             print(value)
         NONE = 'None'
+        Fix_location = ':Category:CA3 oriens' #is this (168-180) correct? I did the split, but I put a fix in for the oriens to add the ":Category:CA3" part
+        s = ':Category:CA3 alveus/oriens'
+        locations = s.split("/")
+        for location in locations:
+            print(location)
+
         fixes = {
             ':Category:NA':NONE,
             ':Category:None':NONE,
             ':Category:No axon':NONE,
             ':Category:Anaxonic - no axon':NONE,
             ':Category:This is an anaxonal cell; it lacks an axon':NONE,
+            'oriens':Fix_location
         }
         if value in fixes:
             value = fixes[value]
 
         self.set_LocationOfAxonArborization.add(value)
 
-        to_skip = {':Category:NA', ':Category:None', ':Category:No axon', ':Category:Anaxonic - no axon', ':Category:This is an axonal cell; it lacks an axon', ' : axon collaterals to other pyramidal cells. Mouse: no axon collaterals. Exit through the dorsal and intermediate acoustic striae to terminate in the contralateral inferior colliculus', ':Category:Axon descends in the medial lateral fasciculus and projects to caudal brainstem and all spinal segments', ':Category:For supragranular neurons', ':Category:This is almost exclusively cortical (except for some corticostriatal projections from layer 3). Infragranular neurons can project subcortically (LGN', ':Category:Superior colliculus', ':Category:Claustrum', ':Category:Amygdala) but also cortically', ':Category:Ipsi- or contralateral.', ':Category:Cell groups embedded in the lemniscus lateralis', ':Category:And the nucleus mesencephalicus lateralis', ':Category:Pars dorsalis in the midbrain', ':Category:Synaptic output is from cell body', ''}
+        to_skip = {':Category:NA', ':Category:None', ':Category:No axon', ':Category:Anaxonic - no axon', ':Category:This is an axonal cell; it lacks an axon', ' : axon collaterals to other pyramidal cells. Mouse: no axon collaterals. Exit through the dorsal and intermediate acoustic striae to terminate in the contralateral inferior colliculus', ':Category:Axon descends in the medial lateral fasciculus and projects to caudal brainstem and all spinal segments', ':Category:For supragranular neurons', ':Category:This is almost exclusively cortical (except for some corticostriatal projections from layer 3). Infragranular neurons can project subcortically (LGN', ':Category:Superior colliculus', ':Category:Claustrum', ':Category:Amygdala) but also cortically', ':Category:Ipsi- or contralateral.', ':Category:Cell groups embedded in the lemniscus lateralis', ':Category:And the nucleus mesencephalicus lateralis', ':Category:Pars dorsalis in the midbrain', ':Category:Synaptic output is from cell body', 'oriens', ''}
         if value in to_skip:
             pass
         else:
             #put_the_value_in_the_graph(value)
-            self.graph.add_node(self.category, 'http://LocationOfAxonArborization.org', value)
+            self.graph.add_node(self.category, 'http://LocationOfAxonArborization.org', value) 
         pass
     def LocationOfLocalAxonArborization(self, value): 
         if value:
