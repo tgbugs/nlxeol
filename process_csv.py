@@ -110,10 +110,12 @@ class convertCurated(rowParse):
         mitral_fix = 'Category:Mitral Soma Quality'
         round_fix = 'Category:Round Soma Quality'
 
-        s = 'Category:Round, Oval, Fusiform' #is this (100-122) correct?
-        locations = s.split(", ")
-        for location in locations:
-            print(location)
+        if value == 'Category:Round, Oval, Fusiform': #is this (100-122) correct?
+            locations = s.split(", ")
+            for location in locations:
+                print(location)
+                self.CellSomaShape(location)
+            return    
 
         fixes = {
                 'Category:Multipolar':multipolar_fix,
@@ -187,7 +189,7 @@ class convertCurated(rowParse):
             print(value)
         NONE = 'None'
         Fix_location = ':Category:CA3 oriens' #is this (168-180) correct? I did the split, but I put a fix in for the oriens to add the ":Category:CA3" part
-        if value == ':Category:CA3 alveus/oriens'
+        if value == ':Category:CA3 alveus/oriens':
             locations = s.split("/")
             for location in locations:
                 print(location)
