@@ -6,9 +6,14 @@ from pyontutils.utils import makeGraph, rowParse
 from pyontutils.scigraph_client import Cypher
 from IPython import embed
 import json
+import yaml
+import requests
+import io
 
-prefixes = Cypher().getCuries()
-with open ('curie_fragment.json', 'rt') as f:
+_ = requests.get('https://raw.githubusercontent.com/SciCrunch/NIF-Ontology/master/scigraph/nifstd_curie_map.yaml').text
+prefixes = yaml.load(io.StringIO(_))  # temp fix for ucsd blocking :9000
+#prefixes = Cypher().getCuries()
+with open ('total_curie_fragment.json', 'rt') as f:
     fragment_curie_dict = json.load(f)
 
 
