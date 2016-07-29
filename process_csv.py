@@ -1,9 +1,16 @@
 #!/usr/bin/env python3
 
+import csv
 import rdflib
 from pyontutils.utils import makeGraph, rowParse
+from pyontutils.scigraph_client import Cypher
 from IPython import embed
-import csv
+import json
+
+prefixes = Cypher().getCuries()
+with open ('curie_fragment.json', 'rt') as f:
+    fragment_curie_dict = json.load(f)
+
 
 class convertCurated(rowParse):
     def __init__(self, graph, rows, header):
@@ -17,38 +24,122 @@ class convertCurated(rowParse):
         self.set_CellSomaShape = set()
         self.set_DendriteLocation = set()
         self.set_Has_Role = set()
+        self.chebi_ids = set()
+        self.bad_ids = set()
+        self.failed_resolution = set()
+
+        
+        self.line = 0
         self.cat_id_dict = {}
-        self.fake_url_prefix = 'http://fake.org/'
-        eval_first = ['Id', 'Category']
+        self.to_call = []
+        self.fake_url_prefix = 'ILX:'
+        self.neurolex_url = 'http://neurolex.org/wiki/'
+        eval_first = ['FBbt_Id', 'Categories', 'Id']
         super().__init__(rows, header, order=eval_first)
+        [func(*args) for func, args in self.to_call]
 
-    def _translate_category_id(self, category):  # FIXME this fails when referencing later defined cats
-        if category in self.cat_id_dict:
-            return self.cat_id_dict[category]
+    #def _translate_category_id(self, category):  # FIXME this fails when referencing later defined cats
+        #if category in self.cat_id_dict:
+       #     return self.cat_id_dict[category]
+     #   else:
+        #    return category
+
+                        #should I get rid of all of this ^^
+    def _add_node(self, s, p, o): #Call for non Category/Id
+        if o in self.cat_id_dict:
+            o = self.cat_id_dict[o]
+            self.graph.add_node(s, p, o)
+        elif ':Category:' in o: # FIXME needs a way to identify putative objectProperties
+            if (self._add_node, (s, p, o)) in self.to_call:
+                self.graph.add_node(s, p, o)
+                self.failed_resolution.add(o)
+                #print('Failed to resolve reference to', o)
+            else:
+                self.to_call.append((self._add_node, (s, p, o)))
         else:
-            return category
+            self.graph.add_node(s, p, o)
 
-    def Category(self, value):
-        self.category = self.fake_url_prefix + value.replace(' ','_')
-        if self.id_ is None:
-            self.Id(self.category)
-        self.cat_id_dict[self.category] = self.id_
+    #def Category(self, value):
+        #self.category = self.fake_url_prefix + value.replace(' ','_')
+        #if self.id_ is None:
+        #    self.Id(self.category)
+        #self.cat_id_dict[self.category] = self.id_
+# should I get rid of all of this ^^^
+
+    def Categories(self, value): # FIXME called Categories in neurolex_full.csv
+        self.line += 1
+        if ':Category:Resource:' in value or value == 'Categories':
+            raise self.SkipError
+        elif not value:
+            raise BaseException('Category is empyt, this should not be possible! Row = %s' % self.line) #there was a type on your version here, you had empyt instead of empty
+        self.category = self.neurolex_url + value.replace(' ','_')
 
     def Label(self, value):
-        print(value)
-        self.graph.add_node(self.id_, rdflib.RDFS.label, value)
-        pass
+        if value:
+            self._add_node(self.id_, rdflib.RDFS.label, value)
+        
     def Synonym(self, value):
-        print(value)
-        #self.graph.add_node(self.id_, rdflib.RDFS.synonym, value)
-        pass
+        if value:
+            half = None
+            for v in value.split(','):
+                if '(' in v and ')' not in v:
+                    half = v
+                    continue
+
+                if half:
+                    if ')' in v:
+                        v = half + ',' + v
+                        print('Bad split on comma detected!', v)
+                    else:
+                        half.strip()
+                        self._add_node(self.id_, 'OBOANN:synonym', half)
+
+                    half = None
+
+                v = v.strip()
+                if v:
+                    self._add_node(self.id_, 'OBOANN:synonym', v)
     def Id(self, value):
         if not value:
-            self.id_ = None
+           self.id_ = self.category
+            # self.id_ = None
+
         else:
-            self.id_ = self.fake_url_prefix + value  # TODO need proper curie prefixes
-            self.graph.add_node(self.id_, rdflib.RDF.type, rdflib.OWL.Class)
-        print(value)
+            if value.startswith('JAX:') or value.startswith('FMAID:'):
+                value = value.replace(' ','') # FIXME
+            elif value.startswith('Taxonomy ID: '):
+                value = 'NCBITaxon:' + value.strip('Taxonomy ID: ')
+            elif value.startswith('NCBITaxon: '):
+                value = value.replace(' ' ,'')
+            elif value.startswith('PATO'):
+                value = value.replace(' ',':')
+            elif value.startswith('CHEBI'):
+                self.chebi_ids.add(value.replace('_',':'))
+                raise self.SkipError
+
+            if value in fragment_curie_dict:
+                self.id_ = fragment_curie_dict[value]
+                if self.id_ == 'NLXONLY':
+                    self.id_ = 'NLX:' + value
+                else:
+                    prefix, fragment = self.id_.split(':')
+                    if prefix not in self.graph.namespaces:
+                        self.graph.namespaces[prefix] = rdflib.Namespace(prefixes[prefix])
+                        self.graph.g.namespace_manager.bind(prefix, prefixes[prefix])
+            elif value.startswith('http://'): # coming from category
+                self.id_ = value
+            else:
+                self.bad_ids.add(value)
+                raise self.SkipError('SKIPPING RECORD DUE TO wtf? %s' % value)
+
+        self.cat_id_dict[self.category] = self.id_
+        self.graph.add_node(self.id_, rdflib.RDF.type, rdflib.OWL.Class)
+        self.graph.add_node(self.id_, 'OBOANN:neurolex_category', self.category)
+            
+        #else:
+         #   self.id_ = self.fake_url_prefix + value  # TODO need proper curie prefixes
+          #  self.graph.add_node(self.id_, rdflib.RDF.type, rdflib.OWL.Class)
+        #print(value)
 
     def PMID(self, value):
         #print(value)
@@ -57,10 +148,10 @@ class convertCurated(rowParse):
         #print(value)
         pass
     def SuperCategory(self, value):
-        print(value)
-        value = self.fake_url_prefix + ':Category:' + value.replace(' ','_')
-        value = self._translate_category_id(value)  # FIXME out of order issues
-        self.graph.add_node(self.id_, rdflib.RDFS.subClassOf, value)
+        value = self.neurolex_url + ':Category:' + value.replace(' ','_')
+        #if 'University' in value:
+            #print(value)
+        self._add_node(self.id_, rdflib.RDFS.subClassOf, value)
 
     def Species_taxa(self, value):
         #print(value)
@@ -86,8 +177,9 @@ class convertCurated(rowParse):
 
         pass
     def FBbt_Id(self, value):
-        #print(value)
-        pass
+        if value:
+            #print('FBbt id found', value, 'skipping!')
+            raise self.SkipError
     def Abbrev(self, value):
         #print(value)
         pass
@@ -104,13 +196,13 @@ class convertCurated(rowParse):
         fusiform_fix = 'Category:Fusiform Soma Quality'
         pyramidal_fix = 'Category:Pyramidal Soma Quality'
         spherical_fix = 'Category:Spherical Soma Quality'
-        oval_fix = 'Category:Oval Som Quality'
+        oval_fix = 'Category:Oval Soma Quality'
         bipolar_fix = 'Category:Bipolar Soma Quality'
         granule_fix = 'Category:Granule Soma Quality'
         mitral_fix = 'Category:Mitral Soma Quality'
         round_fix = 'Category:Round Soma Quality'
 
-        if value == 'Category:Round, Oval, Fusiform': #is this (100-122) correct?
+        if value == 'Category:Round, Oval, Fusiform': 
             locations = s.split(", ")
             for location in locations:
                 print(location)
@@ -185,10 +277,10 @@ class convertCurated(rowParse):
         print(value)
         pass
     def LocationOfAxonArborization(self, value): 
-        if value:
-            print(value)
+        #if value:
+         #   print(value)
         NONE = 'None'
-        Fix_location = ':Category:CA3 oriens' #is this (168-180) correct? I did the split, but I put a fix in for the oriens to add the ":Category:CA3" part
+        Fix_location = ':Category:CA3 oriens'
         if value == ':Category:CA3 alveus/oriens':
             locations = s.split("/")
             for location in locations:
@@ -215,11 +307,16 @@ class convertCurated(rowParse):
             pass
         else:
             #put_the_value_in_the_graph(value)
-            self.graph.add_node(self.category, 'http://LocationOfAxonArborization.org', value) 
+            for v in value.split(','):
+                v.strip()
+                self._add_node(self.id_, 'http://LocationOfAxonArborization.org', v) 
         
     def LocationOfLocalAxonArborization(self, value): 
-        if value:
-            print(value)
+        #if value:
+            #for v in value.split(','):
+             #   v.strip()
+              #  if v:
+               #     self._add_node(self.id_, 'http://LocationOfLocalAxonArborization', v)
         NONE = 'None'
         CAP = ':Category:Olfactory cortex layer II'
         fixes = {
@@ -240,7 +337,10 @@ class convertCurated(rowParse):
             pass
         else:
             #put_the_value_in_the_graph(value)
-            self.graph.add_node(self.category, 'http://LocationOfLocalAxonArborization.org', value) 
+            for v in value.split(','):
+                v.strip()
+                if v:
+                    self._add_node(self.id_, 'http://LocationOfLocalAxonArborization', v) 
         pass
     def OriginOfAxon(self, value): 
         print(value)
@@ -314,20 +414,29 @@ class convertCurated(rowParse):
 
 def main():
     filename = 'hello world'
-    PREFIXES = {'to':'do','NLX':'http://fake.org/:Category:'}
+    PREFIXES = {'to':'do',
+                'NLX':'http://neurolex.org/wiki/',
+                'ILX':'http://uri.interlex.org/base/ilx_',
+                'OBOANN':'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#',
+                }
     new_graph = makeGraph(filename, PREFIXES)
-    rows = None  #TODO look at line 15 of nlxeol/mysqlinsert.py for this
-    with open('neuron_data_curated.csv', 'rt') as f:
+    #with open('neuron_data_curated.csv', 'rt') as f:
+    with open('neurolex_full.csv', 'rt') as f:
         rows = [r for r in csv.reader(f)]
+    # convert the haeder names so that ' ' is replaced with '_'
     header = [h.replace(' ', '_')  for h in rows[0]]  #TODO
     #embed()
-    header[header.index('')] = 'Category'
-    header[header.index('Species/taxa')] = 'Species_taxa'
+    #header[header.index('')] = 'Category'
+    #header[header.index('Species/taxa')] = 'Species_taxa'
     #header[header.index('Neurotransmitter/NeurotransmitterReceptors')] = 'Neurotransmitter_NeurotransmitterReceptors'
-    header[header.index('Phenotypes:_ilx:has_location_phenotype')] = 'Phenotypes'
+    #header[header.index('Phenotypes:_ilx:has_location_phenotype')] = 'Phenotypes'
     # convert the header names so that ' ' is replaced with '_'
     state = convertCurated(new_graph, rows, header)
-    [print(i) for i in sorted(state.set_LocationOfAxonArborization)]
+    #embed()
+    _ = [print(i) for i in sorted(state.chebi_ids)]
+    _ = [print(i) for i in sorted(state.bad_ids)]
+    #_ = [print(i) for i in sorted(state.failed_resolution)]
+    #_ = [print(i) for i in sorted(state.set_LocationOfAxonArborization)]
     new_graph.write()
 
 
