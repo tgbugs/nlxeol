@@ -159,7 +159,11 @@ class convertCurated(rowParse):
         self._add_node(self.id_, rdflib.RDFS.subClassOf, value)
 
     def Species_taxa(self, value):
-        #print(value)
+        if value:
+            print(value)
+
+        pheno_edge = ilx:hasTaxonRank
+
         pass
     def Definition(self, value):
         #print(value)
@@ -197,6 +201,9 @@ class convertCurated(rowParse):
     def CellSomaShape(self, value): 
         if value:
             print(value)
+
+        parent_phenotype = ilx:SomaMorphologicalPhenotype
+
         multipolar_fix = 'Category:Multipolar Soma Quality'
         fusiform_fix = 'Category:Fusiform Soma Quality'
         pyramidal_fix = 'Category:Pyramidal Soma Quality'
@@ -242,17 +249,32 @@ class convertCurated(rowParse):
             
         pass
     def CellSomaSize(self, value): 
-        #print(value)
+        if value:
+            print(value)
+
+        parent_phenotype = ilx:SomaMorphologicalPhenotype
+
         pass
     def Located_in(self, value): 
-        #print(value)
+        if value:
+            print(value)
+        
+        pheno_edge = ilx:hasSomaLocatedIn
+
         pass
     def SpineDensityOnDendrites(self, value): 
-        #print(value)
+        if value:
+            print(value)
+        
+        parent_phenotype = ilx:DendriteMorphologicalPhenotype
+        
         pass
     def DendriteLocation(self, value): 
         if value:
             print(value)
+
+        pheno_edge = ilx:hasDendriteLocatedIn
+
         self.set_DendriteLocation.add(value)
 
         to_skip = {':Category:Dendrites spread from the cell body in all directions. Dendrites are smooth where they lie in the deep layer but where the dendrites cross the pyramidal (fusiform) cell layer into the molecular layer', ':Category:They become spiny. Functionally it has been demonstrated that they receive not only acoustic input in the deep layer but also proprioceptive input through the molecular layer.', ':Category:Brush of dendrites is short and lies near the cell body', ':Category:Dendrites lie parallel to auditory nerve fibers in the ventral cochlear nucleus', ':Category:Receptive field in the periphery', ':Category:Two primary dendrites', ':Category:One that projects laterally towards the roots of the VIIIth cranial nerve and is named the lateral dendrite', ':Category:And another which projects rostrally and ventrally and is called the ventral dendrite.', ':Category:Basal dendrites in neocortical layers 5 and 6;apical dendrites across neocortical layers 5 to 1.', ':Category:Basal dendrites branch within neocortical layers 5 and 6;apical dendrite extends across neocortical layers 5-1.', ':Category:Basal dendrites in Neocortex layer 5', ':Category:Apical dendrites across neocortical layers 5-1.', ':Category:Mostly neocortical layer 4', ':Category:Basal dendrites will be in the same layer as the soma and/or the subjacent layer. Apical dendrites rise toward the pia and into layer 1. For layer 6 neurons', ':Category:However,:Category:The apical dendrite will often not continue beyond layer 4/lower layer 3.', ':Category:Arborization within the glomerular neuropil and external plexiform layer', ':Category:Dendrties arborize in the external plexiform layer where they contact the secondary/lateral dendrites of mitral cells via reciprocal dendrodendritic synapses. The basal dendrite remains restricted to the granule cell layer.', ':Category:Proximal', ':Category:Intermediate', ':Category:Distal', ''}
@@ -265,6 +287,9 @@ class convertCurated(rowParse):
     def BranchingMetrics(self, value): 
         if value:
             print(value)
+
+        parent_phenotype = ilx:DendriteMorphologicalPhenotype
+
         self.set_BranchingMetrics.add(value)
         
         to_skip = {'other', 'this is a columnar cell without a true dendrite', ''}
@@ -276,14 +301,25 @@ class convertCurated(rowParse):
 
         pass
     def AxonMyelination(self, value): 
-        print(value)
+        if value:
+            print(value)
+        
+        parent_phenotype = ilx:AxonMorphologicalPhenotype
+
         pass
     def AxonProjectionLaterality(self, value): 
-        print(value)
+        if value:
+            print(value)
+
+        pheno_edge = ilx:hasProjectionPhenotype
+
         pass
     def LocationOfAxonArborization(self, value): 
-        #if value:
-         #   print(value)
+        
+        print(value)
+
+        pheno_edge = ilx:hasAxonLocatedIn
+
         NONE = 'None'
         Fix_location = ':Category:CA3 oriens'
         if value == ':Category:CA3 alveus/oriens':
@@ -322,6 +358,10 @@ class convertCurated(rowParse):
              #   v.strip()
               #  if v:
                #     self._add_node(self.id_, 'http://LocationOfLocalAxonArborization', v)
+
+        pheno_edge = ilx:hasAxonLocatedIn
+        
+
         NONE = 'None'
         CAP = ':Category:Olfactory cortex layer II'
         fixes = {
@@ -349,10 +389,15 @@ class convertCurated(rowParse):
         pass
     def OriginOfAxon(self, value): 
         print(value)
+
+        pheno_edge = ilx:hasAxonOrigin
+
         pass
     def Neurotransmitter(self, value):
         if value:
             print(value)
+
+        pheno_edge = ilx:hasExpressionPhenotype
 
         self.set_Neurotransmitter.add(value)
 
@@ -367,6 +412,8 @@ class convertCurated(rowParse):
     def NeurotransmitterReceptors(self, value): 
         if value:
             print(value)
+
+        pheno_edge = ilx:hasExpressionPhenotype
         
         Add_GABA = ':Category:GABA receptor'
         Add_Glutamate = ':Category:Glutamate receptor'
@@ -386,7 +433,7 @@ class convertCurated(rowParse):
 
         self.set_NeurotransmitterReceptors.add(value)
 
-        to_skip = {':Category:?', ':Category:Unknown', ':Category:Not known', ''}
+        to_skip = {':Category:?', ':Category:Unknown', ':Category:Not known', ':Category:GABA', ':Category:Glutamate', ':Category:Acetylcholine', ':Category:Dopamine', ':Category:Serotonin', ':Category:GABA B', ''}
         if value in to_skip:
             pass
         else:
@@ -396,6 +443,8 @@ class convertCurated(rowParse):
     def MolecularConstituents(self, value): 
         if value:
             print(value)
+
+        pheno_edge = ilx:hasExpressionPhenotype
 
         self.set_MolecularConstituents.add(value)
 
@@ -410,7 +459,38 @@ class convertCurated(rowParse):
         #print(value)
         pass
     def Phenotypes(self, value): 
-        #print(value)
+        print(value)
+        
+        basket = "ilx:BasketPhenotype"
+        Lbasket = "ilx:LargeBasketPhenotype"
+        Nbasket = "ilx:NestBasketPhenotype"
+        Sbasket = "ilx:SmallBasketPhenotype"
+        bitufted = "ilx:BituftedPhenotype"
+        bipolar = "ilx:BipolarPhenotype"
+        chandelier = "ilx:ChandelierPhenotype"
+        DBouquet = "ilx:DoubleBouquetPhenotype"
+        Martinotti = "ilx:MartinottiPhenotype"
+        neurogliaform = "ilx:NeurogliaformPhenotype"
+        pyramidal = "ilx:PyramidalPhenotype"
+        spiking = "ilx:SpikingPhenotype"
+
+        fixes: {
+                'ilx:has_morphological_phenotype basket':basket,
+                'ilx:has_morphological_phenotype bipolar':bipolar,
+                'ilx:has_morphological_phenotype chandelier':chandelier,
+                'ilx:has_morphological_phenotype double bouquet':DBouquet,
+                'ilx:has_morphological_phenotype Martinotti':Martinotti,
+                'ilx:has_morphological_phenotype neurogliaform':neurogliaform,
+                'ilx:has_morphological_phenotype pyramidal':pyramidal,
+                }
+
+        to_skip = {'ilx:has_morphological_phenotype basket', 'ilx:has_morphological_phenotype bipolar', 'ilx:has_morphological_phenotype chandelier', 'ilx:has_morphological_phenotype double bouquet', 'ilx:has_morphological_phenotype Martinotti', 'ilx:has_morphological_phenotype neurogliaform', 'ilx:has_morphological_phenotype pyramidal', ''}
+        if value in to_skip:
+            pass
+        else:
+            #put_the_value_in_the_graph(value)
+            self.graph.add_node(self.category, 'http://Phenotypes.org', value)
+
         pass
     def Notes(self, value): 
         #print(value)
