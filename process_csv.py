@@ -162,7 +162,7 @@ class convertCurated(rowParse):
         if value:
             print(value)
 
-        pheno_edge = ilx:hasTaxonRank
+        pheno_edge = 'ilx:hasTaxonRank'
 
         pass
     def Definition(self, value):
@@ -174,7 +174,7 @@ class convertCurated(rowParse):
     def Has_role(self, value):
         print(value)
         self.set_Has_Role.add(value)
-
+        
         to_skip = {':Category:Neuroendocrine motor cell role', ''} #I skipped this because it is already included in the phenotypes. 
 # some of the others have been included as well like Principal neuron role, Motor role of nerve cell, Intrinsic neuron role, sensory reception role, but I can't skip those because I only included them in the phenotypes of the Mammals and Vertebrata, not Drosophila or other insects/invertebrate
 
@@ -202,7 +202,7 @@ class convertCurated(rowParse):
         if value:
             print(value)
 
-        parent_phenotype = ilx:SomaMorphologicalPhenotype
+        parent_phenotype = 'ilx:SomaMorphologicalPhenotype'
 
         multipolar_fix = 'Category:Multipolar Soma Quality'
         fusiform_fix = 'Category:Fusiform Soma Quality'
@@ -252,28 +252,28 @@ class convertCurated(rowParse):
         if value:
             print(value)
 
-        parent_phenotype = ilx:SomaMorphologicalPhenotype
+        parent_phenotype = 'ilx:SomaMorphologicalPhenotype'
 
         pass
     def Located_in(self, value): 
         if value:
             print(value)
         
-        pheno_edge = ilx:hasSomaLocatedIn
+        pheno_edge = 'ilx:hasSomaLocatedIn'
 
         pass
     def SpineDensityOnDendrites(self, value): 
         if value:
             print(value)
         
-        parent_phenotype = ilx:DendriteMorphologicalPhenotype
+        parent_phenotype = 'ilx:DendriteMorphologicalPhenotype'
         
         pass
     def DendriteLocation(self, value): 
         if value:
             print(value)
 
-        pheno_edge = ilx:hasDendriteLocatedIn
+        pheno_edge = 'ilx:hasDendriteLocatedIn'
 
         self.set_DendriteLocation.add(value)
 
@@ -288,7 +288,7 @@ class convertCurated(rowParse):
         if value:
             print(value)
 
-        parent_phenotype = ilx:DendriteMorphologicalPhenotype
+        parent_phenotype = 'ilx:DendriteMorphologicalPhenotype'
 
         self.set_BranchingMetrics.add(value)
         
@@ -304,21 +304,21 @@ class convertCurated(rowParse):
         if value:
             print(value)
         
-        parent_phenotype = ilx:AxonMorphologicalPhenotype
+        parent_phenotype = 'ilx:AxonMorphologicalPhenotype'
 
         pass
     def AxonProjectionLaterality(self, value): 
         if value:
             print(value)
 
-        pheno_edge = ilx:hasProjectionPhenotype
+        pheno_edge = 'ilx:hasProjectionPhenotype'
 
         pass
     def LocationOfAxonArborization(self, value): 
         
         print(value)
 
-        pheno_edge = ilx:hasAxonLocatedIn
+        pheno_edge = 'ilx:hasAxonLocatedIn'
 
         NONE = 'None'
         Fix_location = ':Category:CA3 oriens'
@@ -359,7 +359,7 @@ class convertCurated(rowParse):
               #  if v:
                #     self._add_node(self.id_, 'http://LocationOfLocalAxonArborization', v)
 
-        pheno_edge = ilx:hasAxonLocatedIn
+        pheno_edge = 'ilx:hasAxonLocatedIn'
         
 
         NONE = 'None'
@@ -390,14 +390,14 @@ class convertCurated(rowParse):
     def OriginOfAxon(self, value): 
         print(value)
 
-        pheno_edge = ilx:hasAxonOrigin
+        pheno_edge = 'ilx:hasAxonOrigin'
 
         pass
     def Neurotransmitter(self, value):
         if value:
             print(value)
 
-        pheno_edge = ilx:hasExpressionPhenotype
+        pheno_edge = 'ilx:hasExpressionPhenotype'
 
         self.set_Neurotransmitter.add(value)
 
@@ -413,7 +413,7 @@ class convertCurated(rowParse):
         if value:
             print(value)
 
-        pheno_edge = ilx:hasExpressionPhenotype
+        pheno_edge = 'ilx:hasExpressionPhenotype'
         
         Add_GABA = ':Category:GABA receptor'
         Add_Glutamate = ':Category:Glutamate receptor'
@@ -444,7 +444,7 @@ class convertCurated(rowParse):
         if value:
             print(value)
 
-        pheno_edge = ilx:hasExpressionPhenotype
+        pheno_edge = 'ilx:hasExpressionPhenotype'
 
         self.set_MolecularConstituents.add(value)
 
@@ -474,7 +474,7 @@ class convertCurated(rowParse):
         pyramidal = "ilx:PyramidalPhenotype"
         spiking = "ilx:SpikingPhenotype"
 
-        fixes: {
+        fixes = {
                 'ilx:has_morphological_phenotype basket':basket,
                 'ilx:has_morphological_phenotype bipolar':bipolar,
                 'ilx:has_morphological_phenotype chandelier':chandelier,
