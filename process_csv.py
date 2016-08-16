@@ -493,7 +493,6 @@ class convertCurated(rowParse):
 
         pass
     def Notes(self, value): 
-        #print(value)
         pass
     # TODO look at pyontutils/parcellation.py line 128 for reference
 
