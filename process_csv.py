@@ -10,19 +10,48 @@ from datetime import datetime
 from collections import defaultdict
 import requests
 from IPython import embed
+from sqlalchemy import create_engine, inspect
 from pyontutils.utils import makeGraph, rowParse
 from pyontutils.scigraph_client import Cypher
 
 #_ = requests.get('https://raw.githubusercontent.com/SciCrunch/NIF-Ontology/master/scigraph/nifstd_curie_map.yaml').text
 #prefixes = yaml.load(io.StringIO(_))  # temp fix for ucsd blocking :9000
 prefixes = Cypher().getCuries()
+
 with open ('total_curie_fragment.json', 'rt') as f:
     fragment_curie_dict = json.load(f)
 
-scr_graph = rdflib.Graph()
-scr_graph.parse(os.path.expanduser('~/git/NIF-Ontology/scicrunch-registry.ttl'), format='turtle')
+def get_scr():
+    scr_graph = rdflib.Graph()
+    scr_graph.parse(os.path.expanduser('~/git/NIF-Ontology/scicrunch-registry.ttl'), format='turtle')
+    return scr_graph
+
+def get_nlxdb():
+    DB_URI = 'mysql+mysqlconnector://{user}@{host}/{db}'
+    engine = create_engine(DB_URI.format(user='neurolex', host='localhost', db='neurolexdb'))
+    smw_query = engine.execute("select s_id, tid.smw_title, smw_ids.smw_title, value_xsd from smw_atts2 join smw_ids on p_id=smw_id join smw_ids as tid on tid.smw_id=s_id where tid.smw_title not like '%Resource:%';")
+    smw_data = smw_query.fetchall()
+    output = {}
+    for s_id, category_b, pred_b, obj_b in smw_data:
+        #category = convertCurated.neurolex_url + category_b.decode()
+        category = ':Category:' + category_b.decode().replace('_',' ')
+        pred = pred_b.decode()
+        obj = obj_b.decode()
+
+        if category not in output:
+            output[category] = {}
+
+        if pred not in output[category]:
+            output[category][pred] = []
+
+        output[category][pred].append(obj)
+
+        output[category][pred].append(obj)
+
+    return output
 
 class convertCurated(rowParse):
+    neurolex_url = 'http://neurolex.org/wiki/'
     def __init__(self, graph, rows):
         self.graph = graph
         self.chebi_ids = set()
@@ -37,7 +66,6 @@ class convertCurated(rowParse):
         self.pre_ref_dict = defaultdict(set)
         self.to_call = []
         self.fake_url_prefix = 'ILX:'
-        self.neurolex_url = 'http://neurolex.org/wiki/'
         eval_first = ['FBbt_Id', 'Categories', 'Id', 'SuperCategory']
         super().__init__(rows, order=eval_first)
         [func(*args) for func, args in self.to_call]
@@ -518,6 +546,8 @@ class convertCurated(rowParse):
 
 
 def main():
+    nlxdb = get_nlxdb()
+
     filename = 'hello world'
     PREFIXES = {'to':'do',
                 'NLX':'http://neurolex.org/wiki/',
@@ -536,8 +566,8 @@ def main():
     #header[header.index('Phenotypes:_ilx:has_location_phenotype')] = 'Phenotypes'
     # convert the header names so that ' ' is replaced with '_'
     state = convertCurated(new_graph, new_rows)
-    #embed()
-    #return
+    embed()
+    return
 
     _ = [print(i) for i in sorted([datetime.strptime(t, '%d %B %Y') for _ in state._set_ModifiedDate for t in _.split(',') if _])]
     _ = [print(i) for i in sorted(state.chebi_ids)]
@@ -549,6 +579,7 @@ def main():
     #_ = [print(i) for i in sorted(state._set_LocationOfAxonArborization)]
 
     # deal with unis TODO needs to be embeded in state.Id or something incase of reference
+    get_scr()
     unis = {None:[]}
     lookup_new_id = {}
     for id_ in sorted([_.split(':')[1] for _ in state.uni_ids]):
