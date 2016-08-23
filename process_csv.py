@@ -2,45 +2,41 @@
 
 import csv
 import rdflib
-from pyontutils.utils import makeGraph, rowParse
-from pyontutils.scigraph_client import Cypher
+from collections import defaultdict
 from IPython import embed
 import json
 import yaml
 import requests
 import io
+from pyontutils.utils import makeGraph, rowParse
+from pyontutils.scigraph_client import Cypher
 
-_ = requests.get('https://raw.githubusercontent.com/SciCrunch/NIF-Ontology/master/scigraph/nifstd_curie_map.yaml').text
-prefixes = yaml.load(io.StringIO(_))  # temp fix for ucsd blocking :9000
-#prefixes = Cypher().getCuries()
+#_ = requests.get('https://raw.githubusercontent.com/SciCrunch/NIF-Ontology/master/scigraph/nifstd_curie_map.yaml').text
+#prefixes = yaml.load(io.StringIO(_))  # temp fix for ucsd blocking :9000
+prefixes = Cypher().getCuries()
 with open ('total_curie_fragment.json', 'rt') as f:
     fragment_curie_dict = json.load(f)
 
 
 class convertCurated(rowParse):
-    def __init__(self, graph, rows, header):
+    def __init__(self, graph, rows):
         self.graph = graph
         self.chebi_ids = set()
+        self.drugbank_ids = set()
+        self.t3db_ids = set()
         self.bad_ids = set()
         self.failed_resolution = set()
-
         
         self.line = 0
         self.cat_id_dict = {}
+        self.pre_ref_dict = defaultdict(set)
         self.to_call = []
         self.fake_url_prefix = 'ILX:'
         self.neurolex_url = 'http://neurolex.org/wiki/'
         eval_first = ['FBbt_Id', 'Categories', 'Id']
-        super().__init__(rows, header, order=eval_first)
+        super().__init__(rows, order=eval_first)
         [func(*args) for func, args in self.to_call]
 
-    #def _translate_category_id(self, category):  # FIXME this fails when referencing later defined cats
-        #if category in self.cat_id_dict:
-       #     return self.cat_id_dict[category]
-     #   else:
-        #    return category
-
-                        #should I get rid of all of this ^^
     def _add_node(self, s, p, o): #Call for non Category/Id
         if o in self.cat_id_dict:
             o = self.cat_id_dict[o]
@@ -55,53 +51,27 @@ class convertCurated(rowParse):
         else:
             self.graph.add_node(s, p, o)
 
-    #def Category(self, value):
-        #self.category = self.fake_url_prefix + value.replace(' ','_')
-        #if self.id_ is None:
-        #    self.Id(self.category)
-        #self.cat_id_dict[self.category] = self.id_
-# should I get rid of all of this ^^^
-
     def Categories(self, value): # FIXME called Categories in neurolex_full.csv
         self.line += 1
         if ':Category:Resource:' in value or value == 'Categories':
             raise self.SkipError
         elif not value:
             raise BaseException('Category is empyt, this should not be possible! Row = %s' % self.line) #there was a type on your version here, you had empyt instead of empty
-        self.category = self.neurolex_url + value.replace(' ','_')
+        self.category = self.neurolex_url + value.replace(' ','_')  # fix for unknown url type
 
-    def Label(self, value):
-        if value:
-            self._add_node(self.id_, rdflib.RDFS.label, value)
-        
-    def Synonym(self, value):
-        if value:
-            half = None
-            for v in value.split(','):
-                if '(' in v and ')' not in v:
-                    half = v
-                    continue
-
-                if half:
-                    if ')' in v:
-                        v = half + ',' + v
-                        print('Bad split on comma detected!', v)
-                    else:
-                        half.strip()
-                        self._add_node(self.id_, 'OBOANN:synonym', half)
-
-                    half = None
-
-                v = v.strip()
-                if v:
-                    self._add_node(self.id_, 'OBOANN:synonym', v)
     def Id(self, value):
         if not value:
            self.id_ = self.category
             # self.id_ = None
 
         else:
-            if value.startswith('JAX:') or value.startswith('FMAID:'):
+            if value.startswith('DB'):
+                self.drugbank_ids.add(value)
+                raise self.SkipError
+            elif value.startswith('T3D'):
+                self.t3db_ids.add(value)
+                raise self.SkipError
+            elif value.startswith('JAX:') or value.startswith('FMAID:'):
                 value = value.replace(' ','') # FIXME
             elif value.startswith('Taxonomy ID: '):
                 value = 'NCBITaxon:' + value.strip('Taxonomy ID: ')
@@ -110,7 +80,9 @@ class convertCurated(rowParse):
             elif value.startswith('PATO'):
                 value = value.replace(' ',':')
             elif value.startswith('CHEBI'):
-                self.chebi_ids.add(value.replace('_',':'))
+                value = value.replace('_',':')
+                self.cat_id_dict[self.category] = value  # in case someone referenced it...
+                self.chebi_ids.add(value)
                 raise self.SkipError
 
             if value in fragment_curie_dict:
@@ -137,24 +109,75 @@ class convertCurated(rowParse):
           #  self.graph.add_node(self.id_, rdflib.RDF.type, rdflib.OWL.Class)
         #print(value)
 
+        if self.category in self.pre_ref_dict:
+            for func in self.pre_ref_dict[self.category]:
+                func(self.id_)
+
+    def Label(self, value):
+        if value:
+            self._add_node(self.id_, rdflib.RDFS.label, value)
+        
+    def Synonym(self, value):
+        if value:
+            half = None
+            for v in value.split(','):
+                if '(' in v and ')' not in v:
+                    half = v
+                    continue
+
+                if half:
+                    if ')' in v:
+                        v = half + ',' + v
+                        print('Bad split on comma detected!', v)
+                    else:
+                        half.strip()
+                        self._add_node(self.id_, 'OBOANN:synonym', half)
+
+                    half = None
+
+                v = v.strip()
+                if v:
+                    self._add_node(self.id_, 'OBOANN:synonym', v)
+
     def PMID(self, value):
         #print(value)
         pass
+
     def DefiningCitation(self, value):
         #print(value)
         pass
+
     def SuperCategory(self, value):
-        value = self.neurolex_url + ':Category:' + value.replace(' ','_')
+        if not value:
+            return 
+
+        value = self.neurolex_url + ':Category:' + value  # fix for :Category: being an unknown prefix
         #if 'University' in value:
             #print(value)
-        self._add_node(self.id_, rdflib.RDFS.subClassOf, value)
+        if value in self.cat_id_dict:
+            super_id = self.cat_id_dict[value]
+            self._add_node(self.id_, rdflib.RDFS.subClassOf, super_id)
+        else:
+            def func(super_id, this=self.id_):
+                self._add_node(this, rdflib.RDFS.subClassOf, super_id)
 
-    def Species_taxa(self, value):
+            self.pre_ref_dict[value].add(func)
+
+    def Species(self, value):  # Species_taxa in neuro_data_curated.csv
         if value:
-            #print(value)
-            pass
+            value = self.neurolex_url + value  # fix for :Category: being an unknown prefix
+        else:
+            return
 
         pheno_edge = 'ilx:hasTaxonRank'
+        if value in self.cat_id_dict:
+            spec_id = self.cat_id_dict[value]
+            self._add_node(self.id_, pheno_edge, value)
+        else:
+            def func(spec_id, this=self.id_):
+                self._add_node(this, pheno_edge, spec_id)
+
+            self.pre_ref_dict[value].add(func)
 
     def Definition(self, value):
         #print(value)
@@ -484,23 +507,26 @@ def main():
     PREFIXES = {'to':'do',
                 'NLX':'http://neurolex.org/wiki/',
                 'ILX':'http://uri.interlex.org/base/ilx_',
+                'ilx':'http://uri.interlex.org/base/',
                 'OBOANN':'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#',
                 }
     new_graph = makeGraph(filename, PREFIXES)
     #with open('neuron_data_curated.csv', 'rt') as f:
     with open('neurolex_full.csv', 'rt') as f:
         rows = [r for r in csv.reader(f)]
-    # convert the haeder names so that ' ' is replaced with '_'
-    header = [h.replace(' ', '_')  for h in rows[0]]  #TODO
+    new_rows = [list(r) for r in zip(*[c for c in zip(*rows) if any([r for r in c if r != c[0]])])]
+    no_data_cols = set(rows[0]) - set(new_rows[0])
+    print(no_data_cols)
+    #return
     #embed()
-    #header[header.index('')] = 'Category'
-    #header[header.index('Species/taxa')] = 'Species_taxa'
-    #header[header.index('Neurotransmitter/NeurotransmitterReceptors')] = 'Neurotransmitter_NeurotransmitterReceptors'
+
     #header[header.index('Phenotypes:_ilx:has_location_phenotype')] = 'Phenotypes'
     # convert the header names so that ' ' is replaced with '_'
-    state = convertCurated(new_graph, rows, header)
-    embed()
+    state = convertCurated(new_graph, new_rows)
+    #embed()
     _ = [print(i) for i in sorted(state.chebi_ids)]
+    _ = [print(i) for i in sorted(state.drugbank_ids)]
+    _ = [print(i) for i in sorted(state.t3db_ids)]
     _ = [print(i) for i in sorted(state.bad_ids)]
     #_ = [print(i) for i in sorted(state.failed_resolution)]
     #_ = [print(i) for i in sorted(state._set_LocationOfAxonArborization)]
