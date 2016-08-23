@@ -1,13 +1,15 @@
 #!/usr/bin/env python3.5
 
+import io
+import os
 import csv
-import rdflib
-from collections import defaultdict
-from IPython import embed
 import json
 import yaml
+import rdflib
+from datetime import datetime
+from collections import defaultdict
 import requests
-import io
+from IPython import embed
 from pyontutils.utils import makeGraph, rowParse
 from pyontutils.scigraph_client import Cypher
 
@@ -17,6 +19,8 @@ prefixes = Cypher().getCuries()
 with open ('total_curie_fragment.json', 'rt') as f:
     fragment_curie_dict = json.load(f)
 
+scr_graph = rdflib.Graph()
+scr_graph.parse(os.path.expanduser('~/git/NIF-Ontology/scicrunch-registry.ttl'), format='turtle')
 
 class convertCurated(rowParse):
     def __init__(self, graph, rows):
@@ -24,6 +28,7 @@ class convertCurated(rowParse):
         self.chebi_ids = set()
         self.drugbank_ids = set()
         self.t3db_ids = set()
+        self.uni_ids = set()  # expect 735 from registry dump  # FIXME there are 804...
         self.bad_ids = set()
         self.failed_resolution = set()
         
@@ -33,7 +38,7 @@ class convertCurated(rowParse):
         self.to_call = []
         self.fake_url_prefix = 'ILX:'
         self.neurolex_url = 'http://neurolex.org/wiki/'
-        eval_first = ['FBbt_Id', 'Categories', 'Id']
+        eval_first = ['FBbt_Id', 'Categories', 'Id', 'SuperCategory']
         super().__init__(rows, order=eval_first)
         [func(*args) for func, args in self.to_call]
 
@@ -66,9 +71,11 @@ class convertCurated(rowParse):
 
         else:
             if value.startswith('DB'):
+                self.cat_id_dict[self.category] = value  # in case someone referenced it...  # TODO check for ontology ids as well...
                 self.drugbank_ids.add(value)
                 raise self.SkipError
             elif value.startswith('T3D'):
+                self.cat_id_dict[self.category] = value  # in case someone referenced it...
                 self.t3db_ids.add(value)
                 raise self.SkipError
             elif value.startswith('JAX:') or value.startswith('FMAID:'):
@@ -150,6 +157,10 @@ class convertCurated(rowParse):
     def SuperCategory(self, value):
         if not value:
             return 
+
+        if value == 'University':  # NOPENOPENOPE
+            self.uni_ids.add(self.id_)  # TODO may need to use this to update ID to SRC: ...
+            #raise self.SkipError  # TODO need to check this against scicrunch-registry.ttl hasDbXref
 
         value = self.neurolex_url + ':Category:' + value  # fix for :Category: being an unknown prefix
         #if 'University' in value:
@@ -500,7 +511,11 @@ class convertCurated(rowParse):
 
     def Notes(self, value): 
         pass
-    # TODO look at pyontutils/parcellation.py line 128 for reference
+
+    def ModifiedDate(self, value):
+        # in theory we can use this to skip over records we don't actually need because no one has changed them since they were imported from the ontology
+        pass
+
 
 def main():
     filename = 'hello world'
@@ -517,19 +532,40 @@ def main():
     new_rows = [list(r) for r in zip(*[c for c in zip(*rows) if any([r for r in c if r != c[0]])])]
     no_data_cols = set(rows[0]) - set(new_rows[0])
     print(no_data_cols)
-    #return
-    #embed()
 
     #header[header.index('Phenotypes:_ilx:has_location_phenotype')] = 'Phenotypes'
     # convert the header names so that ' ' is replaced with '_'
     state = convertCurated(new_graph, new_rows)
     #embed()
+    #return
+
+    _ = [print(i) for i in sorted([datetime.strptime(t, '%d %B %Y') for _ in state._set_ModifiedDate for t in _.split(',') if _])]
     _ = [print(i) for i in sorted(state.chebi_ids)]
     _ = [print(i) for i in sorted(state.drugbank_ids)]
     _ = [print(i) for i in sorted(state.t3db_ids)]
+    _ = [print(i) for i in sorted(state.uni_ids)]
     _ = [print(i) for i in sorted(state.bad_ids)]
     #_ = [print(i) for i in sorted(state.failed_resolution)]
     #_ = [print(i) for i in sorted(state._set_LocationOfAxonArborization)]
+
+    # deal with unis TODO needs to be embeded in state.Id or something incase of reference
+    unis = {None:[]}
+    lookup_new_id = {}
+    for id_ in sorted([_.split(':')[1] for _ in state.uni_ids]):
+        matches = [_ for _ in scr_graph.triples((None, None, rdflib.Literal(id_)))]
+        if len(matches) > 1:
+            print(matches)
+        elif not matches:
+            unis[None].append(id_)
+            lookup_new_id[id_] = None
+        else:
+            match = matches[0]
+            unis[match[0].rsplit('/',1)[1].replace('_',':')] = id_
+            lookup_new_id[id_] = match[0].rsplit('/',1)[1].replace('_',':')
+
+    embed()
+    #return
+
     new_graph.write()
 
 
