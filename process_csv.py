@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.5
 
 import csv
 import rdflib
@@ -20,15 +20,6 @@ with open ('total_curie_fragment.json', 'rt') as f:
 class convertCurated(rowParse):
     def __init__(self, graph, rows, header):
         self.graph = graph
-        self.set_LocationOfAxonArborization = set()
-        self.set_LocationOfLocalAxonArborization = set()
-        self.set_MolecularConstituents = set()
-        self.set_NeurotransmitterReceptors = set()
-        self.set_Neurotransmitter = set()
-        self.set_BranchingMetrics = set()
-        self.set_CellSomaShape = set()
-        self.set_DendriteLocation = set()
-        self.set_Has_Role = set()
         self.chebi_ids = set()
         self.bad_ids = set()
         self.failed_resolution = set()
@@ -160,20 +151,21 @@ class convertCurated(rowParse):
 
     def Species_taxa(self, value):
         if value:
-            print(value)
+            #print(value)
+            pass
 
         pheno_edge = 'ilx:hasTaxonRank'
 
-        pass
     def Definition(self, value):
         #print(value)
         pass
+
     def DefiningCriteria(self, value):
         #print(value)
         pass
+
     def Has_role(self, value):
-        print(value)
-        self.set_Has_Role.add(value)
+        #print(value)
         
         to_skip = {':Category:Neuroendocrine motor cell role', ''} #I skipped this because it is already included in the phenotypes. 
 # some of the others have been included as well like Principal neuron role, Motor role of nerve cell, Intrinsic neuron role, sensory reception role, but I can't skip those because I only included them in the phenotypes of the Mammals and Vertebrata, not Drosophila or other insects/invertebrate
@@ -184,23 +176,27 @@ class convertCurated(rowParse):
             #put_the_value_in_the_graph(view)
             self.graph.add_node(self.category, 'http://Has_Role.org', value)
 
-        pass
     def FBbt_Id(self, value):
         if value:
             #print('FBbt id found', value, 'skipping!')
             raise self.SkipError
+
     def Abbrev(self, value):
         #print(value)
         pass
+
     def FBBT_Link(self, value):
         #print(value)
         pass
+
     def Fasciculates_with(self, value): 
         #print(value)
         pass
+    
     def CellSomaShape(self, value): 
         if value:
-            print(value)
+            #print(value)
+            pass
 
         parent_phenotype = 'ilx:SomaMorphologicalPhenotype'
 
@@ -237,7 +233,6 @@ class convertCurated(rowParse):
         if value in fixes:
             value = fixes[value]
         
-        self.set_CellSomaShape.add(value)
 
         to_skip = {'Category:Multipolar', 'Category:Fusiform', 'Category:Pyramidal', 'Category:Spherical', 'Category:Oval', 'Category:bipolar', 'Category:Granule', 'Category:Mitral', 'Oval', 'Fusiform', 'Category:Round', ''}
 
@@ -247,35 +242,34 @@ class convertCurated(rowParse):
             #put_the_value_in_the_graph(view)
             self.graph.add_node(self.category, 'http://CellSomaShape.org', value)
             
-        pass
     def CellSomaSize(self, value): 
         if value:
-            print(value)
+            #print(value)
+            pass
 
         parent_phenotype = 'ilx:SomaMorphologicalPhenotype'
 
         pass
     def Located_in(self, value): 
         if value:
-            print(value)
+            #print(value)
+            pass
         
         pheno_edge = 'ilx:hasSomaLocatedIn'
 
-        pass
     def SpineDensityOnDendrites(self, value): 
         if value:
-            print(value)
+            #print(value)
+            pass
         
         parent_phenotype = 'ilx:DendriteMorphologicalPhenotype'
         
-        pass
     def DendriteLocation(self, value): 
         if value:
-            print(value)
+            #print(value)
+            pass
 
         pheno_edge = 'ilx:hasDendriteLocatedIn'
-
-        self.set_DendriteLocation.add(value)
 
         to_skip = {':Category:Dendrites spread from the cell body in all directions. Dendrites are smooth where they lie in the deep layer but where the dendrites cross the pyramidal (fusiform) cell layer into the molecular layer', ':Category:They become spiny. Functionally it has been demonstrated that they receive not only acoustic input in the deep layer but also proprioceptive input through the molecular layer.', ':Category:Brush of dendrites is short and lies near the cell body', ':Category:Dendrites lie parallel to auditory nerve fibers in the ventral cochlear nucleus', ':Category:Receptive field in the periphery', ':Category:Two primary dendrites', ':Category:One that projects laterally towards the roots of the VIIIth cranial nerve and is named the lateral dendrite', ':Category:And another which projects rostrally and ventrally and is called the ventral dendrite.', ':Category:Basal dendrites in neocortical layers 5 and 6;apical dendrites across neocortical layers 5 to 1.', ':Category:Basal dendrites branch within neocortical layers 5 and 6;apical dendrite extends across neocortical layers 5-1.', ':Category:Basal dendrites in Neocortex layer 5', ':Category:Apical dendrites across neocortical layers 5-1.', ':Category:Mostly neocortical layer 4', ':Category:Basal dendrites will be in the same layer as the soma and/or the subjacent layer. Apical dendrites rise toward the pia and into layer 1. For layer 6 neurons', ':Category:However,:Category:The apical dendrite will often not continue beyond layer 4/lower layer 3.', ':Category:Arborization within the glomerular neuropil and external plexiform layer', ':Category:Dendrties arborize in the external plexiform layer where they contact the secondary/lateral dendrites of mitral cells via reciprocal dendrodendritic synapses. The basal dendrite remains restricted to the granule cell layer.', ':Category:Proximal', ':Category:Intermediate', ':Category:Distal', ''}
         if value in to_skip:
@@ -283,15 +277,14 @@ class convertCurated(rowParse):
         else:
             #put_the_value_in_the_graph(view)
             self.graph.add_node(self.category, 'http://DendriteLocation.org', value)
-        pass
+
     def BranchingMetrics(self, value): 
         if value:
-            print(value)
+            #print(value)
+            pass
 
         parent_phenotype = 'ilx:DendriteMorphologicalPhenotype'
 
-        self.set_BranchingMetrics.add(value)
-        
         to_skip = {'other', 'this is a columnar cell without a true dendrite', ''}
         if value in to_skip:
             pass
@@ -299,24 +292,23 @@ class convertCurated(rowParse):
             #put_the_value_in_the_graph(view)
             self.graph.add_node(self.category, 'http://BranchingMetrics.org', value)
 
-        pass
     def AxonMyelination(self, value): 
         if value:
-            print(value)
+            #print(value)
+            pass
         
         parent_phenotype = 'ilx:AxonMorphologicalPhenotype'
 
-        pass
     def AxonProjectionLaterality(self, value): 
         if value:
-            print(value)
+            #print(value)
+            pass
 
         pheno_edge = 'ilx:hasProjectionPhenotype'
 
-        pass
     def LocationOfAxonArborization(self, value): 
         
-        print(value)
+        #print(value)
 
         pheno_edge = 'ilx:hasAxonLocatedIn'
 
@@ -340,8 +332,6 @@ class convertCurated(rowParse):
         }
         if value in fixes:
             value = fixes[value]
-
-        self.set_LocationOfAxonArborization.add(value)
 
         to_skip = {':Category:NA', ':Category:None', ':Category:No axon', ':Category:Anaxonic - no axon', ':Category:This is an axonal cell; it lacks an axon', ' : axon collaterals to other pyramidal cells. Mouse: no axon collaterals. Exit through the dorsal and intermediate acoustic striae to terminate in the contralateral inferior colliculus', ':Category:Axon descends in the medial lateral fasciculus and projects to caudal brainstem and all spinal segments', ':Category:For supragranular neurons', ':Category:This is almost exclusively cortical (except for some corticostriatal projections from layer 3). Infragranular neurons can project subcortically (LGN', ':Category:Superior colliculus', ':Category:Claustrum', ':Category:Amygdala) but also cortically', ':Category:Ipsi- or contralateral.', ':Category:Cell groups embedded in the lemniscus lateralis', ':Category:And the nucleus mesencephalicus lateralis', ':Category:Pars dorsalis in the midbrain', ':Category:Synaptic output is from cell body', 'oriens', ''}
         if value in to_skip:
@@ -375,8 +365,6 @@ class convertCurated(rowParse):
         if value in fixes:
             value = fixes[value]
 
-        self.set_LocationOfLocalAxonArborization.add(value)
-
         to_skip = {':Category:NA', ':Category:No axon', ':Category:None', ':Category:This is an anaxonal cell; it lacks an axon', ':Category:No local arborization', ':Category:Few', ':Category:Lamina xxx', ':Category:Within extraglomerular regions', ':Category:Within the same granule cell domain as the cell body', ':Category:In some species (mice) but not in others (cats) octopus cells have local collaterals in the octopus cell area and contact granule cells in the granule cell lamina.', ':Category:For layer 6: layer 6 and 4 (J.S. Lund', ':Category:In primate and see A. Thomson for rodent); for layer 5: largely layer 5 but can extend to layer 3; for layer 3', ':Category:Largely layer 3', ':Category:But can extend to layer 5; layer 2', ':Category:Layer 2', ':Category:But can involve other layers.', ':Category:Synaptic output is from the cell body', ':Category:Pyramidal Cells', ':Category:Giant cells', ':Category:Cartwheel cells', ':Category:OLFACTORY CORTEX LAYER II', ''}
         if value in to_skip:
             pass
@@ -386,20 +374,18 @@ class convertCurated(rowParse):
                 v.strip()
                 if v:
                     self._add_node(self.id_, 'http://LocationOfLocalAxonArborization', v) 
-        pass
+
     def OriginOfAxon(self, value): 
-        print(value)
+        #print(value)
 
         pheno_edge = 'ilx:hasAxonOrigin'
 
-        pass
     def Neurotransmitter(self, value):
         if value:
-            print(value)
+            #print(value)
+            pass
 
         pheno_edge = 'ilx:hasExpressionPhenotype'
-
-        self.set_Neurotransmitter.add(value)
 
         to_skip = {':Category:Likely glutamate', 'Excitatiry neurotransmitter', ':Category:Unknown', ':Category:Not known', ''}
         if value in to_skip:
@@ -408,10 +394,10 @@ class convertCurated(rowParse):
             #put_the_value_in_the_graph(value)
             self.graph.add_node(self.category, 'http://Neurotransmitter.org', value)
 
-        pass
     def NeurotransmitterReceptors(self, value): 
         if value:
-            print(value)
+            #print(value)
+            pass
 
         pheno_edge = 'ilx:hasExpressionPhenotype'
         
@@ -431,22 +417,19 @@ class convertCurated(rowParse):
             ':Category:GABA B':Add_GABA_B,
         }
 
-        self.set_NeurotransmitterReceptors.add(value)
-
         to_skip = {':Category:?', ':Category:Unknown', ':Category:Not known', ':Category:GABA', ':Category:Glutamate', ':Category:Acetylcholine', ':Category:Dopamine', ':Category:Serotonin', ':Category:GABA B', ''}
         if value in to_skip:
             pass
         else:
             #put_the_value_in_the_graph(value)
             self.graph.add_node(self.category, 'http://NeurotransmitterReceptors.org', value)
-        pass
+
     def MolecularConstituents(self, value): 
         if value:
-            print(value)
+            #print(value)
+            pass
 
         pheno_edge = 'ilx:hasExpressionPhenotype'
-
-        self.set_MolecularConstituents.add(value)
 
         to_skip = {':Category:?', ':Category:Unknown', ''}
         if value in to_skip:
@@ -454,12 +437,13 @@ class convertCurated(rowParse):
         else:
             #put_the_value_in_the_graph(value)
             self.graph.add_node(self.category, 'http://MolecularConstituents.org', value)
-        pass
+
     def Curator_Notes(self, value): 
         #print(value)
         pass
+
     def Phenotypes(self, value): 
-        print(value)
+        #print(value)
         
         basket = "ilx:BasketPhenotype"
         Lbasket = "ilx:LargeBasketPhenotype"
@@ -491,7 +475,6 @@ class convertCurated(rowParse):
             #put_the_value_in_the_graph(value)
             self.graph.add_node(self.category, 'http://Phenotypes.org', value)
 
-        pass
     def Notes(self, value): 
         pass
     # TODO look at pyontutils/parcellation.py line 128 for reference
@@ -516,11 +499,11 @@ def main():
     #header[header.index('Phenotypes:_ilx:has_location_phenotype')] = 'Phenotypes'
     # convert the header names so that ' ' is replaced with '_'
     state = convertCurated(new_graph, rows, header)
-    #embed()
+    embed()
     _ = [print(i) for i in sorted(state.chebi_ids)]
     _ = [print(i) for i in sorted(state.bad_ids)]
     #_ = [print(i) for i in sorted(state.failed_resolution)]
-    #_ = [print(i) for i in sorted(state.set_LocationOfAxonArborization)]
+    #_ = [print(i) for i in sorted(state._set_LocationOfAxonArborization)]
     new_graph.write()
 
 
