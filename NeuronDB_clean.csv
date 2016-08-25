@@ -22,7 +22,7 @@ Retina photoreceptor cone cell,,Retina,FMA:58301,retina,nlx_152184,,1966,NIFCELL
 Retina photoreceptor rod cell,,Retina,FMA:58301,retina,nlx_152184,,153361,NIFCELL:nlx_cell_100212,Retina photoreceptor rod,
 Septal principal neuron,,Septum,FMA:61842,septum of telencephalon,,,190477,,,
 Neocortex layer 5-6 pyramidal cell,,neocortex,FMA:62429,neocortex,,,265,NIFCELL:nifext_50,Neocortex pyramidal cell layer 5-6,
-Neocortex layer 2-3 pyramidal cell,,neocortex,FMA:62429,neocortex,"nlx_anat_090808, nlx_anat_090809","nlx_anat_090808, nlx_anat_090809, nlx_090807",266,NIFCELL:nifext_49,Neocortex pyramidal cell layer 2-3,
+Neocortex layer 2-3 pyramidal cell,,neocortex,FMA:62429,neocortex,"nlx_anat_090808, nlx_anat_090809","nlx_anat_090808, nlx_anat_090809, nlx_anat_090807",266,NIFCELL:nifext_49,Neocortex pyramidal cell layer 2-3,
 Neocortex interneuron basket cell,,neocortex,FMA:62429,neocortex,,,7387,NIFCELL:nifext_56,Neocortex basket cell,
 Olfactory receptor neuron,Olfactory epithelium (main) sensory cell,Olfactory Epithelium,FMA:64803,olfactory epithelium,nlx_subcell_20090503,,268,NIFCELL:nifext_116,Olfactory epithelium (main) sensory cell,
 Olfactory bulb main mitral cell,Olfactory bulb (main) mitral cell,Olfactory Bulb,FMA:77624,olfactory bulb,birnlex_2707,,267,NIFCELL:nifext_120,Olfactory bulb (main) mitral cell,"NIFCELL:nlx_cell_091202;GabaB;Dendrite , NIFCELL:nlx_cell_091202;GabaA;Dendrite , NIFCELL:nifext_116;AMPA;Dendrite , NIFCELL:nifext_116;NMDA;Dendrite , NIFCELL:nlx_cell_091202;Dopaminergic Receptor;Dendrite , NIFCELL:nifext_123;GabaA;Dendrite , NIFCELL:nifext_123;GabaB;Dendrite , NIFCELL:nifext_123;GabaA;Soma , NIFCELL:nifext_123;GabaB;Soma"
