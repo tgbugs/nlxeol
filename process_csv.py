@@ -17,6 +17,7 @@ from pyontutils.scigraph_client import Cypher
 #_ = requests.get('https://raw.githubusercontent.com/SciCrunch/NIF-Ontology/master/scigraph/nifstd_curie_map.yaml').text
 #prefixes = yaml.load(io.StringIO(_))  # temp fix for ucsd blocking :9000
 prefixes = Cypher().getCuries()
+prefixes['skos'] = 'http://www.w3.org/2004/02/skos/core#'
 
 with open ('total_curie_fragment.json', 'rt') as f:
     fragment_curie_dict = json.load(f)
@@ -137,7 +138,8 @@ class convertCurated(rowParse):
 
         self.cat_id_dict[self.category] = self.id_
         self.graph.add_node(self.id_, rdflib.RDF.type, rdflib.OWL.Class)
-        self.graph.add_node(self.id_, 'OBOANN:neurolex_category', self.category)
+
+        #self.graph.add_node(self.id_, 'OBOANN:neurolex_category', self.category)
             
         #else:
          #   self.id_ = self.fake_url_prefix + value  # TODO need proper curie prefixes
@@ -153,6 +155,7 @@ class convertCurated(rowParse):
             self._add_node(self.id_, rdflib.RDFS.label, value)
         
     def Synonym(self, value):
+        return
         if value:
             half = None
             for v in value.split(','):
@@ -203,6 +206,7 @@ class convertCurated(rowParse):
             self.pre_ref_dict[value].add(func)
 
     def Species(self, value):  # Species_taxa in neuro_data_curated.csv
+        return
         if value:
             value = self.neurolex_url + value  # fix for :Category: being an unknown prefix
         else:
@@ -220,7 +224,7 @@ class convertCurated(rowParse):
 
     def Definition(self, value):
         #print(value)
-        pass
+        self.graph.add_node(self.id_, 'skos:definition', value)
 
     def DefiningCriteria(self, value):
         #print(value)
@@ -546,6 +550,8 @@ class convertCurated(rowParse):
 
 
 def main():
+    # TODO extracly only NLX only with superclasses for fariba
+    # FIXME there is an off by 1 error
     nlxdb = get_nlxdb()
 
     filename = 'hello world'
@@ -553,6 +559,7 @@ def main():
                 'NLX':'http://neurolex.org/wiki/',
                 'ILX':'http://uri.interlex.org/base/ilx_',
                 'ilx':'http://uri.interlex.org/base/',
+                'skos':'http://www.w3.org/2004/02/skos/core#',
                 'OBOANN':'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#',
                 }
     new_graph = makeGraph(filename, PREFIXES)
@@ -566,8 +573,8 @@ def main():
     #header[header.index('Phenotypes:_ilx:has_location_phenotype')] = 'Phenotypes'
     # convert the header names so that ' ' is replaced with '_'
     state = convertCurated(new_graph, new_rows)
-    embed()
-    return
+    #embed()
+    #return
 
     _ = [print(i) for i in sorted([datetime.strptime(t, '%d %B %Y') for _ in state._set_ModifiedDate for t in _.split(',') if _])]
     _ = [print(i) for i in sorted(state.chebi_ids)]
@@ -579,7 +586,7 @@ def main():
     #_ = [print(i) for i in sorted(state._set_LocationOfAxonArborization)]
 
     # deal with unis TODO needs to be embeded in state.Id or something incase of reference
-    get_scr()
+    scr_graph = get_scr()
     unis = {None:[]}
     lookup_new_id = {}
     for id_ in sorted([_.split(':')[1] for _ in state.uni_ids]):
@@ -594,11 +601,11 @@ def main():
             unis[match[0].rsplit('/',1)[1].replace('_',':')] = id_
             lookup_new_id[id_] = match[0].rsplit('/',1)[1].replace('_',':')
 
-    embed()
     #return
 
     new_graph.write()
 
+    embed()
 
 if __name__ == '__main__':
     main()
