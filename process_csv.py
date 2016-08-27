@@ -51,10 +51,13 @@ def get_nlxdb():
 
     return output
 
-class convertCurated(rowParse):
+
+class basicConvert(rowParse):
     neurolex_url = 'http://neurolex.org/wiki/'
     def __init__(self, graph, rows):
         self.graph = graph
+        self.ncbitaxon_ids = set()
+        self.pato_ids = set()
         self.chebi_ids = set()
         self.drugbank_ids = set()
         self.t3db_ids = set()
@@ -85,6 +88,15 @@ class convertCurated(rowParse):
         else:
             self.graph.add_node(s, p, o)
 
+    def _resolve(self, value, edge):  # TODO fixme hierarchy vs node...
+        if value in self.cat_id_dict:
+            value = self.cat_id_dict[value]
+            self.graph.add_node(self.id_, edge, value)
+        else:
+            def func(obj, this=self.id_):
+                self._add_node(this, edge, obj)
+            self.pre_ref_dict[value].add(func)
+
     def Categories(self, value): # FIXME called Categories in neurolex_full.csv
         self.line += 1
         if ':Category:Resource:' in value or value == 'Categories':
@@ -113,8 +125,14 @@ class convertCurated(rowParse):
                 value = 'NCBITaxon:' + value.strip('Taxonomy ID: ')
             elif value.startswith('NCBITaxon: '):
                 value = value.replace(' ' ,'')
+                self.cat_id_dict[self.category] = value  # in case someone referenced it...
+                self.ncbitaxon_ids.add(value)
+                raise self.SkipError
             elif value.startswith('PATO'):
                 value = value.replace(' ',':')
+                self.cat_id_dict[self.category] = value  # in case someone referenced it...
+                self.pato_ids.add(value)
+                raise self.SkipError
             elif value.startswith('CHEBI'):
                 value = value.replace('_',':')
                 self.cat_id_dict[self.category] = value  # in case someone referenced it...
@@ -137,7 +155,7 @@ class convertCurated(rowParse):
                 raise self.SkipError('SKIPPING RECORD DUE TO wtf? %s' % value)
 
         self.cat_id_dict[self.category] = self.id_
-        self.graph.add_node(self.id_, rdflib.RDF.type, rdflib.OWL.Class)
+        self.graph.add_class(self.id_)
 
         #self.graph.add_node(self.id_, 'OBOANN:neurolex_category', self.category)
             
@@ -154,8 +172,32 @@ class convertCurated(rowParse):
         if value:
             self._add_node(self.id_, rdflib.RDFS.label, value)
         
+    def SuperCategory(self, value):
+        if not value:
+            return 
+
+        if value == 'University':  # NOPENOPENOPE
+            self.uni_ids.add(self.id_)  # TODO may need to use this to update ID to SRC: ...
+            #raise self.SkipError  # TODO need to check this against scicrunch-registry.ttl hasDbXref
+
+        value = self.neurolex_url + ':Category:' + value  # fix for :Category: being an unknown prefix
+        #if 'University' in value:
+            #print(value)
+        if value in self.cat_id_dict:
+            super_id = self.cat_id_dict[value]
+            self._add_node(self.id_, rdflib.RDFS.subClassOf, super_id)
+        else:
+            def func(super_id, this=self.id_):
+                self._add_node(this, rdflib.RDFS.subClassOf, super_id)
+
+            self.pre_ref_dict[value].add(func)
+
+    def Definition(self, value):
+        #print(value)
+        self.graph.add_node(self.id_, 'skos:definition', value)
+
+class convertCurated(basicConvert):
     def Synonym(self, value):
-        return
         if value:
             half = None
             for v in value.split(','):
@@ -185,46 +227,14 @@ class convertCurated(rowParse):
         #print(value)
         pass
 
-    def SuperCategory(self, value):
-        if not value:
-            return 
-
-        if value == 'University':  # NOPENOPENOPE
-            self.uni_ids.add(self.id_)  # TODO may need to use this to update ID to SRC: ...
-            #raise self.SkipError  # TODO need to check this against scicrunch-registry.ttl hasDbXref
-
-        value = self.neurolex_url + ':Category:' + value  # fix for :Category: being an unknown prefix
-        #if 'University' in value:
-            #print(value)
-        if value in self.cat_id_dict:
-            super_id = self.cat_id_dict[value]
-            self._add_node(self.id_, rdflib.RDFS.subClassOf, super_id)
-        else:
-            def func(super_id, this=self.id_):
-                self._add_node(this, rdflib.RDFS.subClassOf, super_id)
-
-            self.pre_ref_dict[value].add(func)
-
     def Species(self, value):  # Species_taxa in neuro_data_curated.csv
-        return
         if value:
             value = self.neurolex_url + value  # fix for :Category: being an unknown prefix
         else:
             return
 
         pheno_edge = 'ilx:hasTaxonRank'
-        if value in self.cat_id_dict:
-            spec_id = self.cat_id_dict[value]
-            self._add_node(self.id_, pheno_edge, value)
-        else:
-            def func(spec_id, this=self.id_):
-                self._add_node(this, pheno_edge, spec_id)
-
-            self.pre_ref_dict[value].add(func)
-
-    def Definition(self, value):
-        #print(value)
-        self.graph.add_node(self.id_, 'skos:definition', value)
+        self._resolve(value, pheno_edge)
 
     def DefiningCriteria(self, value):
         #print(value)
@@ -234,13 +244,12 @@ class convertCurated(rowParse):
         #print(value)
         
         to_skip = {':Category:Neuroendocrine motor cell role', ''} #I skipped this because it is already included in the phenotypes. 
-# some of the others have been included as well like Principal neuron role, Motor role of nerve cell, Intrinsic neuron role, sensory reception role, but I can't skip those because I only included them in the phenotypes of the Mammals and Vertebrata, not Drosophila or other insects/invertebrate
+        # some of the others have been included as well like Principal neuron role, Motor role of nerve cell, Intrinsic neuron role, sensory reception role, but I can't skip those because I only included them in the phenotypes of the Mammals and Vertebrata, not Drosophila or other insects/invertebrate
 
         if value in to_skip:
             pass
         else:
-            #put_the_value_in_the_graph(view)
-            self.graph.add_node(self.category, 'http://Has_Role.org', value)
+            self._resolve(value, 'http://Has_Role.org')
 
     def FBbt_Id(self, value):
         if value:
@@ -305,8 +314,7 @@ class convertCurated(rowParse):
         if value in to_skip:
             pass
         else:
-            #put_the_value_in_the_graph(view)
-            self.graph.add_node(self.category, 'http://CellSomaShape.org', value)
+            self._resolve(value, 'http://CellSomaShape.org')
             
     def CellSomaSize(self, value): 
         if value:
@@ -315,13 +323,14 @@ class convertCurated(rowParse):
 
         parent_phenotype = 'ilx:SomaMorphologicalPhenotype'
 
-        pass
+
     def Located_in(self, value): 
         if value:
             #print(value)
             pass
         
         pheno_edge = 'ilx:hasSomaLocatedIn'
+        self._resolve(value, pheno_edge)
 
     def SpineDensityOnDendrites(self, value): 
         if value:
@@ -341,8 +350,7 @@ class convertCurated(rowParse):
         if value in to_skip:
             pass
         else:
-            #put_the_value_in_the_graph(view)
-            self.graph.add_node(self.category, 'http://DendriteLocation.org', value)
+            self._resolve(value, pheno_edge)
 
     def BranchingMetrics(self, value): 
         if value:
@@ -355,8 +363,7 @@ class convertCurated(rowParse):
         if value in to_skip:
             pass
         else:
-            #put_the_value_in_the_graph(view)
-            self.graph.add_node(self.category, 'http://BranchingMetrics.org', value)
+            self._resolve(value, 'http://BranchingMetrics.org')
 
     def AxonMyelination(self, value): 
         if value:
@@ -403,10 +410,9 @@ class convertCurated(rowParse):
         if value in to_skip:
             pass
         else:
-            #put_the_value_in_the_graph(value)
             for v in value.split(','):
                 v.strip()
-                self._add_node(self.id_, 'http://LocationOfAxonArborization.org', v) 
+                self._resolve(v, pheno_edge)
         
     def LocationOfLocalAxonArborization(self, value): 
         #if value:
@@ -415,7 +421,7 @@ class convertCurated(rowParse):
               #  if v:
                #     self._add_node(self.id_, 'http://LocationOfLocalAxonArborization', v)
 
-        pheno_edge = 'ilx:hasAxonLocatedIn'
+        pheno_edge = 'ilx:hasAxonLocatedIn'  # FIXME
         
 
         NONE = 'None'
@@ -435,11 +441,10 @@ class convertCurated(rowParse):
         if value in to_skip:
             pass
         else:
-            #put_the_value_in_the_graph(value)
             for v in value.split(','):
                 v.strip()
                 if v:
-                    self._add_node(self.id_, 'http://LocationOfLocalAxonArborization', v) 
+                    self._resolve(v, 'http://LocationOfLocalAxonArborization')
 
     def OriginOfAxon(self, value): 
         #print(value)
@@ -457,8 +462,7 @@ class convertCurated(rowParse):
         if value in to_skip:
             pass
         else:
-            #put_the_value_in_the_graph(value)
-            self.graph.add_node(self.category, 'http://Neurotransmitter.org', value)
+            self._resolve(value, pheno_edge)
 
     def NeurotransmitterReceptors(self, value): 
         if value:
@@ -487,8 +491,7 @@ class convertCurated(rowParse):
         if value in to_skip:
             pass
         else:
-            #put_the_value_in_the_graph(value)
-            self.graph.add_node(self.category, 'http://NeurotransmitterReceptors.org', value)
+            self._resolve(value, pheno_edge)
 
     def MolecularConstituents(self, value): 
         if value:
@@ -501,8 +504,7 @@ class convertCurated(rowParse):
         if value in to_skip:
             pass
         else:
-            #put_the_value_in_the_graph(value)
-            self.graph.add_node(self.category, 'http://MolecularConstituents.org', value)
+            self._resolve(value, pheno_edge)
 
     def Curator_Notes(self, value): 
         #print(value)
@@ -539,7 +541,9 @@ class convertCurated(rowParse):
             pass
         else:
             #put_the_value_in_the_graph(value)
-            self.graph.add_node(self.category, 'http://Phenotypes.org', value)
+            #self.graph.add_node(self.category, 'http://Phenotypes.org', value)  # TODO
+            #self._resolve(value, pheno_edge)
+            pass
 
     def Notes(self, value): 
         pass
@@ -552,13 +556,14 @@ class convertCurated(rowParse):
 def main():
     # TODO extracly only NLX only with superclasses for fariba
     # FIXME there is an off by 1 error
-    nlxdb = get_nlxdb()
+    #nlxdb = get_nlxdb()
 
     filename = 'hello world'
     PREFIXES = {'to':'do',
                 'NLX':'http://neurolex.org/wiki/',
                 'ILX':'http://uri.interlex.org/base/ilx_',
                 'ilx':'http://uri.interlex.org/base/',
+                'owl':'http://www.w3.org/2002/07/owl#',
                 'skos':'http://www.w3.org/2004/02/skos/core#',
                 'OBOANN':'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#',
                 }
@@ -572,6 +577,7 @@ def main():
 
     #header[header.index('Phenotypes:_ilx:has_location_phenotype')] = 'Phenotypes'
     # convert the header names so that ' ' is replaced with '_'
+    #state = basicConvert(new_graph, new_rows)
     state = convertCurated(new_graph, new_rows)
     #embed()
     #return
@@ -603,7 +609,7 @@ def main():
 
     #return
 
-    new_graph.write()
+    new_graph.write(delay=True)
 
     embed()
 
