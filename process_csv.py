@@ -63,14 +63,16 @@ class basicConvert(rowParse):
         self.t3db_ids = set()
         self.uni_ids = set()  # expect 735 from registry dump  # FIXME there are 804...
         self.bad_ids = set()
+        self.fbbt_ids = set()  # get these from the link
         self.failed_resolution = set()
+        self.skipped = set()
         
         self.line = 0
         self.cat_id_dict = {}
         self.pre_ref_dict = defaultdict(set)
         self.to_call = []
         self.fake_url_prefix = 'ILX:'
-        eval_first = ['FBbt_Id', 'Categories', 'Id', 'SuperCategory']
+        eval_first = ['FBBT_Link', 'Categories', 'Id', 'SuperCategory', 'CAO_Id']
         super().__init__(rows, order=eval_first)
         [func(*args) for func, args in self.to_call]
 
@@ -78,7 +80,7 @@ class basicConvert(rowParse):
         if o in self.cat_id_dict:
             o = self.cat_id_dict[o]
             self.graph.add_node(s, p, o)
-        elif ':Category:' in o: # FIXME needs a way to identify putative objectProperties
+        elif type(o) is str and ':Category:' in o: # FIXME needs a way to identify putative objectProperties
             if (self._add_node, (s, p, o)) in self.to_call:
                 self.graph.add_node(s, p, o)
                 self.failed_resolution.add(o)
@@ -97,6 +99,25 @@ class basicConvert(rowParse):
                 self._add_node(this, edge, obj)
             self.pre_ref_dict[value].add(func)
 
+    def _skip(self, value):
+        self.skipped.add(value)
+        raise self.SkipError
+
+    def FBBT_Link(self, value):  # since the ask query is full a idiocy
+        if value and value != 'FBBT Link':
+            print(value)
+            value = value.rsplit('=',1)[1]
+            self.fbbt_ids.add(value)
+            self._skip(value)
+        elif value == 'FBBT Link':
+            raise self.SkipError  # first chance we have to skip redef lines
+
+    def CAO_Id(self, value):  # need to capture, deprecate and redirect
+        if value and value != 'CAO Id':
+            self._add_node(self.id_, rdflib.OWL.deprecated, True)
+            self._add_node(self.id_, 'oboInOwl:replacedBy', value.replace('_', ':'))  # FIXME nothing can resolve these... DERP
+            #raise self.SkipError
+
     def Categories(self, value): # FIXME called Categories in neurolex_full.csv
         self.line += 1
         if ':Category:Resource:' in value or value == 'Categories':
@@ -109,16 +130,16 @@ class basicConvert(rowParse):
         if not value:
            self.id_ = self.category
             # self.id_ = None
-
+        
         else:
             if value.startswith('DB'):
                 self.cat_id_dict[self.category] = value  # in case someone referenced it...  # TODO check for ontology ids as well...
                 self.drugbank_ids.add(value)
-                raise self.SkipError
+                self._skip(value)
             elif value.startswith('T3D'):
                 self.cat_id_dict[self.category] = value  # in case someone referenced it...
                 self.t3db_ids.add(value)
-                raise self.SkipError
+                self._skip(value)
             elif value.startswith('JAX:') or value.startswith('FMAID:'):
                 value = value.replace(' ','') # FIXME
             elif value.startswith('Taxonomy ID: '):
@@ -127,17 +148,17 @@ class basicConvert(rowParse):
                 value = value.replace(' ' ,'')
                 self.cat_id_dict[self.category] = value  # in case someone referenced it...
                 self.ncbitaxon_ids.add(value)
-                raise self.SkipError
+                self._skip(value)
             elif value.startswith('PATO'):
                 value = value.replace(' ',':')
                 self.cat_id_dict[self.category] = value  # in case someone referenced it...
                 self.pato_ids.add(value)
-                raise self.SkipError
+                self._skip(value)
             elif value.startswith('CHEBI'):
                 value = value.replace('_',':')
                 self.cat_id_dict[self.category] = value  # in case someone referenced it...
                 self.chebi_ids.add(value)
-                raise self.SkipError
+                self._skip(value)
 
             if value in fragment_curie_dict:
                 self.id_ = fragment_curie_dict[value]
@@ -152,7 +173,8 @@ class basicConvert(rowParse):
                 self.id_ = value
             else:
                 self.bad_ids.add(value)
-                raise self.SkipError('SKIPPING RECORD DUE TO wtf? %s' % value)
+                self._skip(value)
+                #raise self.SkipError('SKIPPING RECORD DUE TO wtf? %s' % value)
 
         self.cat_id_dict[self.category] = self.id_
         self.graph.add_class(self.id_)
@@ -178,7 +200,8 @@ class basicConvert(rowParse):
 
         if value == 'University':  # NOPENOPENOPE
             self.uni_ids.add(self.id_)  # TODO may need to use this to update ID to SRC: ...
-            #raise self.SkipError  # TODO need to check this against scicrunch-registry.ttl hasDbXref
+            self.graph.g.remove((self.graph.expand(self.id_), rdflib.RDF.type, rdflib.OWL.Class))
+            self._skip(self.id_)  # TODO need to check this against scicrunch-registry.ttl hasDbXref
 
         value = self.neurolex_url + ':Category:' + value  # fix for :Category: being an unknown prefix
         #if 'University' in value:
@@ -195,6 +218,7 @@ class basicConvert(rowParse):
     def Definition(self, value):
         #print(value)
         self.graph.add_node(self.id_, 'skos:definition', value)
+
 
 class convertCurated(basicConvert):
     def Synonym(self, value):
@@ -251,16 +275,7 @@ class convertCurated(basicConvert):
         else:
             self._resolve(value, 'http://Has_Role.org')
 
-    def FBbt_Id(self, value):
-        if value:
-            #print('FBbt id found', value, 'skipping!')
-            raise self.SkipError
-
     def Abbrev(self, value):
-        #print(value)
-        pass
-
-    def FBBT_Link(self, value):
         #print(value)
         pass
 
@@ -323,6 +338,10 @@ class convertCurated(basicConvert):
 
         parent_phenotype = 'ilx:SomaMorphologicalPhenotype'
 
+    def FBbt_Id(self, value):
+        if value:
+            pass
+            #print('FBbt id found', value, 'skipping!')
 
     def Located_in(self, value): 
         if value:
@@ -566,6 +585,7 @@ def main():
                 'owl':'http://www.w3.org/2002/07/owl#',
                 'skos':'http://www.w3.org/2004/02/skos/core#',
                 'OBOANN':'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#',
+                'oboInOwl':'http://www.geneontology.org/formats/oboInOwl#',
                 }
     new_graph = makeGraph(filename, PREFIXES)
     #with open('neuron_data_curated.csv', 'rt') as f:
@@ -577,12 +597,12 @@ def main():
 
     #header[header.index('Phenotypes:_ilx:has_location_phenotype')] = 'Phenotypes'
     # convert the header names so that ' ' is replaced with '_'
-    #state = basicConvert(new_graph, new_rows)
-    state = convertCurated(new_graph, new_rows)
+    state = basicConvert(new_graph, new_rows)
+    #state = convertCurated(new_graph, new_rows)
     #embed()
     #return
 
-    _ = [print(i) for i in sorted([datetime.strptime(t, '%d %B %Y') for _ in state._set_ModifiedDate for t in _.split(',') if _])]
+    #_ = [print(i) for i in sorted([datetime.strptime(t, '%d %B %Y') for _ in state._set_ModifiedDate for t in _.split(',') if _])]
     _ = [print(i) for i in sorted(state.chebi_ids)]
     _ = [print(i) for i in sorted(state.drugbank_ids)]
     _ = [print(i) for i in sorted(state.t3db_ids)]
