@@ -4,7 +4,7 @@ import csv
 
 
 
-with open ('neurolex_full.csv', 'r') as source1, open ('neuron_data_curated.csv', 'r') as source2:
+with open('neurolex_full.csv', 'rt') as source1, open('neuron_data_curated.csv', 'rt') as source2:
     reader1=csv.reader(source1)
     reader2=csv.reader(source2)
     r1 = next(reader1)
@@ -27,9 +27,9 @@ for r in myReader:
     key = r[0]
     neuron_quick_ref[key] = r[1:]
 
-with open ('neurolex_full.csv', 'r') as source, open ('neurolex_full_merged.csv', 'w') as result:
+with open('neurolex_full.csv', 'rt') as source, open('neurolex_full_merged.csv', 'wt') as result:
     reader=csv.reader(source)
-    writer=csv.writer(result)
+    writer=csv.writer(result, lineterminator='\n')
     for row in reader:
         if (neuron_quick_ref.get(row[0],'none')!='none' and row[0]!='Categories'):
             my_updates = neuron_quick_ref[row[0]]
