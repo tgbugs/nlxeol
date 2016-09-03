@@ -629,7 +629,7 @@ def main():
 
     #return
 
-    new_graph.write(delay=True)
+    new_graph.write(convert=False)
 
     embed()
 
