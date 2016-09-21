@@ -54,7 +54,7 @@ def get_nlxdb():
 
 class basicConvert(rowParse):
     neurolex_url = 'http://neurolex.org/wiki/'
-    def __init__(self, graph, rows):
+    def __init__(self, graph, rows, xrefs):
         self.graph = graph
         self.ncbitaxon_ids = set()
         self.pato_ids = set()
@@ -62,11 +62,14 @@ class basicConvert(rowParse):
         self.drugbank_ids = set()
         self.t3db_ids = set()
         self.uni_ids = set()  # expect 735 from registry dump  # FIXME there are 804...
+        self.biobank_ids = set()
         self.bad_ids = set()
         self.fbbt_ids = set()  # get these from the link
         self.failed_resolution = set()
         self.skipped = set()
-        
+
+        self.xrefs = xrefs
+
         self.line = 0
         self.cat_id_dict = {}
         self.pre_ref_dict = defaultdict(set)
@@ -130,6 +133,9 @@ class basicConvert(rowParse):
         if not value:
            self.id_ = self.category
             # self.id_ = None
+
+        if value in self.xrefs:
+            self._skip(value)  # TODO
         
         else:
             if value.startswith('DB'):
@@ -165,6 +171,7 @@ class basicConvert(rowParse):
                 if self.id_ == 'NLXONLY':
                     self.id_ = 'NLX:' + value
                 else:
+                    self._skip(value)  # for the time being we don't want these in interlex
                     prefix, fragment = self.id_.split(':')
                     if prefix not in self.graph.namespaces:
                         self.graph.namespaces[prefix] = rdflib.Namespace(prefixes[prefix])
@@ -202,6 +209,10 @@ class basicConvert(rowParse):
             self.uni_ids.add(self.id_)  # TODO may need to use this to update ID to SRC: ...
             self.graph.g.remove((self.graph.expand(self.id_), rdflib.RDF.type, rdflib.OWL.Class))
             self._skip(self.id_)  # TODO need to check this against scicrunch-registry.ttl hasDbXref
+        elif value ==  'Biobank':  # further nope
+            self.biobank_ids.add(self.id_)
+            self.graph.g.remove((self.graph.expand(self.id_), rdflib.RDF.type, rdflib.OWL.Class))
+            self._skip(self.id_)
 
         value = self.neurolex_url + ':Category:' + value  # fix for :Category: being an unknown prefix
         #if 'University' in value:
@@ -577,7 +588,10 @@ def main():
     # FIXME there is an off by 1 error
     #nlxdb = get_nlxdb()
 
-    filename = 'hello world'
+    scr_graph = get_scr()
+    existing_xrefs = set([s_o[1].toPython() for s_o in scr_graph.subject_objects(rdflib.term.URIRef('http://www.geneontology.org/formats/oboInOwl#hasDbXref'))])
+
+    filename = 'neurolex_basic'
     PREFIXES = {'to':'do',
                 'NLX':'http://neurolex.org/wiki/',
                 'ILX':'http://uri.interlex.org/base/ilx_',
@@ -597,7 +611,7 @@ def main():
 
     #header[header.index('Phenotypes:_ilx:has_location_phenotype')] = 'Phenotypes'
     # convert the header names so that ' ' is replaced with '_'
-    state = basicConvert(new_graph, new_rows)
+    state = basicConvert(new_graph, new_rows, existing_xrefs)
     #state = convertCurated(new_graph, new_rows)
     #embed()
     #return
@@ -612,7 +626,6 @@ def main():
     #_ = [print(i) for i in sorted(state._set_LocationOfAxonArborization)]
 
     # deal with unis TODO needs to be embeded in state.Id or something incase of reference
-    scr_graph = get_scr()
     unis = {None:[]}
     lookup_new_id = {}
     for id_ in sorted([_.split(':')[1] for _ in state.uni_ids]):
