@@ -132,6 +132,7 @@ class basicConvert(rowParse):
         elif not value:
             raise BaseException('Category is empyt, this should not be possible! Row = %s' % self.line) #there was a type on your version here, you had empyt instead of empty
         self.category = self.neurolex_url + value.replace(' ','_')  # fix for unknown url type
+        self._category = value.split(':',2)[-1].replace(' ','_')
 
     def Id(self, value):
         if not value:
@@ -211,6 +212,9 @@ class basicConvert(rowParse):
             for func in self.pre_ref_dict[self.category]:
                 func(self.id_)
 
+        # doing this here because self._category defined before self.id_ exists
+        self._add_node(self.id_, 'ilx:neurolex_category', self._category)
+
     def Label(self, value):
         if value:
             self._add_node(self.id_, rdflib.RDFS.label, value)
@@ -244,9 +248,7 @@ class basicConvert(rowParse):
         #print(value)
         self.graph.add_node(self.id_, 'skos:definition', value)
 
-
-class convertCurated(basicConvert):
-    def Synonym(self, value):
+    def Synonym(self, value):  # XXX warning only OK on the reduced subset
         if value:
             half = None
             for v in value.split(','):
@@ -268,6 +270,8 @@ class convertCurated(basicConvert):
                 if v:
                     self._add_node(self.id_, 'OBOANN:synonym', v)
 
+
+class convertCurated(basicConvert):
     def PMID(self, value):
         #print(value)
         pass
