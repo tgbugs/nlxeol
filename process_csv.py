@@ -186,7 +186,7 @@ class basicConvert(rowParse):
                 if self.id_ == 'NLXONLY':
                     self.id_ = 'NLXWIKI:' + value
                 else:
-                    self._skip(value)  # for the time being we don't want these in interlex
+                    #self._skip(value)  # for the time being we don't want these in interlex XXX we do need these right now
                     prefix, fragment = self.id_.split(':')
                     if prefix not in self.graph.namespaces:
                         self.graph.namespaces[prefix] = rdflib.Namespace(prefixes[prefix])
@@ -269,6 +269,29 @@ class basicConvert(rowParse):
                 v = v.strip()
                 if v:
                     self._add_node(self.id_, 'OBOANN:synonym', v)
+
+    def Has_part(self, value):
+        if value:
+            print(self.id_, 'has part', value)
+
+    def Is_part_of(self, value):
+        if value:
+            for value in value.split(','):
+                value = self.neurolex_url + value  # fix for :Category: being an unknown prefix
+                #print(self.id_, 'is part of', value)
+                if value in self.cat_id_dict:
+                    poid = self.cat_id_dict[value]
+                    self.graph.add_hierarchy(poid, 'ilx:partOf', self.id_)  # flipped as usual :/
+                    #self._add_node(self.id_, 'ilx:partOf', poid)
+                else:
+                    def func(poid, this=self.id_):
+                        #self._add_node(this, 'ilx:partOf', poid)
+                        #self.graph.add_hierarchy(this, 'ilx:partOf', poid)
+                        self.graph.add_hierarchy(poid, 'ilx:partOf', this)  # flipped as usual :/
+
+                    self.pre_ref_dict[value].add(func)
+
+
 
 
 class convertCurated(basicConvert):
