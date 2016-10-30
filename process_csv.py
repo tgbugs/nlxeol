@@ -130,7 +130,7 @@ class basicConvert(rowParse):
         if ':Category:Resource:' in value or value == 'Categories':
             raise self.SkipError
         elif not value:
-            raise BaseException('Category is empyt, this should not be possible! Row = %s' % self.line) #there was a type on your version here, you had empyt instead of empty
+            raise BaseException('Category is empty, this should not be possible! Row = %s' % self.line) #there was a type on your version here, you had empyt instead of empty
         self.category = self.neurolex_url + value.replace(' ','_')  # fix for unknown url type
         self._category = value.split(':',2)[-1].replace(' ','_')
 
@@ -277,7 +277,7 @@ class basicConvert(rowParse):
     def Is_part_of(self, value):
         if value:
             for value in value.split(','):
-                value = self.neurolex_url + value  # fix for :Category: being an unknown prefix
+                value = self.neurolex_url + value.replace(' ','_')  # fix for :Category: being an unknown prefix
                 #print(self.id_, 'is part of', value)
                 if value in self.cat_id_dict:
                     poid = self.cat_id_dict[value]
