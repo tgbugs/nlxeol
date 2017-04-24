@@ -506,7 +506,7 @@ class convertCurated(basicConvert):
         CAP = ':Category:Olfactory cortex layer II'
         fixes = {
             ':Category:NA':NONE,
-            ':Category:No axon':NONE,
+            ':Category:No axon':NONE,  # disjoint with hasAxon... ??
             ':Category:None':NONE,
             ':Category:This is an anaxonal cell; it lacks an axon':NONE,
             ':Category:No local arborization':NONE,
@@ -522,19 +522,16 @@ class convertCurated(basicConvert):
             for v in value.split(','):
                 v.strip()
                 if v:
-                    self._resolve(v, 'http://LocationOfLocalAxonArborization')
+                    self._resolve(v, pheno_edge)
 
     def OriginOfAxon(self, value): 
-        #print(value)
-
         pheno_edge = 'ilx:hasAxonOrigin'
 
     def Neurotransmitter(self, value):
         if value:
-            #print(value)
             pass
 
-        pheno_edge = 'ilx:hasExpressionPhenotype'
+        pheno_edge = 'ilx:hasNeurotransmitterPhenotype'
 
         to_skip = {':Category:Likely glutamate', 'Excitatiry neurotransmitter', ':Category:Unknown', ':Category:Not known', ''}
         if value in to_skip:
@@ -546,7 +543,6 @@ class convertCurated(basicConvert):
 
     def NeurotransmitterReceptors(self, value): 
         if value:
-            #print(value)
             pass
 
         pheno_edge = 'ilx:hasExpressionPhenotype'
@@ -611,15 +607,19 @@ class convertCurated(basicConvert):
         neurogliaform = "ilx:NeurogliaformPhenotype"
         pyramidal = "ilx:PyramidalPhenotype"
         spiking = "ilx:SpikingPhenotype"
+        somat = 'PR:000015665'
 
         fixes = {
-                'ilx:has_morphological_phenotype basket':basket,
-                'ilx:has_morphological_phenotype bipolar':bipolar,
-                'ilx:has_morphological_phenotype chandelier':chandelier,
-                'ilx:has_morphological_phenotype double bouquet':DBouquet,
-                'ilx:has_morphological_phenotype Martinotti':Martinotti,
-                'ilx:has_morphological_phenotype neurogliaform':neurogliaform,
-                'ilx:has_morphological_phenotype pyramidal':pyramidal,
+            'ilx:has_morphological_phenotype basket':basket,
+            'ilx:has_morphological_phenotype bipolar':bipolar,
+            'ilx:has_morphological_phenotype chandelier':chandelier,
+            'ilx:has_morphological_phenotype double bouquet':DBouquet,
+            'ilx:has_morphological_phenotype Martinotti':Martinotti,
+            'ilx:has_morphological_phenotype neurogliaform':neurogliaform,
+            'ilx:has_morphological_phenotype pyramidal':pyramidal,
+            'ilx:has_expression_phenotype somatostatin':somat,
+
+            
                 }
         pheno_edge = 'ilx:hasPhenotype'
 
@@ -637,6 +637,8 @@ class convertCurated(basicConvert):
                 #value = fixes[value]
             #print(value)
             pred, val = value.split(' ', 1)
+            if value in fixes:
+                val = fixes[value]
             pred = predfix(pred)
             if 'UBERON' in val:
                 val = self.graph.expand(val)
@@ -681,7 +683,7 @@ def main():
                 #'PATO':'http://purl.obolibrary.org/obo/PATO_',
 
                 }
-    PREFIXES.update(makePrefixes('UBERON','CHEBI','PATO','NIFGA','NIFMOL','NIFSUB'))
+    PREFIXES.update(makePrefixes('UBERON','CHEBI','PR','PATO','NIFGA','NIFMOL','NIFSUB'))
 
     ontid = ONT_PATH + filename + '.ttl'
     new_graph = makeGraph(filename, PREFIXES)
@@ -742,6 +744,7 @@ def main():
     #convertCurated.cat_id_dict = nlxmapping
     convertCurated.cat_id_dict = wat
     state = convertCurated(new_graph, new_rows, set())
+    new_graph.del_namespace('PRO')
     new_graph.write()
     embed()
     return
