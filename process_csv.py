@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.5
+#!/usr/bin/env python3.6
 
 import io
 import os
@@ -11,7 +11,8 @@ from collections import defaultdict
 import requests
 from IPython import embed
 from sqlalchemy import create_engine, inspect
-from pyontutils.utils import makePrefixes, makeGraph, rowParse
+from pyontutils.utils import makePrefixes, makeGraph, rowParse, createOntology
+from pyontutils.qnamefix import cull_prefixes
 from pyontutils.scigraph_client import Cypher
 #from nlx_cat_map import nlxmapping
 
@@ -91,13 +92,13 @@ class basicConvert(rowParse):
             self.graph.add_node(s, p, o)
         elif type(o) is str and ':Category:' in o: # FIXME needs a way to identify putative objectProperties
             if (self._add_node, (s, p, o)) in self.to_call:
-                self.graph.add_node(s, p, o)
+                self.graph.add_trip(s, p, o)
                 self.failed_resolution.add(o)
                 #print('Failed to resolve reference to', o)
             else:
                 self.to_call.append((self._add_node, (s, p, o)))
         else:
-            self.graph.add_node(s, p, o)
+            self.graph.add_trip(s, p, o)
 
     def _resolve(self, value, edge):  # TODO fixme hierarchy vs node...
         value = value.strip(':')
@@ -105,7 +106,7 @@ class basicConvert(rowParse):
         if value in self.cat_id_dict:
             print('YAY')
             value = self.cat_id_dict[value]
-            self.graph.add_node(self.id_, edge, value)
+            self.graph.add_trip(self.id_, edge, value)
         else:
             def func(obj, this=self.id_):
                 self._add_node(this, edge, obj)
@@ -251,7 +252,7 @@ class basicConvert(rowParse):
 
     def Definition(self, value):
         #print(value)
-        self.graph.add_node(self.id_, 'skos:definition', value)
+        self.graph.add_trip(self.id_, 'skos:definition', value)
 
     def Synonym(self, value):  # XXX warning only OK on the reduced subset
         if value:
@@ -295,8 +296,6 @@ class basicConvert(rowParse):
                         self.graph.add_hierarchy(poid, 'ilx:partOf', this)  # flipped as usual :/
 
                     self.pre_ref_dict[value].add(func)
-
-
 
 
 class convertCurated(basicConvert):
@@ -654,13 +653,89 @@ class convertCurated(basicConvert):
         # in theory we can use this to skip over records we don't actually need because no one has changed them since they were imported from the ontology
         pass
 
+
+class altIds(basicConvert):
+    cat_id_dict = {}
+    def _add_xref(self, value):
+        if value:
+            self._add_node(self.id_, 'oboInOwl:hasDbXref', value)
+
+    def SuperCategory(self, value):
+        pass
+    def Label(self, value):
+        pass
+    def Definition(self, value):
+        pass
+    def Synonym(self, value):
+        pass
+    def Has_part(self, value):
+        pass
+    def Is_part_of(self, value):
+        pass
+
+    def BamsID(self, value):
+        if value:
+            for v in value.split(','):
+                self._add_xref('BAMS:' + v)
+    def CAO_Id(self, value):
+        if value:
+            self._add_xref(value.replace('_', ':'))
+    def DICOMID(self, value):
+        self._add_xref(value)
+    def FBbt_Id(self, value):
+        if value:
+            self._add_xref('FBBT:' + value)
+    def GbifID(self, value):
+        if value:
+            self._add_xref('GBIF:' + value)
+    def ItisID(self, value):
+        if value:
+            self._add_xref('ITIS:' + value)
+    def NeuronamesID(self, value):
+        if value:
+            self._add_xref('NN:' + value)
+    def Nifid(self, value):
+        self._add_xref(value)
+    def TaxID(self, value):
+        if value:
+            self._add_xref('NCBITaxon:' + value)
+    def Xref(self, value):
+        if value:
+            for v in value.split(','):
+                if v.startswith('NITRC_'):
+                    v = v.replace('NITRC_', 'NITRC:')
+                self._add_xref(v.strip())
+
+    def _row_post(self):
+        s = self.graph.expand(self.id_)
+        pos = list(self.graph.g.predicate_objects(s))
+        if len(pos) <= 1:
+            for p, o in pos:
+                self.graph.g.remove((s, p, o))
+        super()._row_post()
+
+
 def predfix(pred):
     asdf = pred.split('_')
     tail = [_.capitalize() for _ in asdf[1:]]
     out = ''.join(asdf[:1] + tail)
     return out
 
-def main():
+def main():  # xrefs
+    PREFIXES = {'OBO':'http://whatisthis.org/',
+                'NITRC':'https://www.nitrc.org/search/?type_of_search=group&cat=',
+                **makePrefixes('oboInOwl', 'NLXWIKI', 'NCBITaxon', 'CAO')}
+    graph = createOntology('nlx-xrefs', prefixes=PREFIXES)
+    with open('neurolex_full.csv', 'rt') as f:
+        rows = [r for r in csv.reader(f)]
+    asdf = altIds(graph, rows, [])
+    ng = cull_prefixes(graph.g)
+    ng.filename = graph.filename
+    ng.write()
+    #embed()
+
+def _main():  # old
+
     # TODO extracly only NLX only with superclasses for fariba
     # FIXME there is an off by 1 error
     #nlxdb = get_nlxdb()
