@@ -11,7 +11,8 @@ from collections import defaultdict
 import requests
 from IPython import embed
 from sqlalchemy import create_engine, inspect
-from pyontutils.utils import makePrefixes, makeGraph, rowParse, createOntology
+import pyontutils.utils
+from pyontutils.utils import makePrefixes, makeGraph, rowParse, createOntology, PREFIXES
 from pyontutils.qnamefix import cull_prefixes
 from pyontutils.scigraph_client import Cypher
 #from nlx_cat_map import nlxmapping
@@ -24,8 +25,12 @@ prefixes['skos'] = 'http://www.w3.org/2004/02/skos/core#'
 
 TODAY = date.isoformat(date.today())
 
-with open ('total_curie_fragment.json', 'rt') as f:
+with open('total_curie_fragment.json', 'rt') as f:
     fragment_curie_dict = json.load(f)
+
+mloc = os.path.expanduser('~/git/NIF-Ontology/ttl/generated/NIF-NIFSTD-mapping.ttl')
+_mapping = rdflib.Graph().parse(mloc, format='turtle')
+new_tranlsation = {o:s for s, o in _mapping.subject_objects(rdflib.OWL.sameAs)}
 
 def get_scr():
     scr_graph = rdflib.Graph()
@@ -189,14 +194,23 @@ class basicConvert(rowParse):
 
             if value in fragment_curie_dict:
                 self.id_ = fragment_curie_dict[value]
+                pref = self.id_.split(':')[0]
+                if pref in PREFIXES:
+                    self.graph.add_known_namespaces(pref)
+                    exp = self.graph.expand(self.id_)
+                    if exp in new_tranlsation:
+                        self.id_ = _mapping.namespace_manager.qname(new_tranlsation[exp])
                 if self.id_ == 'NLXONLY':
-                    self.id_ = 'NLXWIKI:' + value
+                    if 'nlx_' in value:
+                        self.id_ = value.replace('nlx_', 'NLX:')
+                    else:
+                        self.id_ = 'NLXWIKI:' + value
                 else:
                     #self._skip(value)  # for the time being we don't want these in interlex XXX we do need these right now
                     prefix, fragment = self.id_.split(':')
                     if prefix not in self.graph.namespaces:
-                        self.graph.namespaces[prefix] = rdflib.Namespace(prefixes[prefix])
-                        self.graph.g.namespace_manager.bind(prefix, prefixes[prefix])
+                        self.graph.namespaces[prefix] = rdflib.Namespace(PREFIXES[prefix])
+                        self.graph.g.namespace_manager.bind(prefix, PREFIXES[prefix])
             elif value.startswith('http://'): # coming from category
                 self.id_ = value
             else:
@@ -657,7 +671,8 @@ class convertCurated(basicConvert):
 class altIds(basicConvert):
     cat_id_dict = {}
     def _add_xref(self, value):
-        if value:
+        test = value.split(':')[0] in self.graph.namespaces
+        if value and  self.graph.expand(value) != self.graph.expand(self.id_) if test else True:
             self._add_node(self.id_, 'oboInOwl:hasDbXref', value)
 
     def SuperCategory(self, value):
@@ -690,7 +705,7 @@ class altIds(basicConvert):
             self._add_xref('GBIF:' + value)
     def ItisID(self, value):
         if value:
-            self._add_xref('ITIS:' + value)
+            self._add_xref('ITISTSN:' + value)
     def NeuronamesID(self, value):
         if value:
             self._add_xref('NN:' + value)
@@ -722,14 +737,19 @@ def predfix(pred):
     return out
 
 def main():  # xrefs
-    PREFIXES = {'OBO':'http://whatisthis.org/',
-                'NITRC':'https://www.nitrc.org/search/?type_of_search=group&cat=',
-                **makePrefixes('oboInOwl', 'NLXWIKI', 'NCBITaxon', 'CAO')}
-    graph = createOntology('nlx-xrefs', prefixes=PREFIXES)
+    gps = {
+        'ITISTSN':'https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=',
+        'NITRC':'https://www.nitrc.org/search/?type_of_search=group&cat=',
+        'GBIF':'https://www.gbif.org/species/',
+          }
+    PREFIXES_ = {'OBO':'http://whatisthis.org/', **gps, 
+                **makePrefixes('oboInOwl', 'NLXWIKI', 'NLX', 'NCBITaxon', 'CAO')}
+    graph = createOntology('nlx-xrefs', prefixes=PREFIXES_)
     with open('neurolex_full.csv', 'rt') as f:
         rows = [r for r in csv.reader(f)]
     asdf = altIds(graph, rows, [])
-    ng = cull_prefixes(graph.g)
+    pyontutils.utils.PREFIXES.update(gps)
+    ng = cull_prefixes(graph.g, prefixes=pyontutils.utils.PREFIXES)
     ng.filename = graph.filename
     ng.write()
     #embed()
