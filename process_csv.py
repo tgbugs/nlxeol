@@ -30,7 +30,9 @@ with open('total_curie_fragment.json', 'rt') as f:
 
 mloc = os.path.expanduser('~/git/NIF-Ontology/ttl/generated/NIF-NIFSTD-mapping.ttl')
 _mapping = rdflib.Graph().parse(mloc, format='turtle')
-new_tranlsation = {o:s for s, o in _mapping.subject_objects(rdflib.OWL.sameAs)}
+_mappingg = makeGraph('', graph=_mapping)
+new_translation = {o:s for s, o in _mapping.subject_objects(rdflib.OWL.sameAs)}
+new_translation_values = set(new_translation.values())
 
 def get_scr():
     scr_graph = rdflib.Graph()
@@ -198,11 +200,13 @@ class basicConvert(rowParse):
                 if pref in PREFIXES:
                     self.graph.add_known_namespaces(pref)
                     exp = self.graph.expand(self.id_)
-                    if exp in new_tranlsation:
-                        self.id_ = _mapping.namespace_manager.qname(new_tranlsation[exp])
+                    if exp in new_translation:
+                        self.id_ = _mapping.namespace_manager.qname(new_translation[exp])
                 if self.id_ == 'NLXONLY':
                     if 'nlx_' in value:
                         self.id_ = value.replace('nlx_', 'NLX:')
+                    elif 'oen_' in value:
+                        self.id_ = value.replace('oen_', 'NLXOEN:')
                     else:
                         self.id_ = 'NLXWIKI:' + value
                 else:
@@ -670,13 +674,42 @@ class convertCurated(basicConvert):
 
 class altIds(basicConvert):
     cat_id_dict = {}
+    special_cases = 'IAO:0000025',
+    actual_xrefs = ('REO:0000002',  # antibody reagent, not antibody
+                    'ModelDB:65417',  # models matching, not actual term page
+                   )
+    actual_xref_prefixes = 'ModelDB', 'NITRC'
     def _add_xref(self, value):
         test = value.split(':')[0] in self.graph.namespaces
         if value and  self.graph.expand(value) != self.graph.expand(self.id_) if test else True:
-            self._add_node(self.id_, 'oboInOwl:hasDbXref', value)
+            if value in self.actual_xrefs or test in self.actual_xref_prefixes:
+                self._add_node(self.id_, 'oboInOwl:hasDbXref', value)
+            else:
+                self._add_node(self.id_, 'oboInOwl:hasAlternativeId', value)
+        else:
+            pass  # xref is id
 
-    def SuperCategory(self, value):
-        pass
+    def Id(self, value):  # special cases
+        super().Id(value)
+        if self.id_ in self.special_cases:
+            self.graph.g.remove((self.graph.expand(self.id_), rdflib.RDF.type, rdflib.OWL.Class))
+            raise self.SkipError
+        
+
+    def SuperCategory(self, value):  # actually need this to skip unis and biobanks
+        return
+        if not value:
+            return 
+
+        if value == 'University':  # NOPENOPENOPE
+            self.uni_ids.add(self.id_)  # TODO may need to use this to update ID to SRC: ...
+            self.graph.g.remove((self.graph.expand(self.id_), rdflib.RDF.type, rdflib.OWL.Class))
+            self._skip(self.id_)  # TODO need to check this against scicrunch-registry.ttl hasDbXref
+        elif value ==  'Biobank':  # further nope
+            self.biobank_ids.add(self.id_)
+            self.graph.g.remove((self.graph.expand(self.id_), rdflib.RDF.type, rdflib.OWL.Class))
+            self._skip(self.id_)
+
     def Label(self, value):
         pass
     def Definition(self, value):
@@ -692,33 +725,77 @@ class altIds(basicConvert):
         if value:
             for v in value.split(','):
                 self._add_xref('BAMS:' + v)
+
     def CAO_Id(self, value):
         if value:
             self._add_xref(value.replace('_', ':'))
+
     def DICOMID(self, value):
+        if ' ' in value:
+            value = value.replace(' ', '')
+        if 'DICOMID' in value:
+            _, n = value.split(':')
+            value = 'DICOM:' + n
+
         self._add_xref(value)
+
     def FBbt_Id(self, value):
         if value:
             self._add_xref('FBBT:' + value)
+
     def GbifID(self, value):
         if value:
             self._add_xref('GBIF:' + value)
+
     def ItisID(self, value):
         if value:
             self._add_xref('ITISTSN:' + value)
+
     def NeuronamesID(self, value):
         if value:
             self._add_xref('NN:' + value)
+
     def Nifid(self, value):
         self._add_xref(value)
+
     def TaxID(self, value):
         if value:
             self._add_xref('NCBITaxon:' + value)
+
     def Xref(self, value):
         if value:
             for v in value.split(','):
+                if v.startswith('Nlx'):
+                    v = 'n' + v[1:]
+                elif v.startswith('sao-'):
+                    v = 'SAO:' + v[4:]
+                elif v.startswith('sao'):
+                    v = 'SAO:' + v[3:]
+                elif v.startswith('DICOM'):
+                    return self.DICOMID(value)
+
                 if v.startswith('NITRC_'):
                     v = v.replace('NITRC_', 'NITRC:')
+                elif v.startswith('http'):
+                    pass
+                elif v in fragment_curie_dict:
+                    exp = self.graph.expand(fragment_curie_dict[v])
+                    if exp in new_translation:
+                        v = _mapping.namespace_manager.qname(new_translation[exp])
+                elif '_' in v:
+                    p, nums = v.rsplit('_', 1)
+                    p = p.replace('_', '').upper()
+                    if p == 'OEN':
+                        p = 'NLXOEN'
+                    _v = p + ':' + nums
+                    if p in PREFIXES:
+                        v = _v
+                    elif p in self.graph.namespaces:
+                        v = _v
+                    else:
+                        test = _mappingg.expand(_v)
+                        if test in new_translation_values:
+                            v = test
                 self._add_xref(v.strip())
 
     def _row_post(self):
@@ -738,16 +815,28 @@ def predfix(pred):
 
 def main():  # xrefs
     gps = {
-        'ITISTSN':'https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=',
-        'NITRC':'https://www.nitrc.org/search/?type_of_search=group&cat=',
-        'GBIF':'https://www.gbif.org/species/',
+        'ITISTSN':'http://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=',
+        'NITRC':'http://www.nitrc.org/search/?type_of_search=group&cat=',
+        'GBIF':'http://www.gbif.org/species/',
+        'REO':'http://purl.obolibrary.org/obo/REO_',
+        'OBI':'http://purl.obolibrary.org/obo/OBI_',
+        'NEMO':'http://purl.bioontology.org/NEMO/ontology/NEMO.owl#NEMO_',
+        #'OMICS':'http://omicstools.com/id/',  # they seoed themselves >_< and this is not real
+        'DICOM':'http://uri.interlex.org/dicom/uris/terms/',
+        'NLXOEN':'http://uri.neuinfo.org/nif/nifstd/oen_',
+        'ModelDB':'https://senselab.med.yale.edu/modeldb/ModelList.cshtml?id=',
           }
+    # FIXME REO_0000002 is NOT conceptually equivalent to BIRNLEX:2110
     PREFIXES_ = {'OBO':'http://whatisthis.org/', **gps, 
                 **makePrefixes('oboInOwl', 'NLXWIKI', 'NLX', 'NCBITaxon', 'CAO')}
     graph = createOntology('nlx-xrefs', prefixes=PREFIXES_)
     with open('neurolex_full.csv', 'rt') as f:
         rows = [r for r in csv.reader(f)]
-    asdf = altIds(graph, rows, [])
+
+    scr_graph = get_scr()
+    xrefs = set([s_o[1].toPython()
+                 for s_o in scr_graph.subject_objects(rdflib.term.URIRef('http://www.geneontology.org/formats/oboInOwl#hasDbXref'))])
+    asdf = altIds(graph, [r for r in rows if 'Resource:' not in r[0]], xrefs)
     pyontutils.utils.PREFIXES.update(gps)
     ng = cull_prefixes(graph.g, prefixes=pyontutils.utils.PREFIXES)
     ng.filename = graph.filename
