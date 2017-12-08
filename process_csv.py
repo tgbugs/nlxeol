@@ -674,15 +674,16 @@ class convertCurated(basicConvert):
 
 class altIds(basicConvert):
     cat_id_dict = {}
-    special_cases = 'IAO:0000025',
+    special_cases = 'IAO:0000025', 'NLXWIKI:Birnlex_1816', 'NLXWIKI:COGPO:00124', 'NLXWIKI:OBI:0000832', 'NIFGA:nlx_20558'
     actual_xrefs = ('REO:0000002',  # antibody reagent, not antibody
                     'ModelDB:65417',  # models matching, not actual term page
                    )
-    actual_xref_prefixes = 'ModelDB', 'NITRC'
-    def _add_xref(self, value):
-        test = value.split(':')[0] in self.graph.namespaces
-        if value and  self.graph.expand(value) != self.graph.expand(self.id_) if test else True:
-            if value in self.actual_xrefs or test in self.actual_xref_prefixes:
+    actual_xref_prefixes = 'ModelDB', 'NITRC', 'BAMS'
+    def _add_altid(self, value, xref=False):
+        prefix = value.split(':')[0]
+        test = prefix in self.graph.namespaces
+        if value and self.graph.expand(value) != self.graph.expand(self.id_) if test else True:
+            if xref or (value in self.actual_xrefs) or (prefix in self.actual_xref_prefixes):
                 self._add_node(self.id_, 'oboInOwl:hasDbXref', value)
             else:
                 self._add_node(self.id_, 'oboInOwl:hasAlternativeId', value)
@@ -693,7 +694,19 @@ class altIds(basicConvert):
         super().Id(value)
         if self.id_ in self.special_cases:
             self.graph.g.remove((self.graph.expand(self.id_), rdflib.RDF.type, rdflib.OWL.Class))
-            raise self.SkipError
+            if self.id_ in self.special_cases[1:]:  # XXX hack
+                if self.id_ == 'NLXWIKI:Birnlex_1816':
+                    self.id_ = 'BIRNLEX:1816'
+                elif self.id_ == 'NLXWIKI:COGPO:00124':
+                    self.id_ = 'COGPO:00124'
+                elif self.id_ == 'NLXWIKI:OBI:0000832':
+                    self.id_ = 'OBI:0000832'
+                elif self.id_ == 'NIFGA:nlx_20558':
+                    self.id_ = 'NLX:20558'
+                    self._add_altid('NLXANAT:1005032')  # one of the ones lost in transition so grab it while we're at it
+                self.graph.g.add((self.graph.expand(self.id_), rdflib.RDF.type, rdflib.OWL.Class))
+            else:
+                raise self.SkipError
         
 
     def SuperCategory(self, value):  # actually need this to skip unis and biobanks
@@ -721,14 +734,20 @@ class altIds(basicConvert):
     def Is_part_of(self, value):
         pass
 
-    def BamsID(self, value):
+    def BamsID(self, value):  # XXX NOTE this column is garbage, the underlying fields were doubles that got rendered with a comma by semantic media wiki on export *screaming* use BamsLink instead
+        pass
+
+    def BamsLink(self, value):
         if value:
             for v in value.split(','):
-                self._add_xref('BAMS:' + v)
+                _, id_ = v.split('aidi=')
+                self._add_altid('BAMS:' + id_)
 
     def CAO_Id(self, value):
         if value:
-            self._add_xref(value.replace('_', ':'))
+            if value.startswith('COGPO_'):  # DERP
+                return self.Xref(value)
+            self._add_altid(value.replace('_', ':'))
 
     def DICOMID(self, value):
         if ' ' in value:
@@ -737,42 +756,100 @@ class altIds(basicConvert):
             _, n = value.split(':')
             value = 'DICOM:' + n
 
-        self._add_xref(value)
+        self._add_altid(value)
 
     def FBbt_Id(self, value):
         if value:
-            self._add_xref('FBBT:' + value)
+            self._add_altid('FBBT:' + value)
 
     def GbifID(self, value):
         if value:
-            self._add_xref('GBIF:' + value)
+            self._add_altid('GBIF:' + value)
 
     def ItisID(self, value):
         if value:
-            self._add_xref('ITISTSN:' + value)
+            self._add_altid('ITISTSN:' + value)
 
     def NeuronamesID(self, value):
         if value:
-            self._add_xref('NN:' + value)
+            if value == '228':
+                self._add_altid('NeuroNames:854', xref=True)  # XXX ERRATA
+            elif value == '229':
+                self._add_altid('NeuroNames:3232', xref=True)  # XXX ERRATA
 
     def Nifid(self, value):
-        self._add_xref(value)
+        self._add_altid(value)
 
     def TaxID(self, value):
         if value:
-            self._add_xref('NCBITaxon:' + value)
+            self._add_altid('NCBITaxon:' + value)
+
+    @staticmethod
+    def _special_cases(v):
+        # exact matches
+        if v == 'Biological imaging ontology FBbi:00000115':
+            v = 'FBbi:00000115'
+        elif v == 'BioPAX Interaction':
+            v = 'http://www.biopax.org/release/biopax-level3.owl#Interaction'
+        elif v == 'Radlex RID5649':
+            v = 'RadLex:RID5649'
+        elif v == 'Category:Sensory reception role':  # fixed the has role issue in interlex already
+            v = 'BAMSN:BAMSC974'
+        elif v == 'TAXRANK:0000000':
+            v = 'NCBITaxon:taxonomic_rank'
+        elif v == 'C537111 (MeSH ID)':
+            v = 'MESH:C537111'
+        elif v == 'MESH ID:http://purl.bioontology.org/ontology/MSH/D001930':
+            v = 'MESH:D001930'
+        # prefixes
+        elif v.startswith('Nlx'):
+            v = 'n' + v[1:]
+        elif v.startswith('sao-'):
+            v = 'SAO:' + v[4:]
+        elif v.startswith('sao'):
+            v = 'SAO:' + v[3:]
+        elif v.startswith('FMAID:'):
+            v = 'FMA:' + v[6:]
+        elif v.startswith('PAR:1279'):
+            v = v.split(' ', 1)[0]
+        elif v.startswith('BAMSC'):
+            v = 'BAMSN:' + v
+        elif v.startswith('BAMSID:'):
+            v = 'BAMS:' + v.split(':')[-1]
+        elif v.startswith('BAMSID '):
+            v = 'BAMS:' + v.split(' ')[-1]
+        elif v.startswith('Modeldb'):
+            v = v.replace('Modeldb', 'ModelDB')
+        elif v.startswith('COGPO_'):
+            v = 'COGPO1:' + v.split('_')[-1]
+        elif v.startswith('EFO_'):
+            v = v.split(' ')[0]
+            v = 'EFO:' + v.split('_')[-1]
+        elif v.startswith('SBO:'):
+            v = v.split(' ')[0]
+        elif v.startswith('MeSH'):
+            v = v.replace('MeSH', 'MESH')  # follow uberon
+        elif any(v.startswith(_) for _ in ('C', 'D', 'Q')) and v[1].isdigit():
+            v = 'MESH:' + v
+        elif 'FBbi#FBbi_' in v:
+            v = 'FBbi:' + v.split('_')[-1]
+        return v
 
     def Xref(self, value):
         if value:
             for v in value.split(','):
-                if v.startswith('Nlx'):
-                    v = 'n' + v[1:]
-                elif v.startswith('sao-'):
-                    v = 'SAO:' + v[4:]
-                elif v.startswith('sao'):
-                    v = 'SAO:' + v[3:]
-                elif v.startswith('DICOM'):
+
+                if v.startswith('DICOM'):
                     return self.DICOMID(value)
+
+                v = self._special_cases(v)
+
+                if v == 'http://sig.biostr.washington.edu/fma3.0#Inner_nuclear_layer_of_retina':
+                    self._add_altid('FMA:58686')
+                elif v == 'http://sig.biostr.washington.edu/fma3.0#Inner_plexiform_layer_of_retina':
+                    self._add_altid('FMA:58704')
+                elif v == 'http://sig.biostr.washington.edu/fma3.0#Ganglionic_layer_of_retina':
+                    self._add_altid('FMA:58687')
 
                 if v.startswith('NITRC_'):
                     v = v.replace('NITRC_', 'NITRC:')
@@ -782,7 +859,7 @@ class altIds(basicConvert):
                     exp = self.graph.expand(fragment_curie_dict[v])
                     if exp in new_translation:
                         v = _mapping.namespace_manager.qname(new_translation[exp])
-                elif '_' in v:
+                elif '_' in v and ':' not in v:
                     p, nums = v.rsplit('_', 1)
                     p = p.replace('_', '').upper()
                     if p == 'OEN':
@@ -796,7 +873,7 @@ class altIds(basicConvert):
                         test = _mappingg.expand(_v)
                         if test in new_translation_values:
                             v = test
-                self._add_xref(v.strip())
+                self._add_altid(v.strip())
 
     def _row_post(self):
         s = self.graph.expand(self.id_)
@@ -819,16 +896,25 @@ def main():  # xrefs
         'NITRC':'http://www.nitrc.org/search/?type_of_search=group&cat=',
         'GBIF':'http://www.gbif.org/species/',
         'REO':'http://purl.obolibrary.org/obo/REO_',
-        'OBI':'http://purl.obolibrary.org/obo/OBI_',
         'NEMO':'http://purl.bioontology.org/NEMO/ontology/NEMO.owl#NEMO_',
         #'OMICS':'http://omicstools.com/id/',  # they seoed themselves >_< and this is not real
         'DICOM':'http://uri.interlex.org/dicom/uris/terms/',
         'NLXOEN':'http://uri.neuinfo.org/nif/nifstd/oen_',
         'ModelDB':'https://senselab.med.yale.edu/modeldb/ModelList.cshtml?id=',
+        'BAMS':'http://brancusi.usc.edu/bkms/brain/show-braing2.php?aidi=',  # FIXME dead
+        'NeuroNames':'http://braininfo.rprc.washington.edu/centraldirectory.aspx?ID=',
+        'NeuroNamesHier':'http://braininfo.rprc.washington.edu/centraldirectory.aspx?type=h&ID=',  # XXX this is what NIFSTD has listed, some of these are incorrect eg on BIRNLEX:1099 and BIRNLEX:1111
+        'MA':'http://purl.obolibrary.org/obo/MA_',
+        'PAR':'http://uri.interlex.org/fakeobo/uris/obo/PAR_',  # http://www.psidev.info/psi-par#minimum_requirements tons of dead links except for this one http://psidev.cvs.sourceforge.net/viewvc/psidev/psi/mi/controlledVocab/proteomeBinder/psi-par.obo # cvs -z3 -d:pserver:anonymous@psidev.cvs.sourceforge.net:/cvsroot/psidev co -P psi
+        'SBO':'http://biomodels.net/SBO/SBO_',
+        'BAMSN':'https://bams1.org/bkms/BAMS.owl#',  # FIXME dead source is https://bams1.org/public/files/neuron-ontology.xml I have a copy. using the BAMSN namespace so that we don't klobber the id with the colon sigh
+        'MESH':'https://meshb.nlm.nih.gov/record/ui?ui=',  # for now use the browser as the landing page, not sure 
+        'RadLex':'http://www.radlex.org/RID/',  # match uberon
+        'FBbi':'http://purl.obolibrary.org/obo/FBbi_',
           }
     # FIXME REO_0000002 is NOT conceptually equivalent to BIRNLEX:2110
     PREFIXES_ = {'OBO':'http://whatisthis.org/', **gps, 
-                **makePrefixes('oboInOwl', 'NLXWIKI', 'NLX', 'NCBITaxon', 'CAO')}
+                **makePrefixes('oboInOwl', 'NLXWIKI', 'NLX', 'NCBITaxon', 'CAO', 'FMA', 'EFO', 'OBI', 'COGPO1', 'CHEBI')}
     graph = createOntology('nlx-xrefs', prefixes=PREFIXES_)
     with open('neurolex_full.csv', 'rt') as f:
         rows = [r for r in csv.reader(f)]
