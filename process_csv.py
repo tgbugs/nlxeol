@@ -698,7 +698,7 @@ class altIds(basicConvert):
                 if self.id_ == 'NLXWIKI:Birnlex_1816':
                     self.id_ = 'BIRNLEX:1816'
                 elif self.id_ == 'NLXWIKI:COGPO:00124':
-                    self.id_ = 'COGPO:00124'
+                    self.id_ = 'COGPO1:00124'
                 elif self.id_ == 'NLXWIKI:OBI:0000832':
                     self.id_ = 'OBI:0000832'
                 elif self.id_ == 'NIFGA:nlx_20558':
@@ -906,7 +906,8 @@ def main():  # xrefs
         'NeuroNamesHier':'http://braininfo.rprc.washington.edu/centraldirectory.aspx?type=h&ID=',  # XXX this is what NIFSTD has listed, some of these are incorrect eg on BIRNLEX:1099 and BIRNLEX:1111
         'MA':'http://purl.obolibrary.org/obo/MA_',
         'PAR':'http://uri.interlex.org/fakeobo/uris/obo/PAR_',  # http://www.psidev.info/psi-par#minimum_requirements tons of dead links except for this one http://psidev.cvs.sourceforge.net/viewvc/psidev/psi/mi/controlledVocab/proteomeBinder/psi-par.obo # cvs -z3 -d:pserver:anonymous@psidev.cvs.sourceforge.net:/cvsroot/psidev co -P psi
-        'SBO':'http://biomodels.net/SBO/SBO_',
+        #'SBO':'http://biomodels.net/SBO/SBO_',  # FIXME these do not resolve despite being used in the ontology source...
+        'SBO':'http://www.ebi.ac.uk/sbo/main/SBO:',  # these resolve... sigh obo...
         'BAMSN':'https://bams1.org/bkms/BAMS.owl#',  # FIXME dead source is https://bams1.org/public/files/neuron-ontology.xml I have a copy. using the BAMSN namespace so that we don't klobber the id with the colon sigh
         'MESH':'https://meshb.nlm.nih.gov/record/ui?ui=',  # for now use the browser as the landing page, not sure 
         'RadLex':'http://www.radlex.org/RID/',  # match uberon
