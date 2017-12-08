@@ -916,7 +916,10 @@ def main():  # xrefs
     # FIXME REO_0000002 is NOT conceptually equivalent to BIRNLEX:2110
     PREFIXES_ = {'OBO':'http://whatisthis.org/', **gps, 
                 **makePrefixes('oboInOwl', 'NLXWIKI', 'NLX', 'NCBITaxon', 'CAO', 'FMA', 'EFO', 'OBI', 'COGPO1', 'CHEBI')}
-    graph = createOntology('nlx-xrefs', prefixes=PREFIXES_)
+    graph = createOntology('nlx-xrefs',
+                           path='/',   # FIXME trailing slash...
+                           local_base=os.path.expanduser('~/git/nlxeol'),
+                           prefixes=PREFIXES_,)
     with open('neurolex_full.csv', 'rt') as f:
         rows = [r for r in csv.reader(f)]
 
