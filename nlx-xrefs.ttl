@@ -8894,9 +8894,6 @@ NLXOEN:0001273 a owl:Class ;
 NLXOEN:0001286 a owl:Class ;
     oboInOwl:hasAlternativeId NLXMOL:100202 .
 
-NLXOEN:0001287 a owl:Class ;
-    oboInOwl:hasAlternativeId NIFEXT:8054 .
-
 NLXORG:091012 a owl:Class ;
     oboInOwl:hasAlternativeId NCBITaxon:9925 .
 
