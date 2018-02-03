@@ -1335,6 +1335,9 @@ SAO:1804523077 oboInOwl:hasAlternativeId NLXWIKI:sao1804523077 .
 
 SAO:1804901442 oboInOwl:hasAlternativeId NLXWIKI:sao1804901442 .
 
+SAO:1810043179 rdfs:comment "This SAO id dissapeared from NIFSTD at some point and reappeared in neurolex." ;
+    oboInOwl:hasAlternativeId NLXWIKI:sao1810043179 .
+
 SAO:1813327414 oboInOwl:hasAlternativeId NLXWIKI:sao1813327414 .
 
 SAO:1819020575 oboInOwl:hasAlternativeId NLXWIKI:sao-1819020575 .
