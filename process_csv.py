@@ -346,9 +346,11 @@ class convertCurated(basicConvert):
         #print(value)
         pass
 
-    def Species(self, value):  # Species_taxa in neuro_data_curated.csv
+    def Species_taxa(self, value):  # Species_taxa in neuro_data_curated.csv
         if value:
-            value = self.neurolex_url + value  # fix for :Category: being an unknown prefix
+            #value = self.neurolex_url + value[1:]  # fix for :Category: being an unknown prefix
+            #value = value[1:]
+            pass
         else:
             return
 
@@ -1051,7 +1053,7 @@ def _main():  # old
     state = convertCurated(new_graph, new_rows, set())
     new_graph.del_namespace('PRO')
     new_graph.write()
-    #embed()
+    embed()
     return
 
     #_ = [print(i) for i in sorted([datetime.strptime(t, '%d %B %Y') for _ in state._set_ModifiedDate for t in _.split(',') if _])]
