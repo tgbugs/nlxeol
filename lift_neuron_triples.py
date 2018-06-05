@@ -92,9 +92,16 @@ for class_ in g.subjects(rdflib.RDF.type, rdflib.OWL.Class):
         s = [p for p in pes if p.e == ilxtr.hasSomaLocatedIn]
         l = [p for p in pes if p.e == ilxtr.hasLocationPhenotype]
         if s and l:
-            if str(s[0].p) != str(l[0].p):  # FIXME should not have to str these!
+            s0 = s[0]
+            l0 = l[0]
+            if str(s0.p) != str(l0.p):  # FIXME should not have to str these!
                 print(f'WARNING: mismatch! {class_}\n{s[0]}\n{l[0]}')
                 #raise ValueError(f'mismatch! {class_}\n{s[0]}\n{l[0]}')
+                pes.remove(s0)
+                pes.remove(l0)
+                # swap
+                pes.append(Phenotype(s0.p, l0.e))
+                pes.append(Phenotype(l0.p, s0.e))
             else:
                 pes.remove(l[0])
 
