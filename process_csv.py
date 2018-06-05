@@ -11,8 +11,9 @@ from collections import defaultdict
 import requests
 from IPython import embed
 from sqlalchemy import create_engine, inspect
-import pyontutils.utils
-from pyontutils.utils import makePrefixes, makeGraph, rowParse, createOntology, PREFIXES
+import pyontutils.core
+from pyontutils.utils import rowParse
+from pyontutils.core import makePrefixes, makeGraph, createOntology, PREFIXES, definition
 from pyontutils.qnamefix import cull_prefixes
 from pyontutils.scigraph_client import Cypher
 #from nlx_cat_map import nlxmapping
@@ -83,6 +84,8 @@ class basicConvert(rowParse):
         self.skipped = set()
 
         self.xrefs = xrefs
+        self.actual_xref_prefixes = tuple()
+        self.actual_xrefs = tuple()
 
         self.line = 0
         #self.cat_id_dict = {}
@@ -106,6 +109,17 @@ class basicConvert(rowParse):
                 self.to_call.append((self._add_node, (s, p, o)))
         else:
             self.graph.add_trip(s, p, o)
+
+    def _add_altid(self, value, xref=False):
+        prefix = value.split(':')[0]
+        test = prefix in self.graph.namespaces
+        if value and self.graph.expand(value) != self.graph.expand(self.id_) if test else True:
+            if xref or (value in self.actual_xrefs) or (prefix in self.actual_xref_prefixes):
+                self._add_node(self.id_, 'oboInOwl:hasDbXref', value)
+            else:
+                self._add_node(self.id_, 'oboInOwl:hasAlternativeId', value)
+        else:
+            pass  # xref is id
 
     def _resolve(self, value, edge):  # TODO fixme hierarchy vs node...
         value = value.strip(':')
@@ -154,7 +168,7 @@ class basicConvert(rowParse):
 
         if value in self.xrefs:
             self._skip(value)  # TODO
-        
+
         else:
             if value.startswith('DB'):
                 self.cat_id_dict[self.category] = value  # in case someone referenced it...  # TODO check for ontology ids as well...
@@ -197,6 +211,13 @@ class basicConvert(rowParse):
             if value in fragment_curie_dict:
                 self.id_ = fragment_curie_dict[value]
                 pref = self.id_.split(':')[0]
+                #if value == 'nlx_143534,nifext_102':
+                if ',' in value:
+                    id_, altid = value.split(',')
+                    a, b = id_.split('_')
+                    c, d = altid.split('_')
+                    self.id_ = a.upper() + ':' + b  # XXX dangerzone!
+                    self._add_altid(c.upper() + ':' + d)
                 if pref in PREFIXES:
                     self.graph.add_known_namespaces(pref)
                     exp = self.graph.expand(self.id_)
@@ -208,7 +229,7 @@ class basicConvert(rowParse):
                     elif 'oen_' in value:
                         self.id_ = value.replace('oen_', 'NLXOEN:')
                     else:
-                        self.id_ = 'NLXWIKI:' + value
+                        self.id_ = 'NIFSTD:' + value
                 else:
                     #self._skip(value)  # for the time being we don't want these in interlex XXX we do need these right now
                     prefix, fragment = self.id_.split(':')
@@ -270,7 +291,7 @@ class basicConvert(rowParse):
 
     def Definition(self, value):
         #print(value)
-        self.graph.add_trip(self.id_, 'skos:definition', value)
+        self.graph.add_trip(self.id_, definition, value)
 
     def Synonym(self, value):  # XXX warning only OK on the reduced subset
         if value:
@@ -286,13 +307,13 @@ class basicConvert(rowParse):
                         print('Bad split on comma detected!', v)
                     else:
                         half.strip()
-                        self._add_node(self.id_, 'OBOANN:synonym', half)
+                        self._add_node(self.id_, 'NIFRID:synonym', half)
 
                     half = None
 
                 v = v.strip()
                 if v:
-                    self._add_node(self.id_, 'OBOANN:synonym', v)
+                    self._add_node(self.id_, 'NIFRID:synonym', v)
 
     def Has_part(self, value):
         if value:
@@ -305,13 +326,13 @@ class basicConvert(rowParse):
                 #print(self.id_, 'is part of', value)
                 if value in self.cat_id_dict:
                     poid = self.cat_id_dict[value]
-                    self.graph.add_hierarchy(poid, 'ilx:partOf', self.id_)  # flipped as usual :/
+                    self.graph.add_hierarchy(poid, 'partOf:', self.id_)  # flipped as usual :/
                     #self._add_node(self.id_, 'ilx:partOf', poid)
                 else:
                     def func(poid, this=self.id_):
                         #self._add_node(this, 'ilx:partOf', poid)
                         #self.graph.add_hierarchy(this, 'ilx:partOf', poid)
-                        self.graph.add_hierarchy(poid, 'ilx:partOf', this)  # flipped as usual :/
+                        self.graph.add_hierarchy(poid, 'partOf:', this)  # flipped as usual :/
 
                     self.pre_ref_dict[value].add(func)
 
@@ -331,7 +352,7 @@ class convertCurated(basicConvert):
         else:
             return
 
-        pheno_edge = 'ilx:hasTaxonRank'
+        pheno_edge = 'ilxtr:hasTaxonRank'
         self._resolve(value, pheno_edge)
 
     def DefiningCriteria(self, value):
@@ -349,7 +370,7 @@ class convertCurated(basicConvert):
         else:
             values = value.split(',')
             for value in values:
-                self._resolve(value, 'http://Has_Role.org')
+                self._resolve(value, pyontutils.core.hasRole)
 
     def Abbrev(self, value):
         #print(value)
@@ -364,7 +385,7 @@ class convertCurated(basicConvert):
             #print(value)
             pass
 
-        parent_phenotype = 'ilx:SomaMorphologicalPhenotype'
+        parent_phenotype = 'ilxtr:SomaMorphologicalPhenotype'
 
         multipolar_fix = 'Category:Multipolar Soma Quality'
         fusiform_fix = 'Category:Fusiform Soma Quality'
@@ -412,7 +433,7 @@ class convertCurated(basicConvert):
             #print(value)
             pass
 
-        parent_phenotype = 'ilx:SomaMorphologicalPhenotype'
+        parent_phenotype = 'ilxtr:SomaMorphologicalPhenotype'
 
     def FBbt_Id(self, value):
         if value:
@@ -424,7 +445,7 @@ class convertCurated(basicConvert):
             #print(value)
             pass
         
-        pheno_edge = 'ilx:hasSomaLocatedIn'
+        pheno_edge = 'ilxtr:hasSomaLocatedIn'
         self._resolve(value, pheno_edge)
 
     def SpineDensityOnDendrites(self, value): 
@@ -432,14 +453,14 @@ class convertCurated(basicConvert):
             #print(value)
             pass
         
-        parent_phenotype = 'ilx:DendriteMorphologicalPhenotype'
+        parent_phenotype = 'ilxtr:DendriteMorphologicalPhenotype'
         
     def DendriteLocation(self, value): 
         if value:
             #print(value)
             pass
 
-        pheno_edge = 'ilx:hasDendriteLocatedIn'
+        pheno_edge = 'ilxtr:hasDendriteLocatedIn'
 
         to_skip = {':Category:Dendrites spread from the cell body in all directions. Dendrites are smooth where they lie in the deep layer but where the dendrites cross the pyramidal (fusiform) cell layer into the molecular layer', ':Category:They become spiny. Functionally it has been demonstrated that they receive not only acoustic input in the deep layer but also proprioceptive input through the molecular layer.', ':Category:Brush of dendrites is short and lies near the cell body', ':Category:Dendrites lie parallel to auditory nerve fibers in the ventral cochlear nucleus', ':Category:Receptive field in the periphery', ':Category:Two primary dendrites', ':Category:One that projects laterally towards the roots of the VIIIth cranial nerve and is named the lateral dendrite', ':Category:And another which projects rostrally and ventrally and is called the ventral dendrite.', ':Category:Basal dendrites in neocortical layers 5 and 6;apical dendrites across neocortical layers 5 to 1.', ':Category:Basal dendrites branch within neocortical layers 5 and 6;apical dendrite extends across neocortical layers 5-1.', ':Category:Basal dendrites in Neocortex layer 5', ':Category:Apical dendrites across neocortical layers 5-1.', ':Category:Mostly neocortical layer 4', ':Category:Basal dendrites will be in the same layer as the soma and/or the subjacent layer. Apical dendrites rise toward the pia and into layer 1. For layer 6 neurons', ':Category:However,:Category:The apical dendrite will often not continue beyond layer 4/lower layer 3.', ':Category:Arborization within the glomerular neuropil and external plexiform layer', ':Category:Dendrties arborize in the external plexiform layer where they contact the secondary/lateral dendrites of mitral cells via reciprocal dendrodendritic synapses. The basal dendrite remains restricted to the granule cell layer.', ':Category:Proximal', ':Category:Intermediate', ':Category:Distal', ''}
         if value in to_skip:
@@ -452,7 +473,7 @@ class convertCurated(basicConvert):
             #print(value)
             pass
 
-        parent_phenotype = 'ilx:DendriteMorphologicalPhenotype'
+        parent_phenotype = 'ilxtr:DendriteMorphologicalPhenotype'
 
         to_skip = {'other', 'this is a columnar cell without a true dendrite', ''}
         if value in to_skip:
@@ -465,20 +486,20 @@ class convertCurated(basicConvert):
             #print(value)
             pass
         
-        parent_phenotype = 'ilx:AxonMorphologicalPhenotype'
+        parent_phenotype = 'ilxtr:AxonMorphologicalPhenotype'
 
     def AxonProjectionLaterality(self, value): 
         if value:
             #print(value)
             pass
 
-        pheno_edge = 'ilx:hasProjectionPhenotype'
+        pheno_edge = 'ilxtr:hasProjectionPhenotype'
 
     def LocationOfAxonArborization(self, value): 
         
         #print(value)
 
-        pheno_edge = 'ilx:hasAxonLocatedIn'
+        pheno_edge = 'ilxtr:hasAxonLocatedIn'
 
         NONE = 'None'
         Fix_location = ':Category:CA3 oriens'
@@ -516,7 +537,7 @@ class convertCurated(basicConvert):
               #  if v:
                #     self._add_node(self.id_, 'http://LocationOfLocalAxonArborization', v)
 
-        pheno_edge = 'ilx:hasAxonLocatedIn'  # FIXME
+        pheno_edge = 'ilxtr:hasAxonLocatedIn'  # FIXME
         
 
         NONE = 'None'
@@ -542,13 +563,13 @@ class convertCurated(basicConvert):
                     self._resolve(v, pheno_edge)
 
     def OriginOfAxon(self, value): 
-        pheno_edge = 'ilx:hasAxonOrigin'
+        pheno_edge = 'ilxtr:hasAxonOrigin'
 
     def Neurotransmitter(self, value):
         if value:
             pass
 
-        pheno_edge = 'ilx:hasNeurotransmitterPhenotype'
+        pheno_edge = 'ilxtr:hasNeurotransmitterPhenotype'
 
         to_skip = {':Category:Likely glutamate', 'Excitatiry neurotransmitter', ':Category:Unknown', ':Category:Not known', ''}
         if value in to_skip:
@@ -562,7 +583,7 @@ class convertCurated(basicConvert):
         if value:
             pass
 
-        pheno_edge = 'ilx:hasExpressionPhenotype'
+        pheno_edge = 'ilxtr:hasExpressionPhenotype'
         
         Add_GABA = ':Category:GABA receptor'
         Add_Glutamate = ':Category:Glutamate receptor'
@@ -595,7 +616,7 @@ class convertCurated(basicConvert):
             #print(value)
             pass
 
-        pheno_edge = 'ilx:hasExpressionPhenotype'
+        pheno_edge = 'ilxtr:hasExpressionPhenotype'
 
         to_skip = {':Category:?', ':Category:Unknown', ''}
         if value in to_skip:
@@ -612,18 +633,18 @@ class convertCurated(basicConvert):
     def Phenotypes(self, value): 
         #print(value)
         
-        basket = "ilx:BasketPhenotype"
-        Lbasket = "ilx:LargeBasketPhenotype"
-        Nbasket = "ilx:NestBasketPhenotype"
-        Sbasket = "ilx:SmallBasketPhenotype"
-        bitufted = "ilx:BituftedPhenotype"
-        bipolar = "ilx:BipolarPhenotype"
-        chandelier = "ilx:ChandelierPhenotype"
-        DBouquet = "ilx:DoubleBouquetPhenotype"
-        Martinotti = "ilx:MartinottiPhenotype"
-        neurogliaform = "ilx:NeurogliaformPhenotype"
-        pyramidal = "ilx:PyramidalPhenotype"
-        spiking = "ilx:SpikingPhenotype"
+        basket = "ilxtr:BasketPhenotype"
+        Lbasket = "ilxtr:LargeBasketPhenotype"
+        Nbasket = "ilxtr:NestBasketPhenotype"
+        Sbasket = "ilxtr:SmallBasketPhenotype"
+        bitufted = "ilxtr:BituftedPhenotype"
+        bipolar = "ilxtr:BipolarPhenotype"
+        chandelier = "ilxtr:ChandelierPhenotype"
+        DBouquet = "ilxtr:DoubleBouquetPhenotype"
+        Martinotti = "ilxtr:MartinottiPhenotype"
+        neurogliaform = "ilxtr:NeurogliaformPhenotype"
+        pyramidal = "ilxtr:PyramidalPhenotype"
+        spiking = "ilxtr:SpikingPhenotype"
         somat = 'PR:000015665'
 
         fixes = {
@@ -638,7 +659,7 @@ class convertCurated(basicConvert):
 
             
                 }
-        pheno_edge = 'ilx:hasPhenotype'
+        pheno_edge = 'ilxtr:hasPhenotype'
 
         #to_skip = {'ilx:has_morphological_phenotype basket', 'ilx:has_morphological_phenotype bipolar', 'ilx:has_morphological_phenotype chandelier', 'ilx:has_morphological_phenotype double bouquet', 'ilx:has_morphological_phenotype Martinotti', 'ilx:has_morphological_phenotype neurogliaform', 'ilx:has_morphological_phenotype pyramidal', ''}
         #if value in to_skip:
@@ -679,17 +700,6 @@ class altIds(basicConvert):
                     'ModelDB:65417',  # models matching, not actual term page
                    )
     actual_xref_prefixes = 'ModelDB', 'NITRC', 'BAMS'
-    def _add_altid(self, value, xref=False):
-        prefix = value.split(':')[0]
-        test = prefix in self.graph.namespaces
-        if value and self.graph.expand(value) != self.graph.expand(self.id_) if test else True:
-            if xref or (value in self.actual_xrefs) or (prefix in self.actual_xref_prefixes):
-                self._add_node(self.id_, 'oboInOwl:hasDbXref', value)
-            else:
-                self._add_node(self.id_, 'oboInOwl:hasAlternativeId', value)
-        else:
-            pass  # xref is id
-
     def Id(self, value):  # special cases
         super().Id(value)
         if self.id_ in self.special_cases:
@@ -888,6 +898,7 @@ def predfix(pred):
     asdf = pred.split('_')
     tail = [_.capitalize() for _ in asdf[1:]]
     out = ''.join(asdf[:1] + tail)
+    out = out.replace('ilx:', 'ilxtr:')
     return out
 
 def main():  # xrefs
@@ -946,18 +957,19 @@ def _main():  # old
     #filename = 'neurolex_basic'
     filename = 'neuron_data_curated'
     PREFIXES = {'to':'do',
+                'OBO':'http://whatisthis.org/',
                 'NLXWIKI':'http://neurolex.org/wiki/',
-                'ILX':'http://uri.interlex.org/base/ilx_',
-                'ilx':'http://uri.interlex.org/base/',
+                #'ILX':'http://uri.interlex.org/base/ilx_',
+                #'ilx':'http://uri.interlex.org/base/',
                 'owl':'http://www.w3.org/2002/07/owl#',
                 'skos':'http://www.w3.org/2004/02/skos/core#',
-                'OBOANN':'http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#',
                 'oboInOwl':'http://www.geneontology.org/formats/oboInOwl#',
                 'PRO':'http://purl.obolibrary.org/obo/PR_',  # sigh
                 #'PATO':'http://purl.obolibrary.org/obo/PATO_',
 
                 }
-    PREFIXES.update(makePrefixes('UBERON','CHEBI','PR','PATO','NIFGA','NIFMOL','NIFSUB'))
+    PREFIXES.update(makePrefixes('UBERON', 'CHEBI', 'PR', 'PATO', 'NIFGA', 'NIFMOL', 'NIFSUB',
+                                 'NLX', 'NLXOEN', 'hasRole', 'ilxtr', 'BIRNLEX', 'NIFRID', 'NIFSTD'))
 
     ontid = ONT_PATH + filename + '.ttl'
     new_graph = makeGraph(filename, PREFIXES)
@@ -971,8 +983,10 @@ def _main():  # old
         rows0 = [r for r in csv.reader(f)]
     wat = {}
     class catid(rowParse):
-        graph = makeGraph('asdf',PREFIXES)
+        graph = makeGraph('asdf', PREFIXES)
         xrefs = {}
+        actual_xrefs = tuple()
+        actual_xref_prefixes = tuple()
         pre_ref_dict = {}
         t3db_ids = set()
         cat_id_dict = {}
@@ -984,11 +998,15 @@ def _main():  # old
         pro_ids = set()
         bams_ids = set()
         ncbitaxon_ids = set()
+        _add_altid = altIds._add_altid
+        _add_node = basicConvert._add_node
         def _skip(self, value):
             self.skipped.add(value)
             raise self.SkipError
+
         def Categories(self, value):
             self.category = value.strip(':')
+            
         def Id(self, value):
             return basicConvert.Id(self, value)
 
@@ -1016,11 +1034,24 @@ def _main():  # old
     # convert the header names so that ' ' is replaced with '_'
     #state = basicConvert(new_graph, new_rows, existing_xrefs)
     #convertCurated.cat_id_dict = nlxmapping
-    convertCurated.cat_id_dict = wat
+
+    #from pyontutils.core import OntTerm
+    #from pyontutils.utils import Async, deferred
+
+    #def noDep(k, uri):
+        #term = OntTerm(uri)
+        #if not term.validated:
+            #return term
+        #else: # TODO
+            #return uri
+
+
+    #watNoDep = {k:v for k, v in Async()(deferred(noDep)(k, v) for k, v in wat.items())}  # TODO (k, deferred(v))??
+    convertCurated.cat_id_dict = wat #watNoDep
     state = convertCurated(new_graph, new_rows, set())
     new_graph.del_namespace('PRO')
     new_graph.write()
-    embed()
+    #embed()
     return
 
     #_ = [print(i) for i in sorted([datetime.strptime(t, '%d %B %Y') for _ in state._set_ModifiedDate for t in _.split(',') if _])]
@@ -1054,4 +1085,4 @@ def _main():  # old
     embed()
 
 if __name__ == '__main__':
-    main()
+    _main()
