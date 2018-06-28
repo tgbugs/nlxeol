@@ -9,14 +9,11 @@ import rdflib
 from IPython import embed
 from process_csv import _main
 
-config(out_graph_path='/tmp/neuron_data_lifted.ttl',
-       prefixes=('NLXANAT', 'NIFEXT', 'NLX', 'NLXANAT', 'NIFGA'),
-      )
+Config(name='neuron_data_lifted',
+       imports=['file:///tmp/output.ttl'])
+
 query = OntTerm.query
 #_main()
-Neuron.out_graph.add((next(Neuron.out_graph[:rdf.type:owl.Ontology]),
-                      owl.imports,
-                      rdflib.URIRef('file:///tmp/output.ttl')))
 
 BIRNLEX, = makeNamespaces('BIRNLEX')
 
