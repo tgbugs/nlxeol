@@ -1,16 +1,19 @@
 #!/usr/bin/env python3
 
-from pyontutils.neuron_lang import *
-from pyontutils.core import OntTerm, makePrefixes, makeNamespaces
-from pyontutils.core import rdf, rdfs, owl
-from pyontutils.core import NIFRID, ilxtr
-from pyontutils.core import hasRole, definition
+from pyontutils.neurons.lang import *
+from pyontutils.core import OntTerm
+from pyontutils.namespaces import NIFRID, ilxtr
+from pyontutils.namespaces import hasRole, definition
+from pyontutils.namespaces import makePrefixes, makeNamespaces
+from pyontutils.closed_namespaces import rdf, rdfs, owl
 import rdflib
 from IPython import embed
 from process_csv import _main
-
 Config(name='neuron_data_lifted',
-       imports=['file:///tmp/output.ttl'])
+       #branch='neurons-demo',
+       imports=['https://raw.githubusercontent.com/SciCrunch/NIF-Ontology/neurons/ttl/generated/neurons/phenotype-direct.ttl',
+                'https://raw.githubusercontent.com/SciCrunch/NIF-Ontology/neurons/ttl/phenotype-core.ttl',
+                'https://raw.githubusercontent.com/SciCrunch/NIF-Ontology/neurons/ttl/phenotypes.ttl'])
 
 query = OntTerm.query
 #_main()

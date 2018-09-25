@@ -13,7 +13,8 @@ from IPython import embed
 from sqlalchemy import create_engine, inspect
 import pyontutils.core
 from pyontutils.utils import rowParse
-from pyontutils.core import makePrefixes, makeGraph, createOntology, PREFIXES, definition
+from pyontutils.core import makeGraph, createOntology
+from pyontutils.namespaces import makePrefixes, PREFIXES, definition, hasRole
 from pyontutils.qnamefix import cull_prefixes
 from pyontutils.scigraph_client import Cypher
 #from nlx_cat_map import nlxmapping
@@ -372,7 +373,7 @@ class convertCurated(basicConvert):
         else:
             values = value.split(',')
             for value in values:
-                self._resolve(value, pyontutils.core.hasRole)
+                self._resolve(value, hasRole)
 
     def Abbrev(self, value):
         #print(value)
