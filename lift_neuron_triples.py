@@ -10,7 +10,6 @@ import rdflib
 from IPython import embed
 from process_csv import _main
 Config(name='neuron_data_lifted',
-       #branch='neurons-demo',
        imports=['https://raw.githubusercontent.com/SciCrunch/NIF-Ontology/neurons/ttl/generated/neurons/phenotype-direct.ttl',
                 'https://raw.githubusercontent.com/SciCrunch/NIF-Ontology/neurons/ttl/phenotype-core.ttl',
                 'https://raw.githubusercontent.com/SciCrunch/NIF-Ontology/neurons/ttl/phenotypes.ttl'])
@@ -110,13 +109,13 @@ for class_ in g.subjects(rdflib.RDF.type, rdflib.OWL.Class):
         else:
             pes += layers
 
+        origLabel = list(g.objects(class_, rdflib.RDFS.label))[0]
         try:
-            n = Neuron(*pes, id_=class_)
+            n = Neuron(*pes, id_=class_, label=origLabel)
         except BaseException as e:
             print(class_)
             [print(pe) for pe in pes]
             raise e
-        n._origLabel = list(g.objects(class_, rdflib.RDFS.label))[0]
         neurons.append(n)
         #print(n)
 

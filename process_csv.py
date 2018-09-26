@@ -100,7 +100,7 @@ class basicConvert(rowParse):
     def _add_node(self, s, p, o): #Call for non Category/Id
         if o in self.cat_id_dict:
             o = self.cat_id_dict[o]
-            self.graph.add_node(s, p, o)
+            self.graph.add_trip(s, p, o)
         elif type(o) is str and ':Category:' in o: # FIXME needs a way to identify putative objectProperties
             if (self._add_node, (s, p, o)) in self.to_call:
                 self.graph.add_trip(s, p, o)
@@ -201,7 +201,7 @@ class basicConvert(rowParse):
             elif value.startswith('BAMS'):
                 self.cat_id_dict[self.category] = value  # in case someone referenced it...
                 self.bams_ids.add(value)
-                self._skip(value)
+                #self._skip(value)  # need some of these for neurons
             elif value.startswith('PRO:'):
                 self.cat_id_dict[self.category] = value  # in case someone referenced it...
                 self.pro_ids.add(value)
