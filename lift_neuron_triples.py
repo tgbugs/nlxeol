@@ -35,7 +35,9 @@ def oconvert(o):
         return ilxtr.SpinyPhenotype
     #elif o == 'medium':
         #return ilxtr.mediumQQQPhenotype
-    elif o in ('broad', 'medium', 'small', 'large', 'simple', 'nociception'):  # TODO
+    elif o in ('broad', 'medium', 'small', 'large', 'simple', 'nociception', 'beaded'):  # TODO
+        # FIXME there is the usual binding problem here, where these modify either
+        # a neuron phenotype or a dendrite phenotype
         return 'TODO'
 
 g = rdflib.Graph()
