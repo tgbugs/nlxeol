@@ -2,6 +2,8 @@
 
 from pyontutils.neurons.lang import *
 from pyontutils.core import OntTerm
+from pyontutils.utils import TermColors as tc
+from pyontutils.scigraph import Graph
 from pyontutils.namespaces import NIFRID, ilxtr
 from pyontutils.namespaces import hasRole, definition
 from pyontutils.namespaces import makePrefixes, makeNamespaces
@@ -10,22 +12,36 @@ import rdflib
 from IPython import embed
 from process_csv import _main
 Config(name='neuron_data_lifted',
+       ignore_existing=True,
        imports=['https://raw.githubusercontent.com/SciCrunch/NIF-Ontology/neurons/ttl/generated/neurons/phenotype-direct.ttl',
                 'https://raw.githubusercontent.com/SciCrunch/NIF-Ontology/neurons/ttl/phenotype-core.ttl',
                 'https://raw.githubusercontent.com/SciCrunch/NIF-Ontology/neurons/ttl/phenotypes.ttl'])
 
 query = OntTerm.query
-#_main()
-
+sgg = Graph()
 BIRNLEX, = makeNamespaces('BIRNLEX')
+repby = sgg.getEdges('IAO:0100001', limit=99999)
+nifga_uberon = {e['sub']:e['obj'] for e in repby['edges'] if 'UBERON' in e['obj']}
 
 def oconvert(o):
     o = o.strip()
+
+    mapping = dict(acetylcholine=OntTerm('SAO:185580330', label='Acetylcholine'),
+                   norepinephrine=OntTerm('NIFEXT:5013', label='Norepinephrine'),
+                   DB00368=OntTerm('NIFEXT:5013', label='Norepinephrine'),  # DB skipped in pcsv
+                   histamine=OntTerm('NIFEXT:5016', label='Histamine'),
+                   stellate=OntTerm('SAO:9271919883', label='Stellate'),  # may need a pheno repr of this?
+                   oxytocin=OntTerm('CHEBI:7872', label='oxytocin'),
+    )
+    mapping['visual cortex primary  layer 5'] = OntTerm('NLX:143939')
+
     if o == 'on':
         return ilxtr.ONspikesWithPhotons
     elif o == 'off':
         return ilxtr.OFFspikesWithoutPhotons
     elif o == 'principal':
+        return ilxtr.ProjectionPhenotype
+    elif o == 'projection':
         return ilxtr.ProjectionPhenotype
     elif o == 'intrinsic':
         return ilxtr.InterneuronPhenotype
@@ -33,6 +49,16 @@ def oconvert(o):
         return False, ilxtr.SpinyPhenotype
     elif o == 'spiny':
         return ilxtr.SpinyPhenotype
+    elif o == 'parvalbumin':
+        return OntTerm('NIFEXT:6', label='Parvalbumin').u
+    elif o == 'calbindin':
+        return OntTerm('PR:000004967', label='calbindin').u
+    elif o == 'GABA':
+        return OntTerm('SAO:229636300', label='GABA').u
+    elif o == 'calretinin':
+        return OntTerm('NIFEXT:5', label='Calretinin').u
+    elif o in mapping:
+        return mapping[o].URIRef
     #elif o == 'medium':
         #return ilxtr.mediumQQQPhenotype
     elif o in ('broad', 'medium', 'small', 'large', 'simple', 'nociception', 'beaded'):  # TODO
@@ -44,15 +70,21 @@ g = rdflib.Graph()
 g.parse('/tmp/neuron_data_curated.ttl', format='turtle')
 
 neurons = []
+todo_report = set()
 for class_ in g.subjects(rdflib.RDF.type, rdflib.OWL.Class):
     pes = []
     layers = []
+    origLabel = None
     for p, o in g.predicate_objects(class_):
         if p == rdf.type:
             Neuron.out_graph.add((class_, p, o))
             continue
-        elif p in (definition, rdfs.label, NIFRID.synonym):
+        elif p in (definition,
+                   NIFRID.synonym):
             Neuron.out_graph.add((class_, p, o))
+            continue
+        elif p == rdfs.label:
+            origLabel = o
             continue
         elif p == hasRole and o == BIRNLEX['2533']:
             p, o = ilxtr.hasCircuitRolePhenotype, ilxtr.ProjectionPhenotype
@@ -71,14 +103,16 @@ for class_ in g.subjects(rdflib.RDF.type, rdflib.OWL.Class):
                 if ofix is not None and ofix != 'TODO':
                     o = ofix
                 elif ofix == 'TODO':
-                    print(f'TODO: {Neuron.ng.qname(p):<40}{o}')
+                    print(tc.blue(f'TODO: {Neuron.ng.qname(p):<40}{o}'))
+                    todo_report.add(o)
                     continue
                 else:
                     omatch = next(query(label=o)).OntTerm
-                    print(f'TODO: {Neuron.ng.qname(p):<40}{o}\n\t{omatch!r}')
+                    print(tc.blue(f'TODO: {Neuron.ng.qname(p):<40}{o}\n\t{omatch!r}'))
                     o = omatch
             except StopIteration:
-                print(f'TODO: {Neuron.ng.qname(p):<40}{o}')
+                todo_report.add(o)
+                print(tc.blue(f'TODO: {Neuron.ng.qname(p):<40}{o}'))
                 continue
         try:
             if p == ilxtr.hasLayerLocationPhenotype:
@@ -89,9 +123,13 @@ for class_ in g.subjects(rdflib.RDF.type, rdflib.OWL.Class):
                 pes.append(Phenotype(o, p))
         except TypeError as e:
             print(p, o, e)
+
     if pes or layers:
         s = [p for p in pes if p.e == ilxtr.hasSomaLocatedIn]
-        l = [p for p in pes if p.e == ilxtr.hasLocationPhenotype]
+        _l = [p for p in pes if p.e == ilxtr.hasLocationPhenotype]
+        l = [nifga_uberon[p.p] if
+             p.p in nifga_uberon else
+             p for p in _l]
         if s and l:
             s0 = s[0]
             l0 = l[0]
@@ -100,7 +138,7 @@ for class_ in g.subjects(rdflib.RDF.type, rdflib.OWL.Class):
                 #raise ValueError(f'mismatch! {class_}\n{s[0]}\n{l[0]}')
                 pes.remove(s0)
                 pes.remove(l0)
-                # swap
+                # swap  # FIXME why are we doing this? TODO deal with redundant
                 pes.append(Phenotype(s0.p, l0.e))
                 pes.append(Phenotype(l0.p, s0.e))
             else:
@@ -111,9 +149,8 @@ for class_ in g.subjects(rdflib.RDF.type, rdflib.OWL.Class):
         else:
             pes += layers
 
-        origLabel = list(g.objects(class_, rdflib.RDFS.label))[0]
         try:
-            n = Neuron(*pes, id_=class_, label=origLabel)
+            n = Neuron(*pes, id_=class_, label=origLabel, override=True)
         except BaseException as e:
             print(class_)
             [print(pe) for pe in pes]
@@ -123,5 +160,6 @@ for class_ in g.subjects(rdflib.RDF.type, rdflib.OWL.Class):
 
 Neuron.write_python()
 Neuron.write()
+_ = [print(repr(str(s)) + ': ,') for s in sorted(todo_report)]
 embed()
 
