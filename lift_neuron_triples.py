@@ -32,8 +32,12 @@ def oconvert(o):
                    histamine=OntTerm('NIFEXT:5016', label='Histamine'),
                    stellate=OntTerm('SAO:9271919883', label='Stellate'),  # may need a pheno repr of this?
                    oxytocin=OntTerm('CHEBI:7872', label='oxytocin'),
+                   dopamine=OntTerm('CHEBI:18234', label='dopamine'),
+                   bistratified=OntTerm('ilxtr:BistratifiedPhenotype', label='Bistratified Phenotype'),
+                   motor=OntTerm('ilxtr:MotorPhenotype', label='Motor Phenotype')
     )
     mapping['visual cortex primary  layer 5'] = OntTerm('NLX:143939')
+    mapping['small pyramidal'] = OntTerm('ilxtr:SmallPyramidalPhenotype', 'Small Pyramidal Phenotype')
 
     if o == 'on':
         return ilxtr.ONspikesWithPhotons
