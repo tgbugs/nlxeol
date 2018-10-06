@@ -11,33 +11,34 @@ from pyontutils.closed_namespaces import rdf, rdfs, owl
 import rdflib
 from IPython import embed
 from process_csv import _main
-Config(name='neuron_data_lifted',
-       ignore_existing=True,
-       imports=['https://raw.githubusercontent.com/SciCrunch/NIF-Ontology/neurons/ttl/generated/neurons/phenotype-direct.ttl',
-                'https://raw.githubusercontent.com/SciCrunch/NIF-Ontology/neurons/ttl/phenotype-core.ttl',
-                'https://raw.githubusercontent.com/SciCrunch/NIF-Ontology/neurons/ttl/phenotypes.ttl'])
-
+config = Config(name='neuron_data_lifted',
+                ignore_existing=True,
+                imports=['https://raw.githubusercontent.com/SciCrunch/NIF-Ontology/neurons/ttl/generated/neurons/phenotype-direct.ttl',
+                         'https://raw.githubusercontent.com/SciCrunch/NIF-Ontology/neurons/ttl/phenotype-core.ttl',
+                         'https://raw.githubusercontent.com/SciCrunch/NIF-Ontology/neurons/ttl/phenotypes.ttl'])
+config.load_existing()
 query = OntTerm.query
 sgg = Graph()
 BIRNLEX, = makeNamespaces('BIRNLEX')
 repby = sgg.getEdges('IAO:0100001', limit=99999)
 nifga_uberon = {e['sub']:e['obj'] for e in repby['edges'] if 'UBERON' in e['obj']}
 
+mapping = dict(acetylcholine=OntTerm('SAO:185580330', label='Acetylcholine'),
+                norepinephrine=OntTerm('NIFEXT:5013', label='Norepinephrine'),
+                DB00368=OntTerm('NIFEXT:5013', label='Norepinephrine'),  # DB skipped in pcsv
+                histamine=OntTerm('NIFEXT:5016', label='Histamine'),
+                stellate=OntTerm('SAO:9271919883', label='Stellate'),  # may need a pheno repr of this?
+                oxytocin=OntTerm('CHEBI:7872', label='oxytocin'),
+                dopamine=OntTerm('CHEBI:18234', label='dopamine'),
+                bistratified=OntTerm('ilxtr:BistratifiedPhenotype', label='Bistratified Phenotype'),
+                motor=OntTerm('ilxtr:MotorPhenotype', label='Motor Phenotype')
+)
+mapping['visual cortex primary  layer 5'] = OntTerm('NLX:143939')
+mapping['small pyramidal'] = OntTerm('ilxtr:SmallPyramidalPhenotype', label='Small Pyramidal Phenotype')
+
+
 def oconvert(o):
     o = o.strip()
-
-    mapping = dict(acetylcholine=OntTerm('SAO:185580330', label='Acetylcholine'),
-                   norepinephrine=OntTerm('NIFEXT:5013', label='Norepinephrine'),
-                   DB00368=OntTerm('NIFEXT:5013', label='Norepinephrine'),  # DB skipped in pcsv
-                   histamine=OntTerm('NIFEXT:5016', label='Histamine'),
-                   stellate=OntTerm('SAO:9271919883', label='Stellate'),  # may need a pheno repr of this?
-                   oxytocin=OntTerm('CHEBI:7872', label='oxytocin'),
-                   dopamine=OntTerm('CHEBI:18234', label='dopamine'),
-                   bistratified=OntTerm('ilxtr:BistratifiedPhenotype', label='Bistratified Phenotype'),
-                   motor=OntTerm('ilxtr:MotorPhenotype', label='Motor Phenotype')
-    )
-    mapping['visual cortex primary  layer 5'] = OntTerm('NLX:143939')
-    mapping['small pyramidal'] = OntTerm('ilxtr:SmallPyramidalPhenotype', 'Small Pyramidal Phenotype')
 
     if o == 'on':
         return ilxtr.ONspikesWithPhotons
@@ -98,7 +99,7 @@ for class_ in g.subjects(rdflib.RDF.type, rdflib.OWL.Class):
             term = OntTerm(o)
             if term.validated and term.deprecated:
                 rb = term('replacedBy:')['replacedBy:']
-                if rb:
+                if rb and rb[0] is not None:
                     o = OntTerm(rb[0])
 
         if isinstance(o, rdflib.Literal):
