@@ -113,6 +113,7 @@ for class_ in g.subjects(rdflib.RDF.type, rdflib.OWL.Class):
                     continue
                 else:
                     omatch = next(query(label=o)).OntTerm
+                    omatch.set_next_repr('curie', 'label')
                     print(tc.blue(f'TODO: {Neuron.ng.qname(p):<40}{o}\n\t{omatch!r}'))
                     o = omatch
             except StopIteration:
@@ -125,7 +126,8 @@ for class_ in g.subjects(rdflib.RDF.type, rdflib.OWL.Class):
             elif isinstance(o, tuple) and not o[0]:
                 pes.append(NegPhenotype(o[1], p))
             else:
-                pes.append(Phenotype(o, p))
+                label = o.label if isinstance(o, OntTerm) else None
+                pes.append(Phenotype(o, p, label=label, override=bool(label)))
         except TypeError as e:
             print(p, o, e)
 
