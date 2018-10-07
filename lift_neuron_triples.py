@@ -29,12 +29,16 @@ nifga_uberon = {e['sub']:e['obj'] for e in repby['edges'] if 'UBERON' in e['obj'
 mapping = dict(acetylcholine=OntTerm('SAO:185580330', label='Acetylcholine'),
                norepinephrine=OntTerm('NIFEXT:5013', label='Norepinephrine'),
                DB00368=OntTerm('NIFEXT:5013', label='Norepinephrine'),  # DB skipped in pcsv
+               DB00067=OntTerm('NIFEXT:5124', label='Vasopressin'),
                histamine=OntTerm('NIFEXT:5016', label='Histamine'),
                stellate=OntTerm('SAO:9271919883', label='Stellate'),  # may need a pheno repr of this?
                oxytocin=OntTerm('CHEBI:7872', label='oxytocin'),
                dopamine=OntTerm('CHEBI:18234', label='dopamine'),
+               vasopressin=OntTerm('NIFEXT:5124', label='Vasopressin'),  # FIXME not in chebit?
                bistratified=OntTerm('ilxtr:BistratifiedPhenotype', label='Bistratified Phenotype'),
                motor=OntTerm('ilxtr:MotorPhenotype', label='Motor Phenotype'),
+               postsubiculum=OntTerm('UBERON:0035971', label='postsubiculum'),
+               medulla=OntTerm('UBERON:0001896', label='medulla oblongata'),
 )
 mapping.update({
     'cortical layer 2-3': Layers.L23,
@@ -43,7 +47,25 @@ mapping.update({
     'small pyramidal': OntTerm('ilxtr:SmallPyramidalPhenotype', label='Small Pyramidal Phenotype'),
     'cerebellar nuclei': OntTerm('UBERON:0002130', label='cerebellar nuclear complex'),
     'abducens nucleus': OntTerm('UBERON:0002682', label='abducens nucleus'),
-})
+    'accessory nucleus': OntTerm('NLX:39810', label='Accessory nucleus'),  # TODO add to uberon?
+    'accumbens nucleus core': OntTerm('UBERON:0012170', label='core of nucleus accumbens'),
+    'accumbens nucleus shell': OntTerm('UBERON:0012171', label='shell of nucleus accumbens'),
+    'anterior piriform cortex': OntTerm('NLX:12056', label='Anterior piriform cortex'),  # TODO add to uberon?
+    'superior colliculus stratum opticum': OntTerm('NLX:144109', label='Superior colliculus stratum opticum'),  # TODO add to uberon?
+    'dorsal motor nucleus of the vagus nerve': OntTerm('UBERON:0002870', label='dorsal motor nucleus of vagus nerve'),
+    'nitric oxide synthase brain': OntTerm('PR:000011326', label='nitric oxide synthase, brain'),
+    # classification types
+    })
+ctypes = {
+    'type 1': 'ilxtr:cell-classification-types/1',  # is it safe to I?
+    'type 2': 'ilxtr:cell-classification-types/2',  # is it safe to II?
+    'type 3': 'ilxtr:cell-classification-types/3',  # is it safe to III?
+    'type 4': 'ilxtr:cell-classification-types/4',
+    'type 5': 'ilxtr:cell-classification-types/5',
+    'type 6': 'ilxtr:cell-classification-types/6',
+    'type 7': 'ilxtr:cell-classification-types/7',
+}
+mapping.update({k:OntTerm(v, label=k) for k, v in ctypes.items()})
 
 direct_fix= dict(
     instrinsic=CUT.inter,
@@ -51,15 +73,35 @@ direct_fix= dict(
     ivy=BBP.IVY,
     thick=BBP.Th,
     trilaminar=BBP.TRI,
+    tufted=BBP.Tu,
+    nonpyramidal=NegPhenotype(ilxtr.PyramidalPhenotype, ilxtr.hasMorphologicalPhenotype),
 )
 direct_fix.update({
+    'visual cortex primary layer 5': (Layers.L5, Regions.V1),
     OntId('NLX:143939').iri: (Layers.L5, Regions.V1),
+
 })
 
 direct_fix = {k:v if isinstance(v, tuple) else (v,) for k, v in direct_fix.items()}
 
 pofix = {
     ('ilxtr:hasContactWith', 'cone'): Phenotype('SAO:1103104164', 'ilxtr:hasContactWith'),
+    ('ilxtr:hasContactWith', 'rod'): Phenotype('NLXCELL:100212', 'ilxtr:hasContactWith'),
+
+    # FIXME for motor would prefer to define this as hasProjectionTargetCellType some muscle ...
+    (OntId('RO:0000087', label='has role').curie, OntTerm('NLX:54005', label='Motor role of nerve cell').iri):
+    Phenotype(ilxtr.MotorPhenotype, ilxtr.hasCircuitRolePhenotype),
+    ('ilxtr:hasCircuitRolePhenotype', 'motor'): Phenotype(ilxtr.MotorPhenotype, ilxtr.hasCircuitRolePhenotype),
+
+    (OntId('RO:0000087', label='has role').curie, OntTerm('NLX:153', label='Sensory reception role').iri):
+    # FIXME not clear that these should be in the defining criteria or whether they should be entailed criteria
+    # ie, there is a larger question here, which is what subsets of phenotypes are sufficient to distinguish
+    # a neuron type without requiring information from other modalities
+    # NOTE: SensoryPhenotype is not a circuit role in the sense that it is not a projection phenotype
+    # in the same way as the intrinsic and principle are ... maybe it is a dendrite phenotype?
+    # eh, sensory neurons are weird
+    Phenotype(ilxtr.SensoryPhenotype, ilxtr.hasCircuitRolePhenotype),
+    ('ilxtr:hasCircuitRolePhenotype', 'sensory'): Phenotype(ilxtr.SensoryPhenotype, ilxtr.hasCircuitRolePhenotype),
 }
 def poconvert(p, o):
     po = OntId(p).curie, str(o)
@@ -135,6 +177,10 @@ for class_ in g.subjects(rdflib.RDF.type, rdflib.OWL.Class):
                 rb = term('replacedBy:')['replacedBy:']
                 if rb and rb[0] is not None:
                     o = OntTerm(rb[0])
+        elif p == ilxtr.hasClassificationPhenotype:
+            maybe_o = oconvert(o)
+            if maybe_o:
+                o = maybe_o
 
         pf = poconvert(p, o)
         if pf is not None:
@@ -153,7 +199,10 @@ for class_ in g.subjects(rdflib.RDF.type, rdflib.OWL.Class):
                     todo_report.add((o, p))
                     continue
                 else:
-                    omatch = next(query(label=o)).OntTerm
+                    try:
+                        omatch = next(query(label=o)).OntTerm
+                    except StopIteration:
+                        omatch = next(query(term=o)).OntTerm  # ok to go more general since we aren't autoinserting
                     #omatch.set_next_repr('curie', 'label')
                     #print(tc.blue(f'TODO: {Neuron.ng.qname(p):<40}{o}\n\t{omatch!r}'))
                     t = omatch
@@ -165,6 +214,7 @@ for class_ in g.subjects(rdflib.RDF.type, rdflib.OWL.Class):
                             t.predicates['rdfs:subClassOf']
 
                     match_report[o] = t
+                    todo_report.add((o, p))  # stick it in for reference on the predicate
                     continue  # save them, but they are too diverse
                     o = t
             except StopIteration:
@@ -186,7 +236,7 @@ for class_ in g.subjects(rdflib.RDF.type, rdflib.OWL.Class):
                 label = o.label if isinstance(o, OntTerm) else None
                 pes.append(Phenotype(o, p, label=label, override=bool(label)))
         except TypeError as e:
-            print(__file__, e.__traceback__.tb_lineno, p, o, e)
+            print(*map(lambda s:tc.red(str(s)), (__file__, e.__traceback__.tb_lineno, OntTerm(p), OntTerm(o), '\n', e)))
 
     if pes or layers:
         s = [p for p in pes if p.e == ilxtr.hasSomaLocatedIn]
@@ -221,6 +271,9 @@ for class_ in g.subjects(rdflib.RDF.type, rdflib.OWL.Class):
             raise e
         neurons.append(n)
         #print(n)
+    elif origLabel:
+        Neuron.out_graph.add((class_, rdfs.label, origLabel))
+        
 
 Neuron.write_python()
 Neuron.write()
