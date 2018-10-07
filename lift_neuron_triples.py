@@ -79,6 +79,7 @@ direct_fix= dict(
 )
 direct_fix.update({
     'visual cortex primary layer 5': (Layers.L5, Regions.V1),
+    'visual cortex primary layer 2-3': (Layers.L23, Regions.V1),
     OntId('NLX:143939').iri: (Layers.L5, Regions.V1),
 
 })
