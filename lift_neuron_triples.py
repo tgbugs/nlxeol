@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 
+from pprint import pprint
 from pyontutils.neurons.lang import *
-from pyontutils.core import OntTerm
+from pyontutils.core import OntTerm, OntId
 from pyontutils.utils import TermColors as tc
 from pyontutils.scigraph import Graph
 from pyontutils.namespaces import NIFRID, ilxtr
 from pyontutils.namespaces import hasRole, definition
 from pyontutils.namespaces import makePrefixes, makeNamespaces
 from pyontutils.closed_namespaces import rdf, rdfs, owl
+from pyontutils.phenotype_namespaces import BBP, CUT, Layers, Regions
 import rdflib
 from IPython import embed
 from process_csv import _main
@@ -33,8 +35,25 @@ mapping = dict(acetylcholine=OntTerm('SAO:185580330', label='Acetylcholine'),
                 bistratified=OntTerm('ilxtr:BistratifiedPhenotype', label='Bistratified Phenotype'),
                 motor=OntTerm('ilxtr:MotorPhenotype', label='Motor Phenotype')
 )
-mapping['visual cortex primary  layer 5'] = OntTerm('NLX:143939')
-mapping['small pyramidal'] = OntTerm('ilxtr:SmallPyramidalPhenotype', label='Small Pyramidal Phenotype')
+mapping.update({
+    'cortical layer 2-3': Layers.L23,
+    'cortical layer 5-6': Layers.L56,
+    #'visual cortex primary  layer 5': (Layers.L5, Regions.V1), #OntTerm('NLX:143939'),
+    'small pyramidal': OntTerm('ilxtr:SmallPyramidalPhenotype', label='Small Pyramidal Phenotype'),
+})
+
+direct_fix= dict(
+    ivy=BBP.IVY,
+    intrinsic=CUT.inter,
+    thick=BBP.Th
+    trilaminar=BBP.TRI
+
+)
+direct_fix.update({
+    OntId('NLX:143939').u: (Layers.L5, Regions.V1),
+})
+
+direct_fix = {k:v if isinstance(v, tuple) else (v,) for k, v in direct_fix.items()}
 
 
 def oconvert(o):
@@ -63,7 +82,11 @@ def oconvert(o):
     elif o == 'calretinin':
         return OntTerm('NIFEXT:5', label='Calretinin').u
     elif o in mapping:
-        return mapping[o].URIRef
+        v = mapping[o]
+        if isinstance(v, OntTerm):
+            return v.URIRef
+        else:
+            return v
     #elif o == 'medium':
         #return ilxtr.mediumQQQPhenotype
     elif o in ('broad', 'medium', 'small', 'large', 'simple', 'nociception', 'beaded'):  # TODO
@@ -76,6 +99,7 @@ g.parse('/tmp/neuron_data_curated.ttl', format='turtle')
 
 neurons = []
 todo_report = set()
+match_report = {}
 for class_ in g.subjects(rdflib.RDF.type, rdflib.OWL.Class):
     pes = []
     layers = []
@@ -102,34 +126,45 @@ for class_ in g.subjects(rdflib.RDF.type, rdflib.OWL.Class):
                 if rb and rb[0] is not None:
                     o = OntTerm(rb[0])
 
-        if isinstance(o, rdflib.Literal):
+        if o in direct_fix:
+            pes.extend(direct_fix[o])
+            continue
+        elif isinstance(o, rdflib.Literal):
             try:
                 ofix = oconvert(o)
                 if ofix is not None and ofix != 'TODO':
                     o = ofix
                 elif ofix == 'TODO':
-                    print(tc.blue(f'TODO: {Neuron.ng.qname(p):<40}{o}'))
-                    todo_report.add(o)
+                    #print(tc.blue(f'TODO: {Neuron.ng.qname(p):<40}{o}'))
+                    todo_report.add((o, p))
                     continue
                 else:
                     omatch = next(query(label=o)).OntTerm
-                    omatch.set_next_repr('curie', 'label')
-                    print(tc.blue(f'TODO: {Neuron.ng.qname(p):<40}{o}\n\t{omatch!r}'))
+                    #omatch.set_next_repr('curie', 'label')
+                    #print(tc.blue(f'TODO: {Neuron.ng.qname(p):<40}{o}\n\t{omatch!r}'))
+                    match_report[o] = omatch
+                    continue  # save them, but they are too diverse
                     o = omatch
             except StopIteration:
-                todo_report.add(o)
-                print(tc.blue(f'TODO: {Neuron.ng.qname(p):<40}{o}'))
+                todo_report.add((o, p))
+                #print(tc.blue(f'TODO: {Neuron.ng.qname(p):<40}{o}'))
                 continue
         try:
             if p == ilxtr.hasLayerLocationPhenotype:
-                layers.append(Phenotype(o, p))
+                if isinstance(o, graphBase):  # pheno or logical
+                    pes.append(o)
+                elif isinstance(o, tuple) and all(isinstance(e, graphBase) for e in o):
+                    pes.extend(o)
+                else:
+                    pheno = Phenotype(o, p)
+                    layers.append(pheno)
             elif isinstance(o, tuple) and not o[0]:
                 pes.append(NegPhenotype(o[1], p))
             else:
                 label = o.label if isinstance(o, OntTerm) else None
                 pes.append(Phenotype(o, p, label=label, override=bool(label)))
         except TypeError as e:
-            print(p, o, e)
+            print(__file__, e.__traceback__.tb_lineno, p, o, e)
 
     if pes or layers:
         s = [p for p in pes if p.e == ilxtr.hasSomaLocatedIn]
@@ -141,13 +176,13 @@ for class_ in g.subjects(rdflib.RDF.type, rdflib.OWL.Class):
             s0 = s[0]
             l0 = l[0]
             if str(s0.p) != str(l0.p):  # FIXME should not have to str these!
-                print(f'WARNING: mismatch! {class_}\n{s[0]}\n{l[0]}')
+                print(tc.yellow(f'WARNING: mismatch! {class_}\n{s[0]}\n{l[0]}'))
                 #raise ValueError(f'mismatch! {class_}\n{s[0]}\n{l[0]}')
                 pes.remove(s0)
                 pes.remove(l0)
                 # swap  # FIXME why are we doing this? TODO deal with redundant
                 pes.append(Phenotype(s0.p, l0.e))
-                pes.append(Phenotype(l0.p, s0.e))
+                #pes.append(Phenotype(l0.p, s0.e))
             else:
                 pes.remove(l[0])
 
@@ -167,6 +202,10 @@ for class_ in g.subjects(rdflib.RDF.type, rdflib.OWL.Class):
 
 Neuron.write_python()
 Neuron.write()
-_ = [print(repr(str(s)) + ': ,') for s in sorted(todo_report)]
-embed()
+for o, p in sorted(todo_report, key=lambda t:t[::-1]):
+    s = repr(str(o)) + ': ,'
+    print(f'{s:<65}  # ' + repr(OntId(iri=p)))
 
+OntTerm.repr_args = 'curie', 'label', #'definition'
+pprint({str(k):v for k, v in match_report.items()})
+embed()
