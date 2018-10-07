@@ -53,6 +53,7 @@ mapping.update({
     'anterior piriform cortex': OntTerm('NLX:12056', label='Anterior piriform cortex'),  # TODO add to uberon?
     'superior colliculus stratum opticum': OntTerm('NLX:144109', label='Superior colliculus stratum opticum'),  # TODO add to uberon?
     'dorsal motor nucleus of the vagus nerve': OntTerm('UBERON:0002870', label='dorsal motor nucleus of vagus nerve'),
+    'spinal cord intermediate horn': OntTerm('UBERON:0004676', label='spinal cord lateral horn'),  # synonym match
     'nitric oxide synthase brain': OntTerm('PR:000011326', label='nitric oxide synthase, brain'),
     # classification types
     })
