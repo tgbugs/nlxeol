@@ -1,4 +1,5 @@
-#!/usr/bin/env python3
+#!/usr/bin/env pypy3
+#!/usr/bin/env python3.6
 
 from pprint import pprint
 from pyontutils.neurons.lang import *
@@ -26,35 +27,44 @@ repby = sgg.getEdges('IAO:0100001', limit=99999)
 nifga_uberon = {e['sub']:e['obj'] for e in repby['edges'] if 'UBERON' in e['obj']}
 
 mapping = dict(acetylcholine=OntTerm('SAO:185580330', label='Acetylcholine'),
-                norepinephrine=OntTerm('NIFEXT:5013', label='Norepinephrine'),
-                DB00368=OntTerm('NIFEXT:5013', label='Norepinephrine'),  # DB skipped in pcsv
-                histamine=OntTerm('NIFEXT:5016', label='Histamine'),
-                stellate=OntTerm('SAO:9271919883', label='Stellate'),  # may need a pheno repr of this?
-                oxytocin=OntTerm('CHEBI:7872', label='oxytocin'),
-                dopamine=OntTerm('CHEBI:18234', label='dopamine'),
-                bistratified=OntTerm('ilxtr:BistratifiedPhenotype', label='Bistratified Phenotype'),
-                motor=OntTerm('ilxtr:MotorPhenotype', label='Motor Phenotype')
+               norepinephrine=OntTerm('NIFEXT:5013', label='Norepinephrine'),
+               DB00368=OntTerm('NIFEXT:5013', label='Norepinephrine'),  # DB skipped in pcsv
+               histamine=OntTerm('NIFEXT:5016', label='Histamine'),
+               stellate=OntTerm('SAO:9271919883', label='Stellate'),  # may need a pheno repr of this?
+               oxytocin=OntTerm('CHEBI:7872', label='oxytocin'),
+               dopamine=OntTerm('CHEBI:18234', label='dopamine'),
+               bistratified=OntTerm('ilxtr:BistratifiedPhenotype', label='Bistratified Phenotype'),
+               motor=OntTerm('ilxtr:MotorPhenotype', label='Motor Phenotype'),
 )
 mapping.update({
     'cortical layer 2-3': Layers.L23,
     'cortical layer 5-6': Layers.L56,
     #'visual cortex primary  layer 5': (Layers.L5, Regions.V1), #OntTerm('NLX:143939'),
     'small pyramidal': OntTerm('ilxtr:SmallPyramidalPhenotype', label='Small Pyramidal Phenotype'),
+    'cerebellar nuclei': OntTerm('UBERON:0002130', label='cerebellar nuclear complex'),
+    'abducens nucleus': OntTerm('UBERON:0002682', label='abducens nucleus'),
 })
 
 direct_fix= dict(
+    instrinsic=CUT.inter,
+    interneuron=CUT.inter,
     ivy=BBP.IVY,
-    intrinsic=CUT.inter,
-    thick=BBP.Th
-    trilaminar=BBP.TRI
-
+    thick=BBP.Th,
+    trilaminar=BBP.TRI,
 )
 direct_fix.update({
-    OntId('NLX:143939').u: (Layers.L5, Regions.V1),
+    OntId('NLX:143939').iri: (Layers.L5, Regions.V1),
 })
 
 direct_fix = {k:v if isinstance(v, tuple) else (v,) for k, v in direct_fix.items()}
 
+pofix = {
+    ('ilxtr:hasContactWith', 'cone'): Phenotype('SAO:1103104164', 'ilxtr:hasContactWith'),
+}
+def poconvert(p, o):
+    po = OntId(p).curie, str(o)
+    if po in pofix:
+        return pofix[po]
 
 def oconvert(o):
     o = o.strip()
@@ -126,8 +136,12 @@ for class_ in g.subjects(rdflib.RDF.type, rdflib.OWL.Class):
                 if rb and rb[0] is not None:
                     o = OntTerm(rb[0])
 
-        if o in direct_fix:
-            pes.extend(direct_fix[o])
+        pf = poconvert(p, o)
+        if pf is not None:
+            pes.append(pf)
+            continue
+        elif str(o) in direct_fix:
+            pes.extend(direct_fix[str(o)])
             continue
         elif isinstance(o, rdflib.Literal):
             try:
@@ -142,9 +156,17 @@ for class_ in g.subjects(rdflib.RDF.type, rdflib.OWL.Class):
                     omatch = next(query(label=o)).OntTerm
                     #omatch.set_next_repr('curie', 'label')
                     #print(tc.blue(f'TODO: {Neuron.ng.qname(p):<40}{o}\n\t{omatch!r}'))
-                    match_report[o] = omatch
+                    t = omatch
+                    if 'oboInOwl:id' in t.predicates:  # uberon replacement from ilx
+                        t = OntTerm(t.predicates['oboInOwl:id'])
+                        t('partOf:', 'rdfs:subClassOf', as_term=True)
+                        if OntId('UBERON:0002301', label='layer of neocortex') in t.predicates['rdfs:subClassOf']:
+                            region = t.predicates['partOf:']
+                            t.predicates['rdfs:subClassOf']
+
+                    match_report[o] = t
                     continue  # save them, but they are too diverse
-                    o = omatch
+                    o = t
             except StopIteration:
                 todo_report.add((o, p))
                 #print(tc.blue(f'TODO: {Neuron.ng.qname(p):<40}{o}'))
