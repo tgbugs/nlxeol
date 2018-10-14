@@ -87,8 +87,8 @@ direct_fix.update({
 direct_fix = {k:v if isinstance(v, tuple) else (v,) for k, v in direct_fix.items()}
 
 pofix = {
-    ('ilxtr:hasContactWith', 'cone'): Phenotype('SAO:1103104164', 'ilxtr:hasContactWith'),
-    ('ilxtr:hasContactWith', 'rod'): Phenotype('NLXCELL:100212', 'ilxtr:hasContactWith'),
+    ('ilxtr:hasConnectionPhenotype', 'cone'): Phenotype('SAO:1103104164', 'ilxtr:hasConnectionPhenotype'),
+    ('ilxtr:hasConnectionPhenotype', 'rod'): Phenotype('NLXCELL:100212', 'ilxtr:hasConnectionPhenotype'),
 
     # FIXME for motor would prefer to define this as hasProjectionTargetCellType some muscle ...
     (OntId('RO:0000087', label='has role').curie, OntTerm('NLX:54005', label='Motor role of nerve cell').iri):
