@@ -1,4 +1,13 @@
 #!/usr/bin/env python3.6
+"""Convert neurolex dump spreadsheets to rdf
+
+Usage:
+    process-csv [options]
+
+Options:
+    -d --debug    embed after complete
+
+"""
 
 import io
 import os
@@ -590,7 +599,7 @@ class convertCurated(basicConvert):
         if value:
             pass
 
-        pheno_edge = 'ilxtr:hasExpressionPhenotype'
+        pheno_edge = 'ilxtr:hasMolecularPhenotype'
         
         Add_GABA = ':Category:GABA receptor'
         Add_Glutamate = ':Category:Glutamate receptor'
@@ -951,7 +960,9 @@ def main():  # xrefs
     ng.write()
     #embed()
 
-def _main():  # old
+def neurons_main():  # old
+    from docopt import docopt
+    args = docopt(__doc__)
 
     # TODO extracly only NLX only with superclasses for fariba
     # FIXME there is an off by 1 error
@@ -1058,7 +1069,8 @@ def _main():  # old
     state = convertCurated(new_graph, new_rows, set())
     new_graph.del_namespace('PRO')
     new_graph.write()
-    embed()
+    if args['--debug']:
+        embed()
     return
 
     #_ = [print(i) for i in sorted([datetime.strptime(t, '%d %B %Y') for _ in state._set_ModifiedDate for t in _.split(',') if _])]
@@ -1092,4 +1104,4 @@ def _main():  # old
     embed()
 
 if __name__ == '__main__':
-    _main()
+    neurons_main()

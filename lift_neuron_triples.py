@@ -1,5 +1,14 @@
 #!/usr/bin/env pypy3
 #!/usr/bin/env python3.6
+"""Convert neuron classes from processed neurolex rdf into neurons
+
+Usage:
+    lift-neuron-triples [options]
+
+Options:
+    -d --debug    embed after complete
+
+"""
 
 from pprint import pprint
 from pyontutils.neurons.lang import *
@@ -13,7 +22,10 @@ from pyontutils.closed_namespaces import rdf, rdfs, owl
 from pyontutils.phenotype_namespaces import BBP, CUT, Layers, Regions
 import rdflib
 from IPython import embed
-from process_csv import _main
+from process_csv import neurons_main
+from docopt import docopt
+args = docopt(__doc__)
+
 config = Config(name='neuron_data_lifted',
                 ignore_existing=True,
                 imports=['https://raw.githubusercontent.com/SciCrunch/NIF-Ontology/neurons/ttl/generated/neurons/phenotype-direct.ttl',
@@ -285,4 +297,5 @@ for o, p in sorted(todo_report, key=lambda t:t[::-1]):
 
 OntTerm.repr_args = 'curie', 'label', #'definition'
 pprint({str(k):v for k, v in match_report.items()})
-embed()
+if args['--debug']:
+    embed()
