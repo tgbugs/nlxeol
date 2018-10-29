@@ -623,7 +623,7 @@ class convertCurated(basicConvert):
             #print(value)
             pass
 
-        pheno_edge = 'ilxtr:hasExpressionPhenotype'
+        pheno_edge = 'ilxtr:hasMolecularPhenotype'
 
         to_skip = {':Category:?', ':Category:Unknown', ''}
         if value in to_skip:
