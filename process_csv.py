@@ -23,7 +23,7 @@ from sqlalchemy import create_engine, inspect
 import pyontutils.core
 from pyontutils.utils import rowParse
 from pyontutils.core import makeGraph, createOntology
-from pyontutils.namespaces import makePrefixes, PREFIXES, definition, hasRole
+from pyontutils.namespaces import makePrefixes, PREFIXES, definition, hasRole, ilxtr
 from pyontutils.qnamefix import cull_prefixes
 from pyontutils.scigraph_client import Cypher
 #from nlx_cat_map import nlxmapping
@@ -168,7 +168,7 @@ class basicConvert(rowParse):
             raise self.SkipError
         elif not value:
             raise BaseException('Category is empty, this should not be possible! Row = %s' % self.line) #there was a type on your version here, you had empyt instead of empty
-        self.category = self.neurolex_url + value.replace(' ','_')  # fix for unknown url type
+        self.category = self.neurolex_url + value.replace(' ','_').strip(':')  # fix for unknown url type
         self._category = value.split(':',2)[-1].replace(' ','_')
 
     def Id(self, value):
@@ -256,7 +256,7 @@ class basicConvert(rowParse):
         self.cat_id_dict[self.category] = self.id_
         self.graph.add_class(self.id_)
 
-        #self.graph.add_node(self.id_, 'OBOANN:neurolex_category', self.category)
+        self.graph.g.add((self.graph.expand(self.id_), ilxtr.neurolexCategory, rdflib.URIRef(self.category)))
             
         #else:
          #   self.id_ = self.fake_url_prefix + value  # TODO need proper curie prefixes
@@ -287,7 +287,7 @@ class basicConvert(rowParse):
             self.graph.g.remove((self.graph.expand(self.id_), rdflib.RDF.type, rdflib.OWL.Class))
             self._skip(self.id_)
 
-        value = self.neurolex_url + ':Category:' + value  # fix for :Category: being an unknown prefix
+        value = self.neurolex_url + 'Category:' + value  # fix for :Category: being an unknown prefix
         #if 'University' in value:
             #print(value)
         if value in self.cat_id_dict:
