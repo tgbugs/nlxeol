@@ -135,12 +135,18 @@ class basicConvert(rowParse):
         value = value.strip(':')
         print(value)
         if value in self.cat_id_dict:
-            print('YAY')
             value = self.cat_id_dict[value]
+            print('YAY', repr(value))
+            # fixes for case where an object is never present as a subject
+            if value == rdflib.URIRef('http://ontology.neuinfo.org/NIF/BiomaterialEntities/NIF-GrossAnatomy.owl#nlx_20558'):
+                value = rdflib.URIRef('http://uri.neuinfo.org/nif/nifstd/nlx_20558')
+
             self.graph.add_trip(self.id_, edge, value)
+
         else:
             def func(obj, this=self.id_):
                 self._add_node(this, edge, obj)
+
             self.pre_ref_dict[value].add(func)
 
     def _skip(self, value):
@@ -971,7 +977,7 @@ def neurons_main():  # old
     #scr_graph = get_scr()
     #existing_xrefs = set([s_o[1].toPython() for s_o in scr_graph.subject_objects(rdflib.term.URIRef('http://www.geneontology.org/formats/oboInOwl#hasDbXref'))])
 
-    ONT_PATH = 'http:/github.com/tgbugs/nlxeol/'
+    ONT_PATH = 'http://github.com/tgbugs/nlxeol/'
     #filename = 'neurolex_basic'
     filename = 'neuron_data_curated'
     PREFIXES = {'to':'do',
