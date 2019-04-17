@@ -11,15 +11,15 @@ Options:
 """
 
 from pprint import pprint
-from pyontutils.neurons.lang import *
-from pyontutils.core import OntTerm, OntId
+from neurondm.lang import *
+from neurondm.phenotype_namespaces import BBP, CUT, Layers, Regions
+#from pyontutils.core import OntTerm, OntId
 from pyontutils.utils import TermColors as tc
 from pyontutils.scigraph import Graph
 from pyontutils.namespaces import NIFRID, ilxtr
 from pyontutils.namespaces import hasRole, definition
 from pyontutils.namespaces import makePrefixes, makeNamespaces
 from pyontutils.closed_namespaces import rdf, rdfs, owl
-from pyontutils.phenotype_namespaces import BBP, CUT, Layers, Regions
 import rdflib
 from IPython import embed
 from process_csv import neurons_main
@@ -248,6 +248,7 @@ for class_ in g.subjects(rdflib.RDF.type, rdflib.OWL.Class):
                 pes.append(NegPhenotype(o[1], p))
             else:
                 label = o.label if isinstance(o, OntTerm) else None
+                print(o, p)
                 pes.append(Phenotype(o, p, label=label, override=bool(label)))
         except TypeError as e:
             print(*map(lambda s:tc.red(str(s)), (__file__, e.__traceback__.tb_lineno, OntTerm(p), OntTerm(o), '\n', e)))
