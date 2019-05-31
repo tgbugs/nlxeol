@@ -139,16 +139,20 @@ def oconvert(o):
         return ilxtr.InterneuronPhenotype
     elif o == 'smooth':
         return False, ilxtr.SpinyPhenotype
+    elif o == 'common spiny':  # common is a dead word, that probably indicates frequency of occurance
+        return ilxtr.SpinyPhenotype
     elif o == 'spiny':
         return ilxtr.SpinyPhenotype
     elif o == 'parvalbumin':
-        return OntTerm('NIFEXT:6', label='Parvalbumin').u
+        return OntTerm('PR:000013502', label='parvalbumin alpha').u
+        #return OntTerm('NIFEXT:6', label='Parvalbumin').u
     elif o == 'calbindin':
         return OntTerm('PR:000004967', label='calbindin').u
     elif o == 'GABA':
         return OntTerm('SAO:229636300', label='GABA').u
     elif o == 'calretinin':
-        return OntTerm('NIFEXT:5', label='Calretinin').u
+        return OntTerm('PR:000004968', label='calretinin').u
+        #return OntTerm('NIFEXT:5', label='Calretinin').u
     elif o in mapping:
         v = mapping[o]
         if isinstance(v, OntTerm):
