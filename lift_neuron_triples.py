@@ -51,6 +51,8 @@ mapping = dict(acetylcholine=OntTerm('SAO:185580330', label='Acetylcholine'),
                motor=OntTerm('ilxtr:MotorPhenotype', label='Motor Phenotype'),
                postsubiculum=OntTerm('UBERON:0035971', label='postsubiculum'),
                medulla=OntTerm('UBERON:0001896', label='medulla oblongata'),
+               rod=ilxtr.RodMorphologicalPhenotype,
+               cone=ilxtr.ConeMorphologicalPhenotype,
 )
 mapping.update({
     'cortical layer 2-3': Layers.L23,
@@ -188,7 +190,7 @@ for class_ in g.subjects(rdflib.RDF.type, rdflib.OWL.Class):
         elif p == ilxtr.hasSomaLocatedIn:
             term = OntTerm(o)
             if term.validated and term.deprecated:
-                rb = term('replacedBy:')['replacedBy:']
+                rb = term('replacedBy:') #['replacedBy:']
                 if rb and rb[0] is not None:
                     o = OntTerm(rb[0])
         elif p == ilxtr.hasClassificationPhenotype:
