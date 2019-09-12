@@ -1,5 +1,5 @@
+#!/usr/bin/env python3.7
 #!/usr/bin/env pypy3
-#!/usr/bin/env python3.6
 """Convert neuron classes from processed neurolex rdf into neurons
 
 Usage:
@@ -11,10 +11,12 @@ Options:
 """
 
 from pprint import pprint
+from pathlib import Path
 from neurondm.lang import *
 from neurondm.phenotype_namespaces import BBP, CUT, Layers, Regions
 #from pyontutils.core import OntTerm, OntId
 from pyontutils.utils import TermColors as tc
+from pyontutils.config import devconfig
 from pyontutils.scigraph import Graph
 from pyontutils.namespaces import NIFRID, ilxtr
 from pyontutils.namespaces import hasRole, definition
@@ -33,10 +35,25 @@ config = Config(name='neuron_data_lifted',
                          'https://raw.githubusercontent.com/SciCrunch/NIF-Ontology/neurons/ttl/phenotypes.ttl'])
 config.load_existing()
 query = OntTerm.query
-sgg = Graph()
+query.services[0].graph.parse(Path(devconfig.ontology_local_repo, 'ttl/neurolex-fixes.ttl').as_posix(), format='ttl')
+sgg = query.services[1].sgg  #Graph()
 BIRNLEX, = makeNamespaces('BIRNLEX')
 repby = sgg.getEdges('IAO:0100001', limit=99999)
 nifga_uberon = {e['sub']:e['obj'] for e in repby['edges'] if 'UBERON' in e['obj']}
+
+do_union_locs = [OntId(i).u for i in
+                 [
+                     # taste buds have multiple locations
+                     'NIFEXT:98',
+                     'NIFEXT:99',
+                  #'NIFSTD:BAMSC995',
+                  #'NIFSTD:BAMSC986',
+                 ]]
+# oval nucleus issues
+# location terms are probably the same
+# see https://github.com/SciCrunch/NIF-Ontology/issues/124#issuecomment-530649025
+# the rest are handled below by location
+bnstonfu = [OntTerm(i).asPhenotype() for i in ['UBERON:0011176', 'UBERON:0023958']]
 
 mapping = dict(acetylcholine=OntTerm('SAO:185580330', label='Acetylcholine'),
                norepinephrine=OntTerm('NIFEXT:5013', label='Norepinephrine'),
@@ -175,6 +192,7 @@ match_report = {}
 for class_ in g.subjects(rdflib.RDF.type, rdflib.OWL.Class):
     pes = []
     layers = []
+    locations = []
     origLabel = None
     for p, o in g.predicate_objects(class_):
         if p == rdf.type:
@@ -192,11 +210,15 @@ for class_ in g.subjects(rdflib.RDF.type, rdflib.OWL.Class):
         elif p == hasRole and o == BIRNLEX['2534']:
             p, o = ilxtr.hasCircuitRolePhenotype, ilxtr.InterneuronPhenotype
         elif p == ilxtr.hasSomaLocatedIn:
+            if isinstance(o, rdflib.Literal):
+                print(tc.yellow(f'WARNING: literal for location! {o}'))
+                continue
             term = OntTerm(o)
-            if term.validated and term.deprecated:
-                rb = term('replacedBy:') #['replacedBy:']
-                if rb and rb[0] is not None:
-                    o = OntTerm(rb[0])
+            o = term.asPreferred()
+            #if term.validated and term.deprecated:
+                #rb = term('replacedBy:') #['replacedBy:']
+                #if rb and rb[0] is not None:
+                    #o = OntTerm(rb[0])
         elif p == ilxtr.hasClassificationPhenotype:
             maybe_o = oconvert(o)
             if maybe_o:
@@ -242,7 +264,7 @@ for class_ in g.subjects(rdflib.RDF.type, rdflib.OWL.Class):
                 #print(tc.blue(f'TODO: {Neuron.ng.qname(p):<40}{o}'))
                 continue
         try:
-            if p == ilxtr.hasLayerLocationPhenotype:
+            if p == ilxtr.hasSomaLocatedInLayer:
                 if isinstance(o, graphBase):  # pheno or logical
                     pes.append(o)
                 elif isinstance(o, tuple) and all(isinstance(e, graphBase) for e in o):
@@ -250,6 +272,14 @@ for class_ in g.subjects(rdflib.RDF.type, rdflib.OWL.Class):
                 else:
                     pheno = Phenotype(o, p)
                     layers.append(pheno)
+            elif p == ilxtr.hasSomaLocatedIn:
+                if isinstance(o, graphBase):  # pheno or logical
+                    pes.append(o)
+                elif isinstance(o, tuple) and all(isinstance(e, graphBase) for e in o):
+                    pes.extend(o)
+                else:
+                    pheno = Phenotype(o, p)
+                    locations.append(pheno)
             elif isinstance(o, tuple) and not o[0]:
                 pes.append(NegPhenotype(o[1], p))
             else:
@@ -258,6 +288,12 @@ for class_ in g.subjects(rdflib.RDF.type, rdflib.OWL.Class):
                 pes.append(Phenotype(o, p, label=label, override=bool(label)))
         except TypeError as e:
             print(*map(lambda s:tc.red(str(s)), (__file__, e.__traceback__.tb_lineno, OntTerm(p), OntTerm(o), '\n', e)))
+
+    if locations:
+        if class_ in do_union_locs or locations == bnstonfu:
+            pes += [LogicalPhenotype(OR, *locations)]
+        else:
+            pes += locations
 
     if pes or layers:
         s = [p for p in pes if p.e == ilxtr.hasSomaLocatedIn]
