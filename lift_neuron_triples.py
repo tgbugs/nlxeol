@@ -46,14 +46,22 @@ do_union_locs = [OntId(i).u for i in
                      # taste buds have multiple locations
                      'NIFEXT:98',
                      'NIFEXT:99',
-                  #'NIFSTD:BAMSC995',
-                  #'NIFSTD:BAMSC986',
+                     'SAO:709770772',  # hair cell, vestibular system was included because it is in the name
+                     'NLX:151801',  # also hair cell
+                     'NLX:144208',  # head direction, functional, thus many places
+                     'NLXCELL:20081206',  # cajal ret, which exists in development and maybe adult? so union
                  ]]
 # oval nucleus issues
 # location terms are probably the same
 # see https://github.com/SciCrunch/NIF-Ontology/issues/124#issuecomment-530649025
 # the rest are handled below by location
-bnstonfu = [OntTerm(i).asPhenotype() for i in ['UBERON:0011176', 'UBERON:0023958']]
+bnstonfu = set(OntTerm(i).asPhenotype() for i in ['UBERON:0011176', 'UBERON:0023958'])
+# visual cortex part of issue see
+# https://github.com/obophenotype/uberon/pull/1512/files
+visualfix = set(OntTerm(i).asPhenotype() for i in ['UBERON:0001950', 'UBERON:0002436'])
+# https://github.com/obophenotype/uberon/issues/1513
+cochfix = set(OntTerm(i).asPhenotype() for i in ['UBERON:0002227','UBERON:0001844'])
+fixes = bnstonfu, visualfix, cochfix
 
 mapping = dict(acetylcholine=OntTerm('SAO:185580330', label='Acetylcholine'),
                norepinephrine=OntTerm('NIFEXT:5013', label='Norepinephrine'),
@@ -242,15 +250,15 @@ for class_ in g.subjects(rdflib.RDF.type, rdflib.OWL.Class):
                     continue
                 else:
                     try:
-                        omatch = next(query(label=o)).OntTerm
+                        omatch = next(query(label=o))
                     except StopIteration:
-                        omatch = next(query(term=o)).OntTerm  # ok to go more general since we aren't autoinserting
+                        omatch = next(query(term=o))  # ok to go more general since we aren't autoinserting
                     #omatch.set_next_repr('curie', 'label')
                     #print(tc.blue(f'TODO: {Neuron.ng.qname(p):<40}{o}\n\t{omatch!r}'))
                     t = omatch
                     if 'oboInOwl:id' in t.predicates:  # uberon replacement from ilx
                         t = OntTerm(t.predicates['oboInOwl:id'])
-                        t('partOf:', 'rdfs:subClassOf', as_term=True)
+                        t('partOf:', 'rdfs:subClassOf', asTerm=True)
                         if OntId('UBERON:0002301', label='layer of neocortex') in t.predicates['rdfs:subClassOf']:
                             region = t.predicates['partOf:']
                             t.predicates['rdfs:subClassOf']
@@ -290,7 +298,7 @@ for class_ in g.subjects(rdflib.RDF.type, rdflib.OWL.Class):
             print(*map(lambda s:tc.red(str(s)), (__file__, e.__traceback__.tb_lineno, OntTerm(p), OntTerm(o), '\n', e)))
 
     if locations:
-        if class_ in do_union_locs or locations == bnstonfu:
+        if class_ in do_union_locs or set(locations) in fixes:
             pes += [LogicalPhenotype(OR, *locations)]
         else:
             pes += locations
