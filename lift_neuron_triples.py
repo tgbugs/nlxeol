@@ -64,7 +64,8 @@ cochfix = set(OntTerm(i).asPhenotype() for i in ['UBERON:0002227', 'UBERON:00018
 # if we were to merge all the graphs this would work, too much trouble at the moment
 # this is a reminder that layers orthogonal to regions still needs work ...
 # maybe use of hasPart is appropriate for this?
-l5bfix = set(OntTerm(i).asPhenotype() for i in ['UBERON:0001950', 'NLX:151718', 'UBERON:0001384'])
+l5bfix = set(OntTerm(i).asPhenotype(predicate='ilxtr:hasSomaLocatedIn')
+             for i in ['UBERON:0001950', 'NLX:151718', 'UBERON:0001384'])
 fixes = bnstonfu, visualfix, cochfix, l5bfix
 
 mapping = dict(acetylcholine=OntTerm('SAO:185580330', label='Acetylcholine'),
