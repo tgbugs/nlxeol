@@ -222,7 +222,8 @@ for class_ in g.subjects(rdflib.RDF.type, rdflib.OWL.Class):
             p, o = ilxtr.hasCircuitRolePhenotype, ilxtr.ProjectionPhenotype
         elif p == hasRole and o == BIRNLEX['2534']:
             p, o = ilxtr.hasCircuitRolePhenotype, ilxtr.InterneuronPhenotype
-        elif p == ilxtr.hasSomaLocatedIn:
+        elif p in (ilxtr.hasSomaLocatedIn, ilxtr.hasAxonLocatedIn,
+                   ilxtr.hasSomaLocatedInLayer):
             if isinstance(o, rdflib.Literal):
                 print(tc.yellow(f'WARNING: literal for location! {o}'))
                 continue
