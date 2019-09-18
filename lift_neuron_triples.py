@@ -13,6 +13,7 @@ Options:
 from pprint import pprint
 from pathlib import Path
 from neurondm.lang import *
+from neurondm.core import log as _log
 from neurondm.phenotype_namespaces import BBP, CUT, Layers, Regions
 #from pyontutils.core import OntTerm, OntId
 from pyontutils.utils import TermColors as tc
@@ -27,6 +28,8 @@ from IPython import embed
 from process_csv import neurons_main
 from docopt import docopt
 args = docopt(__doc__)
+
+log = _log.getChild('lnt')
 
 config = Config(name='neuron_data_lifted',
                 ignore_existing=True,
@@ -50,6 +53,7 @@ do_union_locs = [OntId(i).u for i in
                      'NLX:151801',  # also hair cell
                      'NLX:144208',  # head direction, functional, thus many places
                      'NLXCELL:20081206',  # cajal ret, which exists in development and maybe adult? so union
+                     'NLXCELL:091005',  # olfactory/pyriform cortex issues
                  ]]
 # oval nucleus issues
 # location terms are probably the same
@@ -66,7 +70,9 @@ cochfix = set(OntTerm(i).asPhenotype() for i in ['UBERON:0002227', 'UBERON:00018
 # maybe use of hasPart is appropriate for this?
 l5bfix = set(OntTerm(i).asPhenotype(predicate='ilxtr:hasSomaLocatedIn')
              for i in ['UBERON:0001950', 'NLX:151718', 'UBERON:0001384'])
-fixes = bnstonfu, visualfix, cochfix, l5bfix
+apcfix = set(OntTerm(i).asPhenotype(predicate='ilxtr:hasSomaLocatedIn')
+             for i in ['NLX:12056', 'UBERON:0002894'])
+fixes = bnstonfu, visualfix, cochfix, l5bfix, apcfix
 
 mapping = dict(acetylcholine=OntTerm('SAO:185580330', label='Acetylcholine'),
                norepinephrine=OntTerm('NIFEXT:5013', label='Norepinephrine'),
@@ -91,7 +97,7 @@ mapping.update({
     'small pyramidal': OntTerm('ilxtr:SmallPyramidalPhenotype', label='Small Pyramidal Phenotype'),
     'cerebellar nuclei': OntTerm('UBERON:0002130', label='cerebellar nuclear complex'),
     'abducens nucleus': OntTerm('UBERON:0002682', label='abducens nucleus'),
-    'accessory nucleus': OntTerm('NLX:39810', label='Accessory nucleus'),  # TODO add to uberon?
+    'accessory nucleus': OntTerm('UBERON:0020358', label='accessory XI nerve nucleus'),
     'accumbens nucleus core': OntTerm('UBERON:0012170', label='core of nucleus accumbens'),
     'accumbens nucleus shell': OntTerm('UBERON:0012171', label='shell of nucleus accumbens'),
     'anterior piriform cortex': OntTerm('NLX:12056', label='Anterior piriform cortex'),  # TODO add to uberon?
@@ -218,21 +224,68 @@ for class_ in g.subjects(rdflib.RDF.type, rdflib.OWL.Class):
         elif p == rdfs.label:
             origLabel = o
             continue
+        elif p == ilxtr.neurolexCategory:
+            continue
         elif p == hasRole and o == BIRNLEX['2533']:
             p, o = ilxtr.hasCircuitRolePhenotype, ilxtr.ProjectionPhenotype
         elif p == hasRole and o == BIRNLEX['2534']:
             p, o = ilxtr.hasCircuitRolePhenotype, ilxtr.InterneuronPhenotype
         elif p in (ilxtr.hasSomaLocatedIn, ilxtr.hasAxonLocatedIn,
                    ilxtr.hasSomaLocatedInLayer):
-            if isinstance(o, rdflib.Literal):
-                print(tc.yellow(f'WARNING: literal for location! {o}'))
-                continue
-            term = OntTerm(o)
-            o = term.asPreferred()
-            #if term.validated and term.deprecated:
-                #rb = term('replacedBy:') #['replacedBy:']
-                #if rb and rb[0] is not None:
-                    #o = OntTerm(rb[0])
+            stahp = False
+            if p == ilxtr.hasAxonLocatedIn:
+                _oid = OntId(o)
+                if _oid.prefix == 'NLXCELL':
+                    p, o = ilxtr.hasForwardConnectionPhenotype, o  # FIXME probably needs to be union of in these cases
+                    stahp = True
+                elif _oid.prefix == 'NIFEXT':
+                    if OntId(_NEURON_CLASS) in _oid.asInstrumented()('rdfs:subClassOf', depth=10):
+                        p, o = ilxtr.hasForwardConnectionPhenotype, o
+                        stahp = True
+
+            if not stahp:
+                if isinstance(o, rdflib.Literal):
+                    _so = str(o)
+                    #if _so == 'accessory nucleus' or _so == 'anterior piriform cortex':
+                        #breakpoint()
+                    newo = oconvert(_so)
+                    if newo != _so:
+                        if isinstance(newo, Phenotype) or isinstance(newo, LogicalPhenotype):
+                            pes.append(newo)
+                            continue
+                        if not isinstance(newo, rdflib.URIRef):
+                            todo_report.add((o, p))
+                            #print(tc.yellow(f'WARNING: literal for location! {o}'))
+                            log.warning(f'literal for location! {o}')
+                            continue
+
+                        o = newo
+                    elif _so not in match_report:
+                        matches = list(OntTerm.query(term=_so, prefix='UBERON'))
+                        if matches:
+                            if len(matches) == 1:
+                                matches = matches[0]
+
+                            match_report[_so] = matches
+
+                        log.warning(f'literal for location! {o}')
+                        #print(tc.yellow(f'WARNING: literal for location! {o}'))
+                        continue
+                    else:
+                        log.debug(f'{o!r}')
+
+                if isinstance(o, OntTerm):
+                    term = o
+                else:
+                    term = OntTerm(o)
+
+                o = term.asPreferred()
+
+                #if term.validated and term.deprecated:
+                    #rb = term('replacedBy:') #['replacedBy:']
+                    #if rb and rb[0] is not None:
+                        #o = OntTerm(rb[0])
+
         elif p == ilxtr.hasClassificationPhenotype:
             maybe_o = oconvert(o)
             if maybe_o:
@@ -298,10 +351,12 @@ for class_ in g.subjects(rdflib.RDF.type, rdflib.OWL.Class):
                 pes.append(NegPhenotype(o[1], p))
             else:
                 label = o.label if isinstance(o, OntTerm) else None
-                print(o, p)
+                #log.debug(f'{o!r} {p!r}')
                 pes.append(Phenotype(o, p, label=label, override=bool(label)))
         except TypeError as e:
-            print(*map(lambda s:tc.red(str(s)), (__file__, e.__traceback__.tb_lineno, OntTerm(p), OntTerm(o), '\n', e)))
+            log.exception(e)
+            log.error(f'{OntTerm(o)} {OntTerm(p)}')
+            #print(*map(lambda s:tc.red(str(s)), (__file__, e.__traceback__.tb_lineno, OntTerm(p), OntTerm(o), '\n', e)))
 
     if locations:
         if class_ in do_union_locs or set(locations) in fixes:
@@ -319,7 +374,8 @@ for class_ in g.subjects(rdflib.RDF.type, rdflib.OWL.Class):
             s0 = s[0]
             l0 = l[0]
             if str(s0.p) != str(l0.p):  # FIXME should not have to str these!
-                print(tc.yellow(f'WARNING: mismatch! {class_}\n{s[0]}\n{l[0]}'))
+                #print(tc.yellow(f'WARNING: mismatch! {class_}\n{s[0]}\n{l[0]}'))
+                log.warning('mismatch! {class_}\n{s[0]}\n{l[0]}')
                 #raise ValueError(f'mismatch! {class_}\n{s[0]}\n{l[0]}')
                 pes.remove(s0)
                 pes.remove(l0)
