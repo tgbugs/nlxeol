@@ -6,7 +6,7 @@ Usage:
     lift-neuron-triples [options]
 
 Options:
-    -d --debug    embed after complete
+    -d --debug    drop into debugger at end
 
 """
 
@@ -24,7 +24,6 @@ from pyontutils.namespaces import hasRole, definition
 from pyontutils.namespaces import makePrefixes, makeNamespaces
 from pyontutils.closed_namespaces import rdf, rdfs, owl
 import rdflib
-from IPython import embed
 from process_csv import neurons_main
 from docopt import docopt
 args = docopt(__doc__)
@@ -130,7 +129,6 @@ direct_fix.update({
     'visual cortex primary layer 5': (Layers.L5, Regions.V1),
     'visual cortex primary layer 2-3': (Layers.L23, Regions.V1),
     OntId('NLX:143939').iri: (Layers.L5, Regions.V1),
-
 })
 
 direct_fix = {k:v if isinstance(v, tuple) else (v,) for k, v in direct_fix.items()}
@@ -206,6 +204,7 @@ g.parse('/tmp/neuron_data_curated.ttl', format='turtle')
 
 neurons = []
 todo_report = set()
+need_to_indicator = set()
 match_report = {}
 for class_ in g.subjects(rdflib.RDF.type, rdflib.OWL.Class):
     pes = []
@@ -284,6 +283,19 @@ for class_ in g.subjects(rdflib.RDF.type, rdflib.OWL.Class):
                     #rb = term('replacedBy:') #['replacedBy:']
                     #if rb and rb[0] is not None:
                         #o = OntTerm(rb[0])
+
+        elif p in (ilxtr.hasNeurotransmitterPhenotype, ilxtr.hasMolecularPhenotype):
+            if isinstance(o, rdflib.Literal):
+                maybe_o = oconvert(o)
+                if maybe_o:
+                    o = maybe_o
+                else:
+                    raise ValueError(o)
+
+            term = OntTerm(o)
+            o = term.asIndicator()
+            if o == term:
+                need_to_indicator.add(o)
 
         elif p == ilxtr.hasClassificationPhenotype:
             maybe_o = oconvert(o)
@@ -409,5 +421,9 @@ for o, p in sorted(todo_report, key=lambda t:t[::-1]):
 
 OntTerm.repr_args = 'curie', 'label', #'definition'
 pprint({str(k):v for k, v in match_report.items()})
+snti = sorted(need_to_indicator)
+pref = [t.asPreferred() for t in snti]
+other = {t:query(term=t.label) if t.label else [t] for t in pref}
+pprint(other)
 if args['--debug']:
-    embed()
+    breakpoint()
