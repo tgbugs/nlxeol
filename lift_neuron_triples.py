@@ -33,9 +33,8 @@ log = _log.getChild('lnt')
 
 config = Config(name='neuron_data_lifted',
                 ignore_existing=True,
-                imports=['https://raw.githubusercontent.com/SciCrunch/NIF-Ontology/neurons/ttl/generated/neurons/phenotype-direct.ttl',
-                         'https://raw.githubusercontent.com/SciCrunch/NIF-Ontology/neurons/ttl/phenotype-core.ttl',
-                         'https://raw.githubusercontent.com/SciCrunch/NIF-Ontology/neurons/ttl/phenotypes.ttl'])
+                imports=['NIFRAW:neurons/ttl/phenotype-core.ttl',
+                         'NIFRAW:neurons/ttl/phenotypes.ttl'])
 config.load_existing()
 query = OntTerm.query
 query.services[0].graph.parse(Path(devconfig.ontology_local_repo, 'ttl/neurolex-fixes.ttl').as_posix(), format='ttl')
