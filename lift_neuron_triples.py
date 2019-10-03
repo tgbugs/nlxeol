@@ -423,7 +423,7 @@ OntTerm.repr_args = 'curie', 'label', #'definition'
 pprint({str(k):v for k, v in match_report.items()})
 snti = sorted(need_to_indicator)
 pref = [t.asPreferred() for t in snti]
-other = {t:query(term=t.label) if t.label else [t] for t in pref}
+other = {t:list(query(term=t.label)) if t.label else [t] for t in pref}
 pprint(other)
 if args['--debug']:
     breakpoint()
