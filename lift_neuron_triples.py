@@ -186,6 +186,10 @@ def oconvert(o):
     elif o == 'calretinin':
         return OntTerm('PR:000004968', label='calretinin').u
         #return OntTerm('NIFEXT:5', label='Calretinin').u
+    elif o == 'melanopsin':  # FIXME synonym?
+        return OntTerm('PR:000001243', label='opsin-4').u
+    elif o == 'hydroxysteroid dehydrogenase type 2':  # FIXME synonym?
+        return OntTerm('PR:000008772', label='corticosteroid 11-beta-dehydrogenase isozyme 2').u
     elif o in mapping:
         v = mapping[o]
         if isinstance(v, OntTerm):
@@ -284,7 +288,7 @@ for class_ in g.subjects(rdflib.RDF.type, rdflib.OWL.Class):
                     #if rb and rb[0] is not None:
                         #o = OntTerm(rb[0])
 
-        elif p in (ilxtr.hasNeurotransmitterPhenotype, ilxtr.hasMolecularPhenotype):
+        elif p in graphBase._molecular_predicates:
             if isinstance(o, rdflib.Literal):
                 maybe_o = oconvert(o)
                 if maybe_o:
