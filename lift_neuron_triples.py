@@ -233,7 +233,7 @@ for class_ in g.subjects(rdflib.RDF.type, rdflib.OWL.Class):
         elif p == hasRole and o == BIRNLEX['2534']:
             p, o = ilxtr.hasCircuitRolePhenotype, ilxtr.InterneuronPhenotype
         elif p in (ilxtr.hasSomaLocatedIn, ilxtr.hasAxonLocatedIn,
-                   ilxtr.hasSomaLocatedInLayer):
+                   ilxtr.hasSomaLocatedInLayer, ilxtr.hasDendriteLocatedIn):
             stahp = False
             if p == ilxtr.hasAxonLocatedIn:
                 _oid = OntId(o)
@@ -246,6 +246,9 @@ for class_ in g.subjects(rdflib.RDF.type, rdflib.OWL.Class):
                         stahp = True
 
             if not stahp:
+                if type(o) == rdflib.URIRef and 'UBERON' not in o:
+                    o = OntTerm(o).asPreferred().URIRef
+
                 if isinstance(o, rdflib.Literal):
                     _so = str(o)
                     #if _so == 'accessory nucleus' or _so == 'anterior piriform cortex':
