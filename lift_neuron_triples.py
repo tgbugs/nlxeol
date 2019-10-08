@@ -169,13 +169,15 @@ def oconvert(o):
     elif o == 'projection':
         return ilxtr.ProjectionPhenotype
     elif o == 'intrinsic':
-        return ilxtr.InterneuronPhenotype
+        return ilxtr.IntrinsicPhenotype
     elif o == 'smooth':
         return False, ilxtr.SpinyPhenotype
     elif o == 'common spiny':  # common is a dead word, that probably indicates frequency of occurance
         return ilxtr.SpinyPhenotype
     elif o == 'spiny':
         return ilxtr.SpinyPhenotype
+    elif o == 'inverted pyramidal':
+        return ilxtr.InvertedPyramidalPhenotype
     elif o == 'parvalbumin':
         return OntTerm('PR:000013502', label='parvalbumin alpha').u
         #return OntTerm('NIFEXT:6', label='Parvalbumin').u
@@ -231,7 +233,7 @@ for class_ in g.subjects(rdflib.RDF.type, rdflib.OWL.Class):
         elif p == hasRole and o == BIRNLEX['2533']:
             p, o = ilxtr.hasCircuitRolePhenotype, ilxtr.ProjectionPhenotype
         elif p == hasRole and o == BIRNLEX['2534']:
-            p, o = ilxtr.hasCircuitRolePhenotype, ilxtr.InterneuronPhenotype
+            p, o = ilxtr.hasCircuitRolePhenotype, ilxtr.IntrinsicPhenotype
         elif p in (ilxtr.hasSomaLocatedIn, ilxtr.hasAxonLocatedIn,
                    ilxtr.hasSomaLocatedInLayer, ilxtr.hasDendriteLocatedIn):
             stahp = False
