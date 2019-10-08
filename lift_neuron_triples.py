@@ -103,8 +103,15 @@ mapping.update({
     'dorsal motor nucleus of the vagus nerve': OntTerm('UBERON:0002870', label='dorsal motor nucleus of vagus nerve'),
     'spinal cord intermediate horn': OntTerm('UBERON:0004676', label='spinal cord lateral horn'),  # synonym match
     'nitric oxide synthase brain': OntTerm('PR:000011326', label='nitric oxide synthase, brain'),
-    # classification types
     })
+
+# classification types
+#  unfortunately for all of these classification type neurons the real
+#  way we should be dealing with them is by constructing little local
+#  naming systems, but that is a pain, technically the modelling is
+#  correct, but it does conflate all types with a matching number
+#  when we query, which isn't necessarily a bad thing it just has
+#  arbitrary rather than biological meaning
 ctypes = {
     'type 1': 'ilxtr:cell-classification-types/1',  # is it safe to I?
     'type 2': 'ilxtr:cell-classification-types/2',  # is it safe to II?
@@ -114,6 +121,11 @@ ctypes = {
     'type 6': 'ilxtr:cell-classification-types/6',
     'type 7': 'ilxtr:cell-classification-types/7',
 }
+# yes we are normalizing Roman numerals to Arabic numerals, deal with it
+ctypes['type I'] = ctypes['type 1']
+ctypes['type II'] = ctypes['type 2']
+ctypes['type III'] = ctypes['type 3']
+
 mapping.update({k:OntTerm(v, label=k) for k, v in ctypes.items()})
 
 direct_fix= dict(
