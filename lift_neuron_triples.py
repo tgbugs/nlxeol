@@ -79,7 +79,7 @@ mapping = dict(acetylcholine=OntTerm('SAO:185580330', label='Acetylcholine'),
                histamine=OntTerm('NIFEXT:5016', label='Histamine'),
                stellate=OntTerm('SAO:9271919883', label='Stellate'),  # may need a pheno repr of this?
                oxytocin=OntTerm('CHEBI:7872', label='oxytocin'),
-               dopamine=OntTerm('CHEBI:18234', label='dopamine'),
+               dopamine=OntTerm('CHEBI:18243', label='dopamine'),
                vasopressin=OntTerm('NIFEXT:5124', label='Vasopressin'),  # FIXME not in chebit?
                bistratified=OntTerm('ilxtr:BistratifiedPhenotype', label='Bistratified Phenotype'),
                motor=OntTerm('ilxtr:MotorPhenotype', label='Motor Phenotype'),
