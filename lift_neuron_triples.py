@@ -37,6 +37,7 @@ config = Config(name='neuron_data_lifted',
 config.load_existing()
 query = OntTerm.query
 query.services[0].graph.parse(Path(devconfig.ontology_local_repo, 'ttl/neurolex-fixes.ttl').as_posix(), format='ttl')
+query.services[1].setup(instrumented=OntTerm)
 sgg = query.services[1].sgg  #Graph()
 BIRNLEX, = makeNamespaces('BIRNLEX')
 repby = sgg.getEdges('IAO:0100001', limit=99999)
