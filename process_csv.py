@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.7
+#!/usr/bin/env python3
 """Convert neurolex dump spreadsheets to rdf
 
 Usage:

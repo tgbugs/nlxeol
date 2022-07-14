@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.7
+#!/usr/bin/env python3
 #!/usr/bin/env pypy3
 """Convert neuron classes from processed neurolex rdf into neurons
 
@@ -15,9 +15,9 @@ from pathlib import Path
 from neurondm.lang import *
 from neurondm.core import log as _log
 from neurondm.phenotype_namespaces import BBP, CUT, Layers, Regions
-#from pyontutils.core import OntTerm, OntId
+#from pyontutils.core import OntTerm, OntId  # via neurondm.lang
 from pyontutils.utils import TermColors as tc
-from pyontutils.config import devconfig
+from pyontutils.config import auth
 from pyontutils.scigraph import Graph
 from pyontutils.namespaces import NIFRID, ilxtr
 from pyontutils.namespaces import hasRole, definition
@@ -36,7 +36,7 @@ config = Config(name='neuron_data_lifted',
                          'NIFRAW:neurons/ttl/phenotypes.ttl'])
 config.load_existing()
 query = OntTerm.query
-query.services[0].graph.parse(Path(devconfig.ontology_local_repo, 'ttl/neurolex-fixes.ttl').as_posix(), format='ttl')
+query.services[0].graph.parse(Path(auth.get_path('ontology-local-repo'), 'ttl/neurolex-fixes.ttl').as_posix(), format='ttl')
 query.services[1].setup(instrumented=OntTerm)
 sgg = query.services[1].sgg  #Graph()
 BIRNLEX, = makeNamespaces('BIRNLEX')
